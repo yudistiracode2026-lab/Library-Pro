@@ -7,4 +7,4 @@ export const STAF_STAGES: Record<number, string> = {
     5: 'Pelaporan & akreditasi',
 };
 
-export const CURRENT_STAGE = 3;
+export const CURRENT_STAGE = 4;

@@ -60,6 +60,16 @@ class User extends Authenticatable
         return $this->hasOne(Member::class);
     }
 
+    /**
+     * The staff record (librarian or support staff) linked to this login.
+     *
+     * @return HasOne<Employee, $this>
+     */
+    public function employee(): HasOne
+    {
+        return $this->hasOne(Employee::class);
+    }
+
     public function hasRole(UserRole ...$roles): bool
     {
         return in_array($this->role, $roles, true);

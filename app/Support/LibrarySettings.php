@@ -20,6 +20,10 @@ class LibrarySettings
         'clearance_thesis' => true,
         'clearance_donation' => true,
         'clearance_hardcopy' => true,
+        // Students and staff served; the accreditation wants > 0.5 m² of library per person.
+        'sivitas' => 3280,
+        // Semester procurement budget in rupiah.
+        'procurement_budget' => 25000000,
     ];
 
     public static function get(string $key): mixed

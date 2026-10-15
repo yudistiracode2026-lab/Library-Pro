@@ -90,3 +90,51 @@ export function initials(name: string): string {
         .join('')
         .toUpperCase();
 }
+
+export function Kpi({ label, value, sub, tone }: { label: string; value: string; sub: string; tone?: 'ok' | 'warn' }) {
+    return (
+        <div className="flex flex-col gap-0.5 rounded-lg bg-white px-[18px] py-4 shadow-sm dark:bg-slate-800">
+            <span className="text-fg-3 text-[13px]">{label}</span>
+            <span className={`font-display text-[26px] font-extrabold ${tone === 'ok' ? 'text-success' : tone === 'warn' ? 'text-amber-700' : ''}`}>
+                {value}
+            </span>
+            <span className="text-fg-3 text-xs">{sub}</span>
+        </div>
+    );
+}
+
+export function IconButton({
+    label,
+    onClick,
+    disabled,
+    danger,
+    children,
+}: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    danger?: boolean;
+    children: ReactNode;
+}) {
+    return (
+        <button
+            type="button"
+            aria-label={label}
+            title={label}
+            onClick={onClick}
+            disabled={disabled}
+            className={`text-fg-2 grid size-7 cursor-pointer place-items-center rounded-[8px] disabled:cursor-not-allowed disabled:opacity-40 ${danger ? 'hover:bg-danger-soft hover:text-danger' : 'hover:bg-teal-100 hover:text-teal-700'}`}
+        >
+            {children}
+        </button>
+    );
+}
+
+/** Minutes as "2 j 30 m". */
+export function duration(minutes: number): string {
+    if (minutes <= 0) return '0 m';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+
+    return [h ? `${h} j` : '', m ? `${m} m` : ''].filter(Boolean).join(' ');
+}

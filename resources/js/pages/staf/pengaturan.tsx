@@ -13,9 +13,18 @@ type Settings = {
     clearance_thesis: boolean;
     clearance_donation: boolean;
     clearance_hardcopy: boolean;
+    sivitas: number;
+    procurement_budget: number;
 };
 
-const RULES: { key: keyof Settings; label: string; unit: string; hint?: string }[] = [
+type NumberField = { key: keyof Settings; label: string; unit: string; hint?: string };
+
+const PROFILE: NumberField[] = [
+    { key: 'sivitas', label: 'Jumlah sivitas akademika', unit: 'orang', hint: 'Mahasiswa, dosen, dan tendik. Dipakai untuk luas per sivitas.' },
+    { key: 'procurement_budget', label: 'Pagu pengadaan per semester', unit: 'Rp' },
+];
+
+const RULES: NumberField[] = [
     { key: 'loan_days', label: 'Lama peminjaman', unit: 'hari' },
     { key: 'max_loans', label: 'Maksimal buku dipinjam', unit: 'buku' },
     { key: 'max_extensions', label: 'Maksimal perpanjangan', unit: 'kali' },
@@ -40,32 +49,37 @@ export default function Pengaturan({ settings }: { settings: Settings }) {
     return (
         <StafLayout title="Pengaturan" group="Sistem">
             <form onSubmit={submit} className="flex max-w-3xl flex-col gap-6">
-                <Card>
-                    <CardTitle>Aturan sirkulasi</CardTitle>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        {RULES.map((rule) => (
-                            <label key={rule.key} className="flex flex-col gap-1.5 text-[13px] font-semibold">
-                                {rule.label}
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        value={form.data[rule.key] as number}
-                                        onChange={(e) => form.setData(rule.key, Number(e.target.value))}
-                                        aria-invalid={!!form.errors[rule.key]}
-                                        className={`${inputClass} max-w-[140px]`}
-                                    />
-                                    <span className="text-fg-3 text-sm font-normal">{rule.unit}</span>
-                                </div>
-                                {form.errors[rule.key] ? (
-                                    <span className="text-danger text-xs font-normal">{form.errors[rule.key]}</span>
-                                ) : (
-                                    rule.hint && <span className="text-fg-3 text-xs font-normal">{rule.hint}</span>
-                                )}
-                            </label>
-                        ))}
-                    </div>
-                </Card>
+                {[
+                    { title: 'Aturan sirkulasi', fields: RULES },
+                    { title: 'Data perpustakaan', fields: PROFILE },
+                ].map(({ title, fields }) => (
+                    <Card key={title}>
+                        <CardTitle>{title}</CardTitle>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {fields.map((rule) => (
+                                <label key={rule.key} className="flex flex-col gap-1.5 text-[13px] font-semibold">
+                                    {rule.label}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            value={form.data[rule.key] as number}
+                                            onChange={(e) => form.setData(rule.key, Number(e.target.value))}
+                                            aria-invalid={!!form.errors[rule.key]}
+                                            className={`${inputClass} ${rule.key === 'procurement_budget' ? 'max-w-[200px]' : 'max-w-[140px]'}`}
+                                        />
+                                        <span className="text-fg-3 text-sm font-normal">{rule.unit}</span>
+                                    </div>
+                                    {form.errors[rule.key] ? (
+                                        <span className="text-danger text-xs font-normal">{form.errors[rule.key]}</span>
+                                    ) : (
+                                        rule.hint && <span className="text-fg-3 text-xs font-normal">{rule.hint}</span>
+                                    )}
+                                </label>
+                            ))}
+                        </div>
+                    </Card>
+                ))}
 
                 <Card>
                     <CardTitle>Syarat bebas pustaka</CardTitle>

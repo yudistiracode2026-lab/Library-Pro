@@ -1,9 +1,16 @@
 <?php
 
+use App\Http\Controllers\Staf\ActivityController;
+use App\Http\Controllers\Staf\Aset\InventoryController;
+use App\Http\Controllers\Staf\Aset\RoomController;
+use App\Http\Controllers\Staf\CctvController;
 use App\Http\Controllers\Staf\CirculationController;
 use App\Http\Controllers\Staf\ClearanceController;
 use App\Http\Controllers\Staf\DashboardController;
+use App\Http\Controllers\Staf\OpnameController;
+use App\Http\Controllers\Staf\OvertimeController;
 use App\Http\Controllers\Staf\PageController;
+use App\Http\Controllers\Staf\ProcurementController;
 use App\Http\Controllers\Staf\SearchMapController;
 use App\Http\Controllers\Staf\SettingsController;
 use App\Http\Controllers\Staf\VisitController;
@@ -68,6 +75,73 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
             Route::post('{clearance}/hardcopy', 'receiveHardcopy')->name('.hardcopy');
             Route::post('{clearance}/setujui', 'approve')->name('.approve');
             Route::post('{clearance}/kembalikan', 'sendBack')->name('.send-back');
+        });
+
+        Route::controller(RoomController::class)->prefix('aset/ruang')->name('aset.ruang')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::put('{room}', 'update')->name('.update');
+        });
+
+        Route::controller(InventoryController::class)->prefix('aset/inventaris')->name('aset.inventaris')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::get('ekspor', 'export')->name('.export');
+            Route::post('aset', 'storeAsset')->name('.assets.store');
+            Route::patch('aset/{asset}', 'updateAsset')->name('.assets.update');
+            Route::delete('aset/{asset}', 'destroyAsset')->name('.assets.destroy');
+            Route::post('fasilitas', 'addFacility')->name('.facility');
+            Route::post('lisensi', 'storeLicense')->name('.licenses.store');
+            Route::patch('lisensi/{license}', 'updateLicense')->name('.licenses.update');
+            Route::delete('lisensi/{license}', 'destroyLicense')->name('.licenses.destroy');
+        });
+
+        Route::controller(OpnameController::class)->prefix('opname')->name('opname')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::post('mulai', 'start')->name('.start');
+            Route::post('cek', 'check')->name('.check');
+            Route::post('selesai', 'finish')->name('.finish');
+        });
+
+        Route::controller(ProcurementController::class)->prefix('pengadaan')->name('pengadaan')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::get('ekspor', 'export')->name('.export');
+            Route::post('terbitan/{publication}', 'addNewPublication')->name('.new');
+            Route::post('favorit/{book}', 'addFavorite')->name('.favorite');
+            Route::post('usulan/{suggestion}/setujui', 'approveSuggestion')->name('.suggestion.approve');
+            Route::post('usulan/{suggestion}/tolak', 'rejectSuggestion')->name('.suggestion.reject');
+            Route::post('usulan/{suggestion}/batal', 'undoSuggestion')->name('.suggestion.undo');
+            Route::post('usulan/{suggestion}/tiba', 'arrived')->name('.suggestion.arrived');
+            Route::patch('daftar/{item}', 'updateItem')->name('.item.update');
+            Route::delete('daftar/{item}', 'destroyItem')->name('.item.destroy');
+            Route::post('ajukan', 'submit')->name('.submit');
+        });
+
+        Route::controller(ActivityController::class)->prefix('kegiatan')->name('kegiatan')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::get('ekspor', 'export')->name('.export');
+            Route::post('/', 'store')->name('.store');
+            Route::delete('{log}', 'destroy')->name('.destroy');
+        });
+
+        Route::controller(OvertimeController::class)->prefix('lembur')->name('lembur')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::get('ekspor', 'export')->name('.export');
+            Route::get('surat', 'letter')->name('.letter');
+            Route::post('{assignment}/masuk', 'checkIn')->name('.check-in');
+            Route::post('{assignment}/keluar', 'checkOut')->name('.check-out');
+
+            Route::middleware('role:admin')->group(function () {
+                Route::post('/', 'store')->name('.store');
+                Route::put('{session}', 'update')->name('.update');
+                Route::delete('{session}', 'destroy')->name('.destroy');
+            });
+        });
+
+        Route::controller(CctvController::class)->prefix('cctv')->name('cctv')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::post('kejadian', 'storeEvent')->name('.event');
+            Route::put('{camera}', 'update')->name('.update');
+            Route::post('{camera}/rekam', 'toggleRecording')->name('.recording');
+            Route::post('{camera}/sambungan', 'toggleOnline')->name('.online');
         });
 
         Route::middleware('role:admin')->controller(SettingsController::class)->prefix('pengaturan')->name('pengaturan')->group(function () {

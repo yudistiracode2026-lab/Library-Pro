@@ -27,7 +27,10 @@ class SettingsController extends Controller
             'clearance_thesis' => ['boolean'],
             'clearance_donation' => ['boolean'],
             'clearance_hardcopy' => ['boolean'],
+            'sivitas' => ['sometimes', 'integer', 'min:1'],
+            'procurement_budget' => ['sometimes', 'integer', 'min:0'],
         ], [], [
+            'sivitas' => 'jumlah sivitas', 'procurement_budget' => 'pagu pengadaan',
             'loan_days' => 'lama peminjaman', 'max_loans' => 'maksimal buku dipinjam',
             'max_extensions' => 'maksimal perpanjangan', 'fine_per_day' => 'denda per hari',
         ]);

@@ -12,8 +12,11 @@ class BookCopy extends Model
 
     public const LOANED = 'dipinjam';
 
-    /** Returned damaged, waiting for repair. */
+    /** Returned damaged (or found damaged in stock-taking), waiting for repair. */
     public const REPAIR = 'perbaikan';
+
+    /** Not found during stock-taking. */
+    public const LOST = 'hilang';
 
     protected $fillable = ['book_id', 'code', 'status'];
 
