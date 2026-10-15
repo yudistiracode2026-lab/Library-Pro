@@ -1,13 +1,12 @@
 <?php
 
 use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\WebsiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', WebsiteController::class)->name('home');
 
 Route::middleware(['auth'])->group(function () {
     // Landing page after login: staff go to their portal, members get theirs.

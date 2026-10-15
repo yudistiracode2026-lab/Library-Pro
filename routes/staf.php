@@ -1,16 +1,18 @@
 <?php
 
+use App\Http\Controllers\Staf\AccreditationController;
 use App\Http\Controllers\Staf\ActivityController;
 use App\Http\Controllers\Staf\Aset\InventoryController;
 use App\Http\Controllers\Staf\Aset\RoomController;
 use App\Http\Controllers\Staf\CctvController;
 use App\Http\Controllers\Staf\CirculationController;
 use App\Http\Controllers\Staf\ClearanceController;
+use App\Http\Controllers\Staf\CmsController;
 use App\Http\Controllers\Staf\DashboardController;
 use App\Http\Controllers\Staf\OpnameController;
 use App\Http\Controllers\Staf\OvertimeController;
-use App\Http\Controllers\Staf\PageController;
 use App\Http\Controllers\Staf\ProcurementController;
+use App\Http\Controllers\Staf\ReportController;
 use App\Http\Controllers\Staf\SearchMapController;
 use App\Http\Controllers\Staf\SettingsController;
 use App\Http\Controllers\Staf\VisitController;
@@ -23,20 +25,14 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
     ->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
 
-        // Master data CRUD and placeholders, generated from the menu.
+        // Master data CRUD, generated from the menu.
         foreach (StafMenu::pages() as $page) {
-            if ($page['key'] === 'dashboard' || $page['custom']) {
+            if ($page['controller'] === null) {
                 continue;
             }
 
             Route::middleware($page['admin_only'] ? ['role:admin'] : [])->group(function () use ($page) {
                 ['key' => $key, 'path' => $path, 'controller' => $controller] = $page;
-
-                if ($controller === null) {
-                    Route::get($path, PageController::class)->name($key);
-
-                    return;
-                }
 
                 Route::get($path, [$controller, 'index'])->name($key);
                 Route::get("{$path}/ekspor", [$controller, 'export'])->name("{$key}.export");
@@ -142,6 +138,34 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
             Route::put('{camera}', 'update')->name('.update');
             Route::post('{camera}/rekam', 'toggleRecording')->name('.recording');
             Route::post('{camera}/sambungan', 'toggleOnline')->name('.online');
+        });
+
+        Route::controller(AccreditationController::class)->prefix('akreditasi')->name('akreditasi.')->group(function () {
+            Route::get('dasbor', 'dashboard')->name('dasbor');
+            Route::get('indikator', 'indicators')->name('indikator');
+            Route::get('gap', 'gap')->name('gap');
+            Route::get('bukti', 'evidence')->name('bukti');
+            Route::get('berkas', 'files')->name('berkas');
+            Route::patch('indikator/{indicator}', 'updateIndicator')->name('indikator.update');
+            Route::post('bukti/{evidence}/unggah', 'uploadEvidence')->name('bukti.upload');
+            Route::post('bukti/{evidence}/sahkan', 'approveEvidence')->name('bukti.approve');
+            Route::get('bukti/{evidence}/berkas', 'evidenceFile')->name('bukti.file');
+            Route::post('snapshot', 'snapshot')->name('snapshot');
+            Route::get('berkas/paket-bukti', 'evidencePackage')->name('berkas.package');
+            Route::get('berkas/{type}', 'document')->name('berkas.document');
+        });
+
+        Route::controller(ReportController::class)->prefix('laporan')->name('laporan')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::get('unduh/{format}', 'download')->name('.download');
+        });
+
+        Route::middleware('role:admin')->controller(CmsController::class)->prefix('cms')->name('cms')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::put('konten', 'updateContent')->name('.content');
+            Route::post('berita', 'storeNews')->name('.news.store');
+            Route::patch('berita/{post}', 'updateNews')->name('.news.update');
+            Route::delete('berita/{post}', 'destroyNews')->name('.news.destroy');
         });
 
         Route::middleware('role:admin')->controller(SettingsController::class)->prefix('pengaturan')->name('pengaturan')->group(function () {

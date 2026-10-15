@@ -85,15 +85,19 @@ class StafPortalTest extends TestCase
         $this->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('stafMenu', null));
     }
 
-    public function test_placeholder_page_describes_the_module()
+    public function test_every_menu_link_resolves_to_a_route()
     {
-        $this->actingAs(User::factory()->pustakawan()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
-        $this->get('/staf/akreditasi/indikator')->assertInertia(fn (Assert $page) => $page
-            ->component('staf/segera-hadir')
-            ->where('page.title', 'Akreditasi · indikator kunci')
-            ->where('page.group', 'Akreditasi')
-            ->where('page.stage', 5));
+        $this->get('/staf')->assertInertia(function (Assert $page) {
+            $hrefs = collect($page->toArray()['props']['stafMenu'])
+                ->flatMap(fn ($group) => $group['items'])
+                ->flatMap(fn ($item) => $item['children'] ?? [$item])
+                ->pluck('href');
+
+            $this->assertCount(27, $hrefs);
+            $this->assertNotContains(null, $hrefs);
+        });
     }
 
     public function test_forbidden_pages_render_the_branded_error_page()

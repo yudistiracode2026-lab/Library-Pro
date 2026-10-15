@@ -1,0 +1,1026 @@
+[
+  {
+    "number": "1.1",
+    "name": "Kebijakan pengembangan koleksi",
+    "mode": "Semi",
+    "value": "6 komponen, ditinjau Mar 2024",
+    "score": 4,
+    "options": [
+      "> 5 komponen, ditinjau ≤ 3 thn",
+      "4–5 komponen, ditinjau ≤ 3 thn",
+      "2–3 komponen atau ditinjau > 3 thn",
+      "≤ 1 komponen / belum ada"
+    ],
+    "evidence": [
+      "SK kebijakan",
+      "Berita acara tinjauan"
+    ],
+    "source": "Register kebijakan",
+    "recommendation": null
+  },
+  {
+    "number": "1.2",
+    "name": "Penambahan koleksi",
+    "mode": "Otomatis",
+    "value": "4,6% (866 judul baru)",
+    "score": 3,
+    "options": [
+      "> 5%",
+      "4–5%",
+      "3–4%",
+      "< 3%"
+    ],
+    "evidence": [
+      "Invoice dan berita acara penerimaan"
+    ],
+    "source": "Portal Staf · Pengadaan buku",
+    "recommendation": "Tambah ±76 judul baru tahun ini agar melewati 5%."
+  },
+  {
+    "number": "1.3",
+    "name": "Jenis koleksi",
+    "mode": "Otomatis",
+    "value": "9 jenis berisi (5 jenis wajib ada)",
+    "score": 4,
+    "options": [
+      "> 8 jenis",
+      "7–8 jenis",
+      "5–6 jenis",
+      "< 5 jenis"
+    ],
+    "evidence": [
+      "Daftar jenis koleksi"
+    ],
+    "source": "Portal Staf · Dashboard (koleksi per jenis)",
+    "recommendation": null
+  },
+  {
+    "number": "1.4",
+    "name": "Prodi dengan koleksi inti",
+    "mode": "Otomatis",
+    "value": "1 dari 1 prodi (100%)",
+    "score": 4,
+    "options": [
+      "> 75%",
+      "51–75%",
+      "26–50%",
+      "≤ 25%"
+    ],
+    "evidence": [
+      "Pemetaan koleksi inti ke mata kuliah"
+    ],
+    "source": "SIAKAD + master buku",
+    "recommendation": null
+  },
+  {
+    "number": "1.5",
+    "name": "Evaluasi koleksi",
+    "mode": "Semi",
+    "value": "1×/thn, 3 dari 4 rekomendasi ditindaklanjuti",
+    "score": 3,
+    "options": [
+      "1×/thn, semua ditindaklanjuti",
+      "1×/thn, sebagian ditindaklanjuti",
+      "< 1×/thn",
+      "Tidak ada evaluasi"
+    ],
+    "evidence": [
+      "Laporan evaluasi",
+      "Berita acara penyiangan"
+    ],
+    "source": "Portal Staf · Stock opname",
+    "recommendation": "Selesaikan 1 rekomendasi evaluasi yang tersisa."
+  },
+  {
+    "number": "1.6",
+    "name": "Seleksi bahan pustaka",
+    "mode": "Otomatis",
+    "value": "2 sesi, 4 unsur hadir",
+    "score": 4,
+    "options": [
+      "> 1×/thn, > 3 unsur",
+      "1×/thn, 3 unsur",
+      "1×/thn, 2 unsur",
+      "Tanpa sesi seleksi"
+    ],
+    "evidence": [
+      "Notulen sesi seleksi",
+      "Daftar hadir"
+    ],
+    "source": "Portal Staf · Pengadaan (usulan pemustaka)",
+    "recommendation": null
+  },
+  {
+    "number": "1.7",
+    "name": "Jumlah koleksi",
+    "mode": "Otomatis",
+    "value": "18.824 judul cetak + digital",
+    "score": 4,
+    "options": [
+      "> 5.000 judul",
+      "3.001–5.000 judul",
+      "1.001–3.000 judul",
+      "≤ 1.000 judul"
+    ],
+    "evidence": [
+      "Rekap judul cetak dan digital"
+    ],
+    "source": "Portal Staf · Buku & e-book",
+    "recommendation": null
+  },
+  {
+    "number": "1.8",
+    "name": "Sarana akses koleksi",
+    "mode": "Semi",
+    "value": "Web OPAC + portal pemustaka; pencarian terintegrasi belum",
+    "score": 3,
+    "options": [
+      "Web, aplikasi, dan pencarian terintegrasi",
+      "2 sarana",
+      "1 sarana",
+      "Belum ada"
+    ],
+    "evidence": [
+      "Tangkapan layar OPAC dan portal"
+    ],
+    "source": "Website · OPAC",
+    "recommendation": "Gabungkan pencarian katalog, repositori, dan e-resources dalam satu kotak."
+  },
+  {
+    "number": "1.9",
+    "name": "Platform e-resources",
+    "mode": "Otomatis",
+    "value": "4 platform, bisa diakses dari luar kampus",
+    "score": 3,
+    "options": [
+      "> 6 platform",
+      "5–6 platform",
+      "3–4 platform",
+      "< 3 platform"
+    ],
+    "evidence": [
+      "Kontrak / MoU langganan"
+    ],
+    "source": "Register e-resources",
+    "recommendation": "Tambah 3 platform (mis. e-Resources Perpusnas, Garuda, DOAJ)."
+  },
+  {
+    "number": "1.10",
+    "name": "Repositori institusi",
+    "mode": "Semi",
+    "value": "Terbuka, 1 platform, berkebijakan",
+    "score": 3,
+    "options": [
+      "Terbuka, multi-platform, berkebijakan",
+      "Terbuka, 1 platform, berkebijakan",
+      "Terbatas atau tanpa kebijakan",
+      "Belum ada"
+    ],
+    "evidence": [
+      "Kebijakan repositori",
+      "Tautan"
+    ],
+    "source": "Repositori + Baca di tempat",
+    "recommendation": "Daftarkan repositori ke Garuda dan Google Scholar (OAI-PMH)."
+  },
+  {
+    "number": "1.11",
+    "name": "Pertumbuhan repositori",
+    "mode": "Otomatis",
+    "value": "2,4% (52 unggahan)",
+    "score": 3,
+    "options": [
+      "> 3%",
+      "2–3%",
+      "1–2%",
+      "< 1%"
+    ],
+    "evidence": [
+      "Statistik unggahan per tahun"
+    ],
+    "source": "Portal Staf · Bebas pustaka (unggah skripsi)",
+    "recommendation": "Tambah ±14 unggahan lagi tahun ini."
+  },
+  {
+    "number": "1.12",
+    "name": "Pengorganisasian koleksi",
+    "mode": "Otomatis",
+    "value": "8 dari 9 jenis terkatalog di OPAC (89%)",
+    "score": 4,
+    "options": [
+      "> 80%",
+      "61–80%",
+      "41–60%",
+      "≤ 40%"
+    ],
+    "evidence": [
+      "Tangkapan layar OPAC per jenis"
+    ],
+    "source": "Portal Staf · Buku & e-book",
+    "recommendation": null
+  },
+  {
+    "number": "1.13",
+    "name": "Pelestarian",
+    "mode": "Otomatis",
+    "value": "3 jenis kegiatan dalam 3 thn",
+    "score": 3,
+    "options": [
+      "> 4 kegiatan",
+      "3–4 kegiatan",
+      "1–2 kegiatan",
+      "Tidak ada"
+    ],
+    "evidence": [
+      "Log pelestarian",
+      "Dokumentasi"
+    ],
+    "source": "Log pelestarian",
+    "recommendation": "Tambah 2 jenis kegiatan (mis. fumigasi dan alih media)."
+  },
+  {
+    "number": "2.1",
+    "name": "Luas gedung",
+    "mode": "Semi",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 750 m² dan > 0,5 m²/sivitas, desain khusus",
+      "≥ 500 m² dan ≥ 0,3 m²/sivitas",
+      "≥ 300 m² dan ≥ 0,2 m²/sivitas",
+      "Di bawah itu"
+    ],
+    "evidence": [
+      "Denah dan data luas ruang"
+    ],
+    "source": "Manajemen aset · Ruang & denah",
+    "recommendation": null
+  },
+  {
+    "number": "2.2",
+    "name": "Ruang/area",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "4 ruang dasar + > 1 pendukung",
+      "4 ruang dasar + 1 pendukung",
+      "3 ruang dasar",
+      "≤ 2 ruang dasar"
+    ],
+    "evidence": [
+      "Denah ruang berlabel"
+    ],
+    "source": "Manajemen aset · Ruang & denah",
+    "recommendation": null
+  },
+  {
+    "number": "2.3",
+    "name": "Sarana prasarana berfungsi",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 75%",
+      "61–75%",
+      "41–60%",
+      "≤ 40%"
+    ],
+    "evidence": [
+      "Daftar inventaris",
+      "Kondisi"
+    ],
+    "source": "Manajemen aset · Inventaris",
+    "recommendation": null
+  },
+  {
+    "number": "2.4",
+    "name": "Perabot dan peralatan",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "4 fungsi dasar + > 4 pendukung",
+      "4 dasar + 3–4 pendukung",
+      "4 dasar + 1–2 pendukung",
+      "< 4 fungsi dasar"
+    ],
+    "evidence": [
+      "Foto perabot per fungsi"
+    ],
+    "source": "Manajemen aset · Inventaris",
+    "recommendation": null
+  },
+  {
+    "number": "2.5",
+    "name": "Komputer untuk layanan",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 75%",
+      "51–75%",
+      "26–50%",
+      "≤ 25%"
+    ],
+    "evidence": [
+      "Daftar komputer per fungsi layanan"
+    ],
+    "source": "Manajemen aset · Inventaris",
+    "recommendation": null
+  },
+  {
+    "number": "2.6",
+    "name": "Bandwidth",
+    "mode": "Semi",
+    "value": "2,6 Mbps/orang, 9 dari 12 area",
+    "score": 2,
+    "options": [
+      "> 5 Mbps/orang, semua area",
+      "3–5 Mbps/orang, sebagian besar area",
+      "1–3 Mbps/orang",
+      "< 1 Mbps/orang"
+    ],
+    "evidence": [
+      "Log uji kecepatan internet"
+    ],
+    "source": "Uji jaringan (dicatat manual)",
+    "recommendation": "Naikkan bandwidth dan pasang access point di 3 area yang belum terjangkau."
+  },
+  {
+    "number": "2.7",
+    "name": "Perangkat multimedia",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 5 jenis",
+      "4–5 jenis",
+      "2–3 jenis",
+      "≤ 1 jenis"
+    ],
+    "evidence": [
+      "Foto perangkat multimedia"
+    ],
+    "source": "Manajemen aset · Inventaris",
+    "recommendation": null
+  },
+  {
+    "number": "2.8",
+    "name": "Lisensi perangkat lunak",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 75%",
+      "61–75%",
+      "41–60%",
+      "≤ 40%"
+    ],
+    "evidence": [
+      "Bukti lisensi / invoice"
+    ],
+    "source": "Manajemen aset · Lisensi",
+    "recommendation": null
+  },
+  {
+    "number": "2.9",
+    "name": "Sarana keamanan",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 5 sarana",
+      "4–5 sarana",
+      "2–3 sarana",
+      "≤ 1 sarana"
+    ],
+    "evidence": [
+      "Foto dan lokasi sarana keamanan"
+    ],
+    "source": "Manajemen aset · Inventaris",
+    "recommendation": null
+  },
+  {
+    "number": "2.10",
+    "name": "Fasilitas umum",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 6 fasilitas",
+      "5–6 fasilitas",
+      "3–4 fasilitas",
+      "≤ 2 fasilitas"
+    ],
+    "evidence": [
+      "Foto fasilitas umum"
+    ],
+    "source": "Manajemen aset · Inventaris",
+    "recommendation": null
+  },
+  {
+    "number": "2.11",
+    "name": "Pengawasan sarpras",
+    "mode": "Semi",
+    "value": "Terjadwal, menyeluruh, 70% temuan ditindaklanjuti",
+    "score": 3,
+    "options": [
+      "Terjadwal, menyeluruh, ditindaklanjuti",
+      "Terjadwal, sebagian ditindaklanjuti",
+      "Tidak terjadwal",
+      "Tidak ada pengawasan"
+    ],
+    "evidence": [
+      "Jadwal",
+      "Checklist monitoring"
+    ],
+    "source": "Manajemen aset · cek kondisi",
+    "recommendation": "Tindak lanjuti 3 temuan perbaikan yang masih terbuka."
+  },
+  {
+    "number": "3.1",
+    "name": "Jam layanan",
+    "mode": "Otomatis",
+    "value": "44,5 jam/minggu",
+    "score": 2,
+    "options": [
+      "> 51 jam",
+      "46–51 jam",
+      "40–45 jam",
+      "< 40 jam"
+    ],
+    "evidence": [
+      "SK jam layanan"
+    ],
+    "source": "Portal Staf · CMS website (jadwal layanan)",
+    "recommendation": "Tambah 7 jam/minggu, mis. Sabtu sampai 16.00 dan Jumat sampai 17.00."
+  },
+  {
+    "number": "3.2",
+    "name": "Jenis layanan",
+    "mode": "Otomatis",
+    "value": "9 jenis aktif",
+    "score": 4,
+    "options": [
+      "> 8 jenis",
+      "7–8 jenis",
+      "5–6 jenis",
+      "< 5 jenis"
+    ],
+    "evidence": [
+      "Laporan pelaksanaan layanan"
+    ],
+    "source": "Portal Staf · semua layanan",
+    "recommendation": null
+  },
+  {
+    "number": "3.3",
+    "name": "Sirkulasi",
+    "mode": "Semi",
+    "value": "Otomasi + perpanjangan daring; mandiri belum",
+    "score": 3,
+    "options": [
+      "Otomatis, POS, mandiri",
+      "Otomatis + salah satu",
+      "Otomatis saja",
+      "Manual"
+    ],
+    "evidence": [
+      "Log transaksi sirkulasi"
+    ],
+    "source": "Portal Staf · Sirkulasi",
+    "recommendation": "Aktifkan kios self-checkout di lantai 1."
+  },
+  {
+    "number": "3.4",
+    "name": "Layanan referensi",
+    "mode": "Otomatis",
+    "value": "Luring aktif, daring belum",
+    "score": 2,
+    "options": [
+      "Luring + daring, aktif, terdokumentasi",
+      "Luring + daring, sebagian terdokumentasi",
+      "Luring saja",
+      "Tidak ada"
+    ],
+    "evidence": [
+      "Log interaksi referensi"
+    ],
+    "source": "Layanan referensi",
+    "recommendation": "Buka fitur Tanya Pustakawan di portal pemustaka."
+  },
+  {
+    "number": "3.5",
+    "name": "Kanal akses",
+    "mode": "Otomatis",
+    "value": "4 kanal aktif",
+    "score": 3,
+    "options": [
+      "> 5 kanal",
+      "4–5 kanal",
+      "2–3 kanal",
+      "≤ 1 kanal"
+    ],
+    "evidence": [
+      "Statistik penggunaan kanal"
+    ],
+    "source": "Website + Portal pemustaka",
+    "recommendation": "Aktifkan 2 kanal lagi (mis. WhatsApp layanan dan aplikasi mobile)."
+  },
+  {
+    "number": "3.6",
+    "name": "Konsultasi riset",
+    "mode": "Otomatis",
+    "value": "3 jenis dengan sesi terlaksana",
+    "score": 2,
+    "options": [
+      "> 4 jenis",
+      "4 jenis",
+      "2–3 jenis",
+      "≤ 1 jenis"
+    ],
+    "evidence": [
+      "Laporan sesi konsultasi"
+    ],
+    "source": "Booking konsultasi",
+    "recommendation": "Buka booking konsultasi untuk cek plagiarisme dan sitasi."
+  },
+  {
+    "number": "3.7",
+    "name": "Silang layan",
+    "mode": "Otomatis",
+    "value": "2 lembaga bertransaksi",
+    "score": 2,
+    "options": [
+      "> 5 lembaga",
+      "4–5 lembaga",
+      "2–3 lembaga",
+      "≤ 1 lembaga"
+    ],
+    "evidence": [
+      "Register mitra",
+      "Transaksi"
+    ],
+    "source": "Silang layan",
+    "recommendation": "Aktifkan silang layan dengan 2 perpustakaan mitra lagi."
+  },
+  {
+    "number": "3.8",
+    "name": "Literasi informasi",
+    "mode": "Otomatis",
+    "value": "12 kegiatan",
+    "score": 4,
+    "options": [
+      "> 10 kegiatan",
+      "7–10 kegiatan",
+      "4–6 kegiatan",
+      "≤ 3 kegiatan"
+    ],
+    "evidence": [
+      "Daftar hadir (presensi QR)",
+      "Materi"
+    ],
+    "source": "Website · Berita kegiatan",
+    "recommendation": null
+  },
+  {
+    "number": "3.9",
+    "name": "Layanan ekstensi",
+    "mode": "Otomatis",
+    "value": "2 kegiatan dalam 3 thn",
+    "score": 3,
+    "options": [
+      "> 3 kegiatan",
+      "2–3 kegiatan",
+      "1 kegiatan",
+      "Tidak ada"
+    ],
+    "evidence": [
+      "Laporan kegiatan ekstensi"
+    ],
+    "source": "Kegiatan",
+    "recommendation": "Adakan 2 kegiatan ekstensi lagi, mis. pojok baca di desa binaan."
+  },
+  {
+    "number": "3.10",
+    "name": "Pengaduan",
+    "mode": "Otomatis",
+    "value": "86% aduan ditindaklanjuti",
+    "score": 4,
+    "options": [
+      "> 80%",
+      "61–80%",
+      "41–60%",
+      "≤ 40%"
+    ],
+    "evidence": [
+      "Rekap tiket aduan"
+    ],
+    "source": "Sistem pengaduan",
+    "recommendation": null
+  },
+  {
+    "number": "3.11",
+    "name": "Orientasi",
+    "mode": "Otomatis",
+    "value": "2×/thn, khusus per prodi",
+    "score": 4,
+    "options": [
+      "> 1×, khusus per prodi",
+      "1×, khusus per prodi",
+      "1×, umum",
+      "Tidak ada"
+    ],
+    "evidence": [
+      "Daftar hadir orientasi"
+    ],
+    "source": "Kegiatan",
+    "recommendation": null
+  },
+  {
+    "number": "4.1",
+    "name": "Kualifikasi kepala perpustakaan",
+    "mode": "Manual",
+    "value": "S-2 bidang lain, 3 kriteria terpenuhi",
+    "score": 3,
+    "options": [
+      "S-2/S-3 ilmu perpustakaan + 3 kriteria",
+      "S-2 bidang lain + 3 kriteria",
+      "S-1 + 2 kriteria",
+      "Di bawah itu"
+    ],
+    "evidence": [
+      "Ijazah",
+      "SK pengangkatan kepala"
+    ],
+    "source": "Portal Staf · Pustakawan",
+    "recommendation": "Ikutkan kepala perpustakaan pendidikan atau diklat ilmu perpustakaan."
+  },
+  {
+    "number": "4.2",
+    "name": "Kualifikasi tenaga",
+    "mode": "Otomatis",
+    "value": "4 dari 8 S-1 relevan (50%)",
+    "score": 2,
+    "options": [
+      "> 90%",
+      "71–90%",
+      "50–70%",
+      "< 50%"
+    ],
+    "evidence": [
+      "Ijazah tenaga perpustakaan"
+    ],
+    "source": "Portal Staf · Pustakawan & tendik",
+    "recommendation": "Dukung tenaga melanjutkan S-1 ilmu perpustakaan."
+  },
+  {
+    "number": "4.3",
+    "name": "Jumlah pustakawan",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 75%",
+      "51–75%",
+      "26–50%",
+      "≤ 25%"
+    ],
+    "evidence": [
+      "SK pustakawan"
+    ],
+    "source": "Portal Staf · Pustakawan + SIAKAD",
+    "recommendation": null
+  },
+  {
+    "number": "4.4",
+    "name": "Jumlah tenaga teknis",
+    "mode": "Otomatis",
+    "value": null,
+    "score": null,
+    "options": [
+      "> 75%",
+      "51–75%",
+      "26–50%",
+      "≤ 25%"
+    ],
+    "evidence": [
+      "SK tenaga teknis"
+    ],
+    "source": "Portal Staf · Tendik + SIAKAD",
+    "recommendation": null
+  },
+  {
+    "number": "4.5",
+    "name": "Sertifikasi kompetensi",
+    "mode": "Otomatis",
+    "value": "2 dari 8 tersertifikasi (25%)",
+    "score": 2,
+    "options": [
+      "> 70%",
+      "51–70%",
+      "25–50%",
+      "< 25%"
+    ],
+    "evidence": [
+      "Sertifikat kompetensi"
+    ],
+    "source": "Register sertifikat",
+    "recommendation": "Daftarkan 4 tenaga ke uji kompetensi pustakawan."
+  },
+  {
+    "number": "4.6",
+    "name": "Pengembangan keprofesian (PKB)",
+    "mode": "Otomatis",
+    "value": "3,4 kali per orang",
+    "score": 3,
+    "options": [
+      "> 5 kali",
+      "3–5 kali",
+      "1–2 kali",
+      "Tidak ada"
+    ],
+    "evidence": [
+      "Sertifikat pelatihan / seminar"
+    ],
+    "source": "Log PKB",
+    "recommendation": "Tambah kegiatan PKB tim sampai rata-rata 5 kali per orang."
+  },
+  {
+    "number": "5.1",
+    "name": "Status organisasi",
+    "mode": "Manual",
+    "value": "Unit pelaksana, setara eselon 3",
+    "score": 3,
+    "options": [
+      "Unit mandiri, setara eselon 2",
+      "Setara eselon 3",
+      "Setara eselon 4",
+      "Di bawah unit lain"
+    ],
+    "evidence": [
+      "Statuta",
+      "SK pendirian"
+    ],
+    "source": "Dokumen kelembagaan",
+    "recommendation": "Ajukan perubahan kedudukan perpustakaan di statuta."
+  },
+  {
+    "number": "5.2",
+    "name": "Perangkat aturan",
+    "mode": "Semi",
+    "value": "4 dokumen disahkan",
+    "score": 3,
+    "options": [
+      "> 5 dokumen",
+      "4–5 dokumen",
+      "2–3 dokumen",
+      "≤ 1 dokumen"
+    ],
+    "evidence": [
+      "Dokumen aturan bertanda tangan"
+    ],
+    "source": "Dokumen kelembagaan",
+    "recommendation": "Sahkan 2 aturan lagi, mis. tata tertib dan SOP repositori."
+  },
+  {
+    "number": "5.3",
+    "name": "Perencanaan dan kinerja",
+    "mode": "Semi",
+    "value": "92% capaian IKU",
+    "score": 3,
+    "options": [
+      "> 95%",
+      "86–95%",
+      "76–85%",
+      "≤ 75%"
+    ],
+    "evidence": [
+      "Renja",
+      "Laporan capaian IKU"
+    ],
+    "source": "Rencana kerja",
+    "recommendation": "Kejar 2 IKU yang belum tercapai di triwulan IV."
+  },
+  {
+    "number": "5.4",
+    "name": "Struktur organisasi",
+    "mode": "Manual",
+    "value": "3 jenjang, uraian tugas jelas",
+    "score": 3,
+    "options": [
+      "> 3 jenjang, uraian jelas",
+      "3 jenjang, uraian jelas",
+      "2 jenjang",
+      "Tanpa struktur"
+    ],
+    "evidence": [
+      "Bagan struktur",
+      "Uraian tugas"
+    ],
+    "source": "Dokumen kelembagaan",
+    "recommendation": "Tambah jenjang koordinator layanan dalam struktur."
+  },
+  {
+    "number": "5.5",
+    "name": "Pelibatan pemangku kepentingan",
+    "mode": "Semi",
+    "value": "4 unsur terlibat",
+    "score": 3,
+    "options": [
+      "> 5 unsur",
+      "4–5 unsur",
+      "2–3 unsur",
+      "≤ 1 unsur"
+    ],
+    "evidence": [
+      "Notulen rapat / FGD"
+    ],
+    "source": "Log keterlibatan",
+    "recommendation": "Libatkan 2 unsur lagi, mis. alumni dan kantor pertanahan mitra."
+  },
+  {
+    "number": "5.6",
+    "name": "Komitmen pimpinan",
+    "mode": "Semi",
+    "value": "5 bentuk, nomor 1–3 ada",
+    "score": 3,
+    "options": [
+      "> 5 bentuk, nomor 1–3 ada",
+      "4–5 bentuk",
+      "2–3 bentuk",
+      "≤ 1 bentuk"
+    ],
+    "evidence": [
+      "Surat/SK dukungan pimpinan"
+    ],
+    "source": "Bukti dukungan",
+    "recommendation": "Dokumentasikan 1 bentuk dukungan pimpinan lagi."
+  },
+  {
+    "number": "5.7",
+    "name": "Pengakuan kinerja",
+    "mode": "Manual",
+    "value": "Penghargaan tingkat provinsi",
+    "score": 3,
+    "options": [
+      "Nasional/internasional",
+      "Provinsi",
+      "Kabupaten/kota atau internal",
+      "Belum ada"
+    ],
+    "evidence": [
+      "Sertifikat penghargaan"
+    ],
+    "source": "Register penghargaan",
+    "recommendation": "Ikuti lomba perpustakaan perguruan tinggi tingkat nasional."
+  },
+  {
+    "number": "6.1",
+    "name": "Anggaran",
+    "mode": "Otomatis",
+    "value": "Rata-rata naik 7,8% per tahun",
+    "score": 3,
+    "options": [
+      "> 10%, alokasi jelas",
+      "6–10%",
+      "1–5%",
+      "Tidak naik"
+    ],
+    "evidence": [
+      "DIPA / RKA 3 tahun"
+    ],
+    "source": "Anggaran",
+    "recommendation": "Ajukan kenaikan anggaran minimal 12% untuk tahun depan."
+  },
+  {
+    "number": "6.2",
+    "name": "Website",
+    "mode": "Manual",
+    "value": "8 dari 9 fitur, diperbarui mingguan",
+    "score": 3,
+    "options": [
+      "Mudah, menarik, selalu diperbarui",
+      "Lengkap, diperbarui berkala",
+      "Kurang lengkap",
+      "Tidak ada"
+    ],
+    "evidence": [
+      "Tangkapan layar website",
+      "Log CMS"
+    ],
+    "source": "Portal Staf · CMS website",
+    "recommendation": "Lengkapi fitur ke-9 (Tanya Pustakawan) di website."
+  },
+  {
+    "number": "6.3",
+    "name": "Otomasi dan integrasi",
+    "mode": "Semi",
+    "value": "SIAKAD terintegrasi, SSO belum",
+    "score": 3,
+    "options": [
+      "Integrasi penuh + SSO",
+      "Integrasi SIAKAD saja",
+      "Otomasi tanpa integrasi",
+      "Manual"
+    ],
+    "evidence": [
+      "Dokumen integrasi API"
+    ],
+    "source": "Pengaturan sistem",
+    "recommendation": "Aktifkan login SSO kampus untuk pemustaka dan staf."
+  },
+  {
+    "number": "6.4",
+    "name": "Kerja sama",
+    "mode": "Otomatis",
+    "value": "4 mitra dengan kegiatan tahun ini",
+    "score": 3,
+    "options": [
+      "> 5 lembaga",
+      "4–5 lembaga",
+      "2–3 lembaga",
+      "≤ 1 lembaga"
+    ],
+    "evidence": [
+      "MoU/PKS",
+      "Laporan kegiatan"
+    ],
+    "source": "Register kerja sama",
+    "recommendation": "Jalankan kegiatan dengan 2 mitra lagi."
+  },
+  {
+    "number": "6.5",
+    "name": "Inovasi",
+    "mode": "Manual",
+    "value": "4 jenis: presensi QR, denah rak, e-book, baca di tempat",
+    "score": 3,
+    "options": [
+      "> 5 jenis",
+      "4–5 jenis",
+      "2–3 jenis",
+      "≤ 1 jenis"
+    ],
+    "evidence": [
+      "Proposal",
+      "Statistik pemanfaatan inovasi"
+    ],
+    "source": "Portal Staf + Baca di tempat",
+    "recommendation": "Dokumentasikan 2 inovasi lagi lengkap dengan statistik pemanfaatan."
+  },
+  {
+    "number": "6.6",
+    "name": "Dukungan akreditasi lembaga",
+    "mode": "Otomatis",
+    "value": "100% prodi didukung",
+    "score": 4,
+    "options": [
+      "> 75%",
+      "51–75%",
+      "26–50%",
+      "≤ 25%"
+    ],
+    "evidence": [
+      "Surat dukungan akreditasi prodi"
+    ],
+    "source": "Log dukungan akreditasi",
+    "recommendation": null
+  },
+  {
+    "number": "6.7",
+    "name": "Pemanfaatan",
+    "mode": "Semi",
+    "value": "68% sivitas aktif, belum ada pengguna luar negeri",
+    "score": 3,
+    "options": [
+      "> 75%, termasuk luar negeri",
+      "61–75%",
+      "41–60%",
+      "≤ 40%"
+    ],
+    "evidence": [
+      "Statistik pemanfaatan"
+    ],
+    "source": "Portal Staf · Kunjungan & sirkulasi",
+    "recommendation": "Naikkan pemanfaatan lewat kelas literasi untuk angkatan baru."
+  },
+  {
+    "number": "6.8",
+    "name": "Indeks kepuasan",
+    "mode": "Otomatis",
+    "value": "82% puas/sangat puas, ditindaklanjuti",
+    "score": 4,
+    "options": [
+      "> 75%, ditindaklanjuti",
+      "61–75%",
+      "41–60%",
+      "≤ 40%"
+    ],
+    "evidence": [
+      "Laporan survei kepuasan"
+    ],
+    "source": "Survei kepuasan",
+    "recommendation": null
+  }
+]

@@ -140,6 +140,21 @@ class MasterDataSeeder extends Seeder
         $this->suppliers();
         $this->members();
         $this->employees();
+        $this->backdateAcquisitions();
+    }
+
+    /**
+     * Sample titles entered the collection the year after publication (at
+     * the latest last year), so year-on-year growth (IK 1.2) has a history.
+     */
+    private function backdateAcquisitions(): void
+    {
+        Book::query()->each(function (Book $book) {
+            $year = min(($book->year ?? 2015) + 1, now()->year - 1);
+            $at = now()->setDate($year, 1 + $book->id % 12, 1 + $book->id % 27)->setTime(10, 0);
+
+            $book->forceFill(['created_at' => $at, 'updated_at' => $at])->saveQuietly();
+        });
     }
 
     private function author(string $name): Author
