@@ -32,7 +32,11 @@ export function Cell({ children, sub, bold, mono }: { children: ReactNode; sub?:
 }
 
 export function StatusBadge({ status }: { status: string }) {
-    const tone: Tone = ['Aktif', 'Terbit', 'Tersedia'].includes(status) ? 'success' : status === 'Diblokir' ? 'danger' : 'warning';
+    const tone: Tone = ['Aktif', 'Terbit', 'Tersedia', 'Disetujui', 'Diterima'].includes(status)
+        ? 'success'
+        : ['Diblokir', 'Ditolak', 'Dikembalikan'].includes(status)
+          ? 'danger'
+          : 'warning';
 
     return <Badge tone={tone}>{status}</Badge>;
 }

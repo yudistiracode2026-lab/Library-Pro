@@ -17,12 +17,23 @@ use Illuminate\Database\Seeder;
  */
 class MasterDataSeeder extends Seeder
 {
+    /** floor => code => [name, x, y, w, h] (position on the floor plan, in percent) */
     private const RACKS = [
-        1 => ['A1' => 'Karya umum', 'A2' => 'Komputer & informatika', 'A3' => 'Filsafat & etika', 'A4' => 'Agama',
-            'B1' => 'Kebijakan & reforma agraria', 'B2' => 'Ekonomi lahan', 'B3' => 'Hukum pertanahan'],
-        2 => ['C1' => 'Bahasa', 'C2' => 'Tata ruang & lanskap', 'C3' => 'Sastra', 'D1' => 'Ukur tanah & kartografi',
-            'D2' => 'Statistik & geodesi', 'D3' => 'Teknologi survei', 'E1' => 'Sejarah', 'E2' => 'Geografi & SIG'],
-        3 => ['R1' => 'Skripsi D4 Pertanahan', 'R2' => 'Tugas akhir & laporan PKL', 'J1' => 'Jurnal & terbitan berkala'],
+        1 => [
+            'A1' => ['Karya umum', 8, 8, 6, 36], 'A2' => ['Komputer & informatika', 20, 8, 6, 36],
+            'A3' => ['Filsafat & etika', 32, 8, 6, 36], 'A4' => ['Agama', 44, 8, 6, 36],
+            'B1' => ['Kebijakan & reforma agraria', 60, 8, 6, 36], 'B2' => ['Ekonomi lahan', 72, 8, 6, 36],
+            'B3' => ['Hukum pertanahan', 84, 8, 6, 36],
+        ],
+        2 => [
+            'C1' => ['Bahasa', 6, 8, 6, 36], 'C2' => ['Tata ruang & lanskap', 17, 8, 6, 36], 'C3' => ['Sastra', 28, 8, 6, 36],
+            'D1' => ['Ukur tanah & kartografi', 42, 8, 6, 36], 'D2' => ['Statistik & geodesi', 53, 8, 6, 36],
+            'D3' => ['Teknologi survei', 64, 8, 6, 36], 'E1' => ['Sejarah', 78, 8, 6, 36], 'E2' => ['Geografi & SIG', 89, 8, 6, 36],
+        ],
+        3 => [
+            'R1' => ['Skripsi D4 Pertanahan', 8, 8, 6, 40], 'R2' => ['Tugas akhir & laporan PKL', 20, 8, 6, 40],
+            'J1' => ['Jurnal & terbitan berkala', 34, 8, 6, 40],
+        ],
     ];
 
     /** id, title, author, publisher, year, ddc, call number, rack, copies */
@@ -85,8 +96,8 @@ class MasterDataSeeder extends Seeder
     public function run(): void
     {
         foreach (self::RACKS as $floor => $racks) {
-            foreach ($racks as $code => $name) {
-                Rack::create(['code' => $code, 'name' => $name, 'floor' => $floor]);
+            foreach ($racks as $code => [$name, $x, $y, $w, $h]) {
+                Rack::create(['code' => $code, 'name' => $name, 'floor' => $floor, 'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h]);
             }
         }
 

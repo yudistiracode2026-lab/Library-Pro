@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Http\Controllers\Staf\Master;
+use App\Models\ClearanceRequest;
+use App\Models\Loan;
 use App\Models\User;
 
 /**
@@ -14,7 +16,8 @@ use App\Models\User;
  *
  * Page keys double as route names under the "staf." prefix and their path
  * under /staf (dots become slashes): "aset.ruang" => /staf/aset/ruang.
- * Pages with a "controller" are built; the rest show a placeholder.
+ * Pages with a "controller" get CRUD routes, "custom" pages declare their
+ * own routes in routes/staf.php, and the rest show a placeholder.
  */
 class StafMenu
 {
@@ -48,11 +51,11 @@ class StafMenu
                 'description' => 'Tenaga kependidikan yang bertugas di perpustakaan.'],
         ]],
         ['label' => 'Layanan', 'items' => [
-            ['key' => 'kunjungan', 'label' => 'Kunjungan & presensi', 'icon' => 'qr-code', 'stage' => 3,
+            ['key' => 'kunjungan', 'custom' => true, 'label' => 'Kunjungan & presensi', 'icon' => 'qr-code', 'stage' => 3,
                 'description' => 'Presensi masuk dan keluar dengan QR, buku tamu, dan log kunjungan.'],
-            ['key' => 'sirkulasi', 'label' => 'Sirkulasi', 'icon' => 'repeat', 'stage' => 3,
+            ['key' => 'sirkulasi', 'custom' => true, 'label' => 'Sirkulasi', 'icon' => 'repeat', 'stage' => 3,
                 'description' => 'Peminjaman, pengembalian, perpanjangan, dan denda.'],
-            ['key' => 'pencarian', 'label' => 'Pencarian & denah', 'title' => 'Pencarian buku & denah rak', 'icon' => 'map', 'stage' => 3,
+            ['key' => 'pencarian', 'custom' => true, 'label' => 'Pencarian & denah', 'title' => 'Pencarian buku & denah rak', 'icon' => 'map', 'stage' => 3,
                 'description' => 'Cari koleksi dan tunjukkan posisinya di denah rak.'],
             ['key' => 'cctv', 'label' => 'Pantau CCTV', 'title' => 'Pantau CCTV · sirkulasi & referensi', 'icon' => 'cctv', 'stage' => 4,
                 'description' => 'Pantauan kamera area sirkulasi dan referensi.'],
@@ -70,7 +73,7 @@ class StafMenu
                 'description' => 'Jadwal, presensi, dan laporan lembur.'],
         ]],
         ['label' => 'Akademik', 'items' => [
-            ['key' => 'bebas-pustaka', 'label' => 'Bebas pustaka', 'title' => 'Verifikasi bebas pustaka', 'icon' => 'file-check-2', 'stage' => 3,
+            ['key' => 'bebas-pustaka', 'custom' => true, 'label' => 'Bebas pustaka', 'title' => 'Verifikasi bebas pustaka', 'icon' => 'file-check-2', 'stage' => 3,
                 'description' => 'Verifikasi pengajuan bebas pustaka, sumbangan buku, dan hardcopy skripsi.'],
         ]],
         ['label' => 'Akreditasi', 'items' => [
@@ -92,7 +95,7 @@ class StafMenu
                 'description' => 'Konten website perpustakaan: berita, jadwal, dan fasilitas.'],
             ['key' => 'laporan', 'label' => 'Laporan', 'icon' => 'clipboard-list', 'stage' => 5,
                 'description' => 'Laporan statistik koleksi, layanan, dan kunjungan.'],
-            ['key' => 'pengaturan', 'label' => 'Pengaturan', 'icon' => 'settings', 'stage' => 3, 'admin_only' => true,
+            ['key' => 'pengaturan', 'custom' => true, 'label' => 'Pengaturan', 'icon' => 'settings', 'stage' => 3, 'admin_only' => true,
                 'description' => 'Aturan peminjaman, denda, jam layanan, dan konfigurasi sistem.'],
         ]],
     ];
@@ -112,6 +115,7 @@ class StafMenu
                     $pages[] = [
                         'admin_only' => false,
                         'controller' => null,
+                        'custom' => false,
                         'title' => $page['label'],
                         'description' => null,
                         ...$page,
@@ -140,6 +144,19 @@ class StafMenu
     }
 
     /**
+     * Counters shown next to menu items: late loans and pending requests.
+     *
+     * @return array<string, int|null>
+     */
+    private static function badges(): array
+    {
+        return [
+            'sirkulasi' => Loan::overdue()->count() ?: null,
+            'bebas-pustaka' => ClearanceRequest::where('status', ClearanceRequest::PENDING)->count() ?: null,
+        ];
+    }
+
+    /**
      * The navigation tree visible to the given user, with resolved URLs.
      *
      * @return list<array{label: string, items: list<array<string, mixed>>}>
@@ -147,11 +164,13 @@ class StafMenu
     public static function for(User $user): array
     {
         $visible = fn (array $item) => $user->isAdmin() || ! ($item['admin_only'] ?? false);
+        $badges = self::badges();
 
         $present = fn (array $item) => [
             'key' => $item['key'],
             'label' => $item['label'],
             'icon' => $item['icon'],
+            'badge' => $badges[$item['key']] ?? null,
             'href' => isset($item['children']) ? null : route('staf.'.$item['key'], absolute: false),
             'children' => isset($item['children'])
                 ? array_values(array_map(fn ($child) => [

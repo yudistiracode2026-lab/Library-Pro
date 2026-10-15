@@ -9,6 +9,7 @@ import {
     SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
@@ -64,6 +65,11 @@ export function StafSidebar() {
                                                 <span>{item.label}</span>
                                             </Link>
                                         </SidebarMenuButton>
+                                        {item.badge ? (
+                                            <SidebarMenuBadge className="bg-sunset top-2.5 right-2 h-5 min-w-5 rounded-full px-1.5 text-[11px] font-bold text-white peer-hover/menu-button:text-white peer-data-[active=true]/menu-button:text-white">
+                                                {item.badge}
+                                            </SidebarMenuBadge>
+                                        ) : null}
                                     </SidebarMenuItem>
                                 ),
                             )}

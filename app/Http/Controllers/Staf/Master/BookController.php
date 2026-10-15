@@ -201,8 +201,8 @@ class BookController extends Controller
         return [
             'type' => $data['type'],
             'title' => $data['title'],
-            'author_id' => $this->findOrCreateByName(Author::class, $data['author']),
-            'publisher_id' => $this->findOrCreateByName(Publisher::class, $data['publisher']),
+            'author_id' => Author::idForName($data['author']),
+            'publisher_id' => Publisher::idForName($data['publisher']),
             'year' => $data['year'] ?? null,
             'isbn' => $data['isbn'] ?? null,
             'ddc_class' => $data['ddc_class'],
@@ -216,19 +216,5 @@ class BookController extends Controller
             'license_count' => $printed ? null : $data['license_count'],
             'status' => $printed ? null : $data['status'],
         ];
-    }
-
-    /**
-     * Case-insensitive match so "boedi harsono" reuses "Boedi Harsono" on
-     * every database, not only on MariaDB's default collation.
-     *
-     * @param  class-string<Author|Publisher>  $model
-     */
-    private function findOrCreateByName(string $model, string $name): int
-    {
-        $name = trim($name);
-
-        return $model::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->value('id')
-            ?? $model::create(['name' => $name])->id;
     }
 }

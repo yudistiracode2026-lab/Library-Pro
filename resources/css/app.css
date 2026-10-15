@@ -248,3 +248,22 @@
         outline-offset: 2px;
     }
 }
+
+/* Shelf holding the searched book on the rack side view (from the prototype). */
+@keyframes shelfglow {
+    0%,
+    100% {
+        box-shadow: 0 0 4px 1px rgba(254, 115, 70, 0.6);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow: 0 0 16px 5px rgba(254, 115, 70, 0.9);
+        filter: brightness(1.12);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-shelfglow {
+        animation: none !important;
+    }
+}

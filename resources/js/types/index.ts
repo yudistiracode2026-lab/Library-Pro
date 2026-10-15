@@ -36,6 +36,7 @@ export interface StafMenuItem {
     key: string;
     label: string;
     icon: string;
+    badge?: number | null;
     href: string | null;
     children: Omit<StafMenuItem, 'children'>[] | null;
 }

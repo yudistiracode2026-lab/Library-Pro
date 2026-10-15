@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -47,6 +48,16 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
+    }
+
+    /**
+     * The library membership record linked to this login, if any.
+     *
+     * @return HasOne<Member, $this>
+     */
+    public function member(): HasOne
+    {
+        return $this->hasOne(Member::class);
     }
 
     public function hasRole(UserRole ...$roles): bool

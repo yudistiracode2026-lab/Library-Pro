@@ -24,6 +24,7 @@ class MemberController extends Controller
             'records' => $members->through(fn (Member $m) => [
                 ...$m->only(['id', 'member_number', 'name', 'type', 'study_program', 'email', 'status']),
                 'has_account' => $m->user_id !== null,
+                'open_loans' => $m->open_loans_count,
             ]),
             'filters' => ['q' => $request->string('q')->toString()],
             'options' => [
@@ -50,6 +51,10 @@ class MemberController extends Controller
 
     public function destroy(Member $record): RedirectResponse
     {
+        if ($record->loans()->exists()) {
+            return back()->with('error', 'Pemustaka ini punya riwayat peminjaman. Ubah statusnya menjadi Diblokir saja, ya.');
+        }
+
         $record->delete();
 
         return back()->with('success', 'Pemustaka dihapus.');
@@ -70,7 +75,7 @@ class MemberController extends Controller
     {
         $q = trim($request->string('q')->toString());
 
-        return Member::query()->when($q !== '', fn ($m) => $m->where(fn ($w) => $w
+        return Member::query()->withCount(['loans as open_loans_count' => fn ($l) => $l->open()])->when($q !== '', fn ($m) => $m->where(fn ($w) => $w
             ->where('name', 'like', "%{$q}%")
             ->orWhere('member_number', 'like', "%{$q}%")
             ->orWhere('email', 'like', "%{$q}%")));

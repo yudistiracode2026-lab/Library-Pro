@@ -12,6 +12,7 @@ interface MemberRow {
     email: string | null;
     status: string;
     has_account: boolean;
+    open_loans: number;
 }
 
 interface PemustakaProps {
@@ -30,7 +31,7 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                 addLabel="Tambah pemustaka"
                 records={records}
                 filters={filters}
-                grid="minmax(0,1.8fr) 130px minmax(0,1.2fr) 100px 110px 100px"
+                grid="minmax(0,1.8fr) 130px minmax(0,1.2fr) 100px 110px 90px 100px"
                 describeRow={(m) => m.name}
                 columns={[
                     {
@@ -45,6 +46,7 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                     { label: 'Program studi', render: (m) => <Cell>{m.study_program}</Cell> },
                     { label: 'Jenis', render: (m) => <Cell>{m.type}</Cell> },
                     { label: 'Akun portal', render: (m) => <Cell>{m.has_account ? 'Terhubung' : 'Belum ada'}</Cell> },
+                    { label: 'Pinjaman', render: (m) => <Cell>{`${m.open_loans} aktif`}</Cell> },
                     { label: 'Status', render: (m) => <StatusBadge status={m.status} /> },
                 ]}
                 form={{
