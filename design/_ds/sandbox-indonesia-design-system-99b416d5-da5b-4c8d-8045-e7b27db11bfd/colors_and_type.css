@@ -1,0 +1,290 @@
+/* ============================================================
+   SANDBOX INDONESIA — COLORS & TYPE
+   Single source of truth for the Desa Pintar / Sandbox brand.
+   ============================================================ */
+
+/* ---------- WEB FONTS (Google Fonts) ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ============================================================
+     COLOR — PRIMARY (Teal, from the live site theme-color #5DC3B2)
+     Conveys "smart", trust, technology, calm.
+     ============================================================ */
+  --teal-50:  #EEFBF8;
+  --teal-100: #D3F5EE;
+  --teal-200: #A8EBDD;
+  --teal-300: #7CD9C6;
+  --teal-400: #5DC3B2;   /* ⭐ brand teal — buttons, links, primary UI */
+  --teal-500: #3FA796;
+  --teal-600: #2D8A7B;   /* hover/pressed */
+  --teal-700: #226B60;
+  --teal-800: #1A4F47;
+  --teal-900: #133831;
+
+  /* ============================================================
+     COLOR — SUNSET (warm secondary, lifted from the logo gradients)
+     Used for accents, illustrations, data-viz, hero gradients.
+     Evokes Indonesian sunset / rice-field warmth.
+     ============================================================ */
+  --marigold:  #F59E0B;  /* the lightbulb dot in the logo */
+  --sunglow:   #FECB34;  /* gradient stop id1/id2/id3 */
+  --amber:     #FBBA38;
+  --sunset:    #FE7346;  /* gradient stop id3 */
+  --coral:     #FE474D;  /* gradient stop id4 */
+  --crimson:   #FE424E;
+  --berry:     #DD2666;  /* gradient stop id2 */
+  --violet:    #7563D3;  /* gradient stop id0 */
+  --plum:      #210C2B;  /* deep gradient stop id0 */
+
+  /* ============================================================
+     COLOR — NEUTRALS (warm slate, leans 2° warm to harmonize w/ teal)
+     ============================================================ */
+  --slate-50:  #FAF9F7;
+  --slate-100: #F2F1ED;
+  --slate-200: #E4E2DC;
+  --slate-300: #CCC9C1;
+  --slate-400: #9A958A;
+  --slate-500: #6B675D;
+  --slate-600: #4B473F;
+  --slate-700: #2F2C26;
+  --slate-800: #1B1914;
+  --slate-900: #0F0E0A;
+  --white:     #FFFFFF;
+  --black:     #000000;
+
+  /* ============================================================
+     COLOR — SEMANTIC (status / system)
+     ============================================================ */
+  --success:        #16A34A;
+  --success-soft:   #DCFCE7;
+  --warning:        #F59E0B;  /* same as marigold */
+  --warning-soft:   #FEF3C7;
+  --danger:         #DC2626;
+  --danger-soft:    #FEE2E2;
+  --info:           #2563EB;
+  --info-soft:      #DBEAFE;
+
+  /* ============================================================
+     COLOR — SEMANTIC ALIASES (use these in components)
+     ============================================================ */
+  --bg:             var(--slate-50);
+  --surface:        var(--white);
+  --surface-2:      var(--slate-100);
+  --surface-inv:    var(--slate-900);
+
+  --fg-1:           var(--slate-900);   /* primary text */
+  --fg-2:           var(--slate-700);   /* body */
+  --fg-3:           var(--slate-500);   /* muted / meta */
+  --fg-4:           var(--slate-400);   /* placeholder */
+  --fg-inv:         var(--white);
+
+  --border:         var(--slate-200);
+  --border-strong:  var(--slate-300);
+  --divider:        rgba(15, 14, 10, 0.06);
+
+  --brand:          var(--teal-400);
+  --brand-hover:    var(--teal-500);
+  --brand-pressed:  var(--teal-600);
+  --brand-soft:     var(--teal-50);
+  --brand-fg:       var(--white);       /* on-brand text */
+
+  --accent:         var(--marigold);    /* warm pop */
+  --accent-fg:      var(--slate-900);
+
+  /* ============================================================
+     SPACING SCALE (4px base, no half-steps)
+     ============================================================ */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ============================================================
+     RADII — generous, friendly. Aligns with the rounded wordmark.
+     ============================================================ */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-pill: 999px;
+
+  /* ============================================================
+     SHADOWS — soft, low-contrast. Avoid harsh blacks.
+     ============================================================ */
+  --shadow-xs: 0 1px 2px rgba(15, 14, 10, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 14, 10, 0.06), 0 1px 2px rgba(15, 14, 10, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 14, 10, 0.06), 0 2px 4px rgba(15, 14, 10, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 14, 10, 0.08), 0 4px 8px rgba(15, 14, 10, 0.04);
+  --shadow-xl: 0 24px 64px rgba(15, 14, 10, 0.10), 0 8px 16px rgba(15, 14, 10, 0.05);
+  --shadow-teal: 0 8px 24px rgba(93, 195, 178, 0.28);  /* glow on primary CTAs */
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* ============================================================
+     GRADIENTS — derived from logo. Use sparingly, for illustrations
+     and hero panels. Never on body copy.
+     ============================================================ */
+  --grad-sunset:   linear-gradient(135deg, #FECB34 0%, #FE7346 50%, #FE424E 100%);
+  --grad-fire:     linear-gradient(135deg, #FE7346 0%, #DD2666 100%);
+  --grad-twilight: linear-gradient(135deg, #FE424E 0%, #7563D3 60%, #210C2B 100%);
+  --grad-leaf:     linear-gradient(135deg, #5DC3B2 0%, #2D8A7B 100%);
+  --grad-dawn:     linear-gradient(135deg, #FECB34 0%, #FE424E 100%);
+
+  /* ============================================================
+     MOTION
+     ============================================================ */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);   /* friendly snap */
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:      120ms;
+  --dur-base:      200ms;
+  --dur-slow:      360ms;
+
+  /* ============================================================
+     TYPE — FAMILIES
+     ============================================================ */
+  --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ============================================================
+     TYPE — SIZE SCALE (1.125 minor-third on body, 1.25 on display)
+     ============================================================ */
+  --text-2xs:  11px;
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-md:   18px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  30px;
+  --text-3xl:  36px;
+  --text-4xl:  44px;
+  --text-5xl:  56px;
+  --text-6xl:  72px;
+
+  /* Line heights */
+  --lh-tight:    1.1;
+  --lh-snug:     1.25;
+  --lh-normal:   1.5;
+  --lh-relaxed:  1.65;
+
+  /* Tracking */
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-caps:   0.08em;
+}
+
+/* ================================================================
+   SEMANTIC TYPE — apply to bare HTML or via .h1, .body, etc.
+   ================================================================ */
+
+html, body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-normal);
+  color: var(--fg-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.display-1, .h-display {
+  font-family: var(--font-display);
+  font-size: var(--text-6xl);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+h1, .h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+}
+h3, .h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+}
+h4, .h4 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+}
+h5, .h5 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+}
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--brand-pressed);
+}
+.lead {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: 400;
+  line-height: var(--lh-relaxed);
+  color: var(--fg-2);
+}
+p, .body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-2);
+}
+.small, small {
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-3);
+}
+.caption {
+  font-size: var(--text-xs);
+  line-height: var(--lh-normal);
+  color: var(--fg-3);
+  letter-spacing: var(--tracking-wide);
+}
+code, kbd, samp, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+a {
+  color: var(--brand-pressed);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--brand-hover); }

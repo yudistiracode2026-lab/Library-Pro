@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/sandbox-indonesia-design-system-99b416d5-da5b-4c8d-8045-e7b27db11bfd/colors_and_type.css">
+  <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+  <script src="_ds/sandbox-indonesia-design-system-99b416d5-da5b-4c8d-8045-e7b27db11bfd/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--slate-50); }
+    a { color: var(--teal-600); }
+    a:hover { color: var(--teal-500); }
+    * { box-sizing: border-box; }
+    input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; margin: 0; flex: none; border: 1.5px solid var(--slate-300); border-radius: 5px; background: #fff center / 14px no-repeat; cursor: pointer; }
+    input[type="checkbox"]:checked { background-color: var(--teal-500); border-color: var(--teal-500); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E"); }
+    input[type="checkbox"]:focus-visible { outline: 3px solid var(--teal-400); outline-offset: 2px; }
+    @keyframes toastin { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @media print { body * { visibility: hidden !important; } }
+  </style>
+</helmet>
+
+<div style="display:grid; grid-template-columns:{{ gridCols }}; min-height:{{ minH }}; font-family:var(--font-body); color:var(--fg-1); background:var(--slate-50);">
+  <sc-if value="{{ standalone }}" hint-placeholder-val="{{ true }}">
+  <aside style="position:sticky; top:0; height:100vh; overflow:auto; background:#fff; border-right:1px solid var(--slate-200); display:flex; flex-direction:column; padding:16px 12px; gap:4px;">
+    <a href="Portal Pemustaka.dc.html" style="display:flex; align-items:center; gap:10px; padding:4px 8px 16px; text-decoration:none; color:var(--fg-1);">
+      <img src="assets/logo-stpn.png" alt="Logo Politeknik Agraria STPN" style="width:40px; height:40px; object-fit:contain; flex:none;">
+      <span style="display:flex; flex-direction:column; line-height:1.2;"><span style="font-family:var(--font-display); font-weight:800; font-size:14px;">Baca di tempat</span><span style="font-size:11px; color:var(--fg-3);">Portal pemustaka</span></span>
+    </a>
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+      <button onClick="{{ t.pick }}" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border:0; border-radius:10px; background:{{ t.bg }}; color:{{ t.fg }}; font-family:var(--font-body); font-size:14px; font-weight:600; cursor:pointer; text-align:left;" style-hover="background:var(--teal-50); color:var(--teal-700);"><i class="icon-{{ t.icon }}" style="font-size:17px;"></i><span style="flex:1;">{{ t.label }}</span><span style="font-size:12px; color:var(--fg-3); font-weight:500;">{{ t.count }}</span></button>
+    </sc-for>
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--slate-200); padding-top:12px;">
+      <div style="display:flex; align-items:center; gap:10px; padding:0 6px;">
+        <span style="width:36px; height:36px; flex:none; border-radius:999px; background:var(--teal-100); color:var(--teal-800); display:grid; place-items:center; font-weight:700; font-size:13px;">AP</span>
+        <div style="display:flex; flex-direction:column; line-height:1.25; min-width:0;"><span style="font-size:13px; font-weight:600;">Annisa Putri Lestari</span><span style="font-size:12px; color:var(--fg-3); font-family:var(--font-mono);">20220311</span></div>
+      </div>
+      <a href="Portal Pemustaka.dc.html" style="display:flex; align-items:center; gap:10px; height:38px; padding:0 10px; border-radius:10px; color:var(--fg-2); font-size:14px; text-decoration:none;" style-hover="background:var(--slate-100); color:var(--fg-1);"><i class="icon-arrow-left"></i>Kembali ke portal</a>
+    </div>
+  </aside>
+  </sc-if>
+
+  <div style="display:flex; flex-direction:column; min-width:0;">
+    <sc-if value="{{ standalone }}" hint-placeholder-val="{{ true }}">
+    <header style="position:sticky; top:0; z-index:30; height:64px; display:flex; align-items:center; gap:16px; padding:0 28px; background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--slate-200);">
+      <span style="font-family:var(--font-display); font-weight:700; font-size:17px; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Karya ilmiah · baca di tempat</span>
+      <span style="flex:none; display:flex; align-items:center; gap:8px; height:34px; padding:0 12px; border-radius:999px; background:{{ gate.bg }}; color:{{ gate.fg }}; font-size:13px; font-weight:600; white-space:nowrap;"><i class="icon-{{ gate.icon }}"></i>{{ gate.label }}</span>
+    </header>
+    </sc-if>
+
+    <main style="padding:{{ mainPad }}; display:flex; flex-direction:column; gap:20px; max-width:1200px; width:100%; box-sizing:border-box;">
+      <sc-if value="{{ embedded }}" hint-placeholder-val="{{ false }}"><div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;"><h1 style="margin:0; font-family:var(--font-display); font-size:26px; font-weight:700;">{{ embTitle }}</h1><span style="flex:none; display:flex; align-items:center; gap:8px; height:34px; padding:0 12px; border-radius:999px; background:{{ gate.bg }}; color:{{ gate.fg }}; font-size:13px; font-weight:600; white-space:nowrap;"><i class="icon-{{ gate.icon }}"></i>{{ gate.label }}</span></div></sc-if>
+      <sc-if value="{{ pg.katalog }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap:16px;">
+          <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:20px; display:flex; flex-direction:column; gap:12px;">
+            <span style="font-family:var(--font-display); font-weight:700; font-size:17px;">Syarat membaca teks lengkap</span>
+            <span style="font-size:14px; color:var(--fg-3); line-height:1.55;">Abstrak bisa dibaca dari mana saja. Teks lengkap skripsi, tesis, dan disertasi hanya bisa dibaca di dalam perpustakaan dan tidak bisa diunduh, dicetak, atau disalin.</span>
+            <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="2">
+              <div style="display:flex; gap:12px; align-items:center; padding:12px 14px; border-radius:12px; background:{{ r.bg }}; flex-wrap:wrap;">
+                <i class="icon-{{ r.icon }}" style="font-size:20px; color:{{ r.fg }};"></i>
+                <div style="flex:1; min-width:160px;"><div style="font-weight:600; font-size:14px;">{{ r.label }}</div><div style="font-size:12px; color:var(--fg-2);">{{ r.detail }}</div></div>
+                <sc-if value="{{ r.canFix }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.fix }}" style="white-space:nowrap; flex:none; height:34px; padding:0 12px; border-radius:10px; border:1px dashed var(--slate-300); background:#fff; font-size:12px; font-weight:600; cursor:pointer;">{{ r.fixLabel }}</button></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:var(--grad-leaf); color:#fff; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow-md);">
+            <span style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-50);">Lokasi</span>
+            <span style="font-family:var(--font-display); font-weight:800; font-size:20px;">Ruang koleksi skripsi, tesis &amp; disertasi · lantai 3</span>
+            <span style="font-size:14px; line-height:1.55;">4 terminal baca tersedia, atau pakai laptop/HP sendiri yang terhubung ke Wi-Fi <b>PERPUS-STPN</b> di area mana pun di gedung perpustakaan.</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:auto;">
+              <sc-for list="{{ heroStats }}" as="h" hint-placeholder-count="3"><span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,.2);">{{ h }}</span></sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <div style="flex:1 1 280px; display:flex; align-items:center; gap:10px; height:46px; padding:0 14px; background:#fff; border-radius:12px; box-shadow:var(--shadow-sm); color:var(--fg-3);"><i class="icon-search"></i><input value="{{ q }}" onInput="{{ onQ }}" placeholder="Cari judul, penulis, pembimbing, atau kata kunci" style="flex:1; border:0; outline:0; font-family:var(--font-body); font-size:15px; min-width:0;"></div>
+          <select value="{{ year }}" onChange="{{ onYear }}" style="height:46px; padding:0 12px; border:0; border-radius:12px; box-shadow:var(--shadow-sm); font-family:var(--font-body); font-size:14px; background:#fff;">
+            <option value="Semua">Semua tahun</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="lama">2022 ke bawah</option>
+          </select>
+        </div>
+        <span style="font-size:13px; color:var(--fg-3);">{{ resultLabel }}</span>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <sc-for list="{{ list }}" as="w" hint-placeholder-count="5">
+            <button onClick="{{ w.open }}" style="display:grid; grid-template-columns:52px minmax(0,1fr) auto; gap:16px; align-items:flex-start; padding:18px; border-radius:16px; border:0; background:#fff; box-shadow:var(--shadow-sm); cursor:pointer; text-align:left; font-family:var(--font-body);" style-hover="box-shadow:var(--shadow-md); transform:translateY(-2px);">
+              <span style="width:52px; height:68px; border-radius:6px; background:{{ w.color }}; color:#fff; display:grid; place-items:center; font-size:20px;"><i class="icon-{{ w.icon }}"></i></span>
+              <div style="min-width:0; display:flex; flex-direction:column; gap:4px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                  <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--slate-100); color:var(--fg-2);">{{ w.type }}</span>
+                  <span style="font-size:12px; color:var(--fg-3);">{{ w.prodi }} · {{ w.year }}</span>
+                </div>
+                <span style="font-family:var(--font-display); font-weight:700; font-size:16px; line-height:1.3;">{{ w.title }}</span>
+                <span style="font-size:13px; color:var(--fg-3);">{{ w.author }} · pembimbing {{ w.adv }}</span>
+                <span style="font-size:13px; color:var(--fg-2); line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">{{ w.abs }}</span>
+              </div>
+              <span style="flex:none; display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; background:var(--warning-soft); color:#92400E; white-space:nowrap;"><i class="icon-eye-off"></i>Tanpa unduh</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}"><div style="padding:40px; text-align:center; color:var(--fg-3);">Belum ada karya yang cocok. Coba kata kunci lain, ya.</div></sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pg.riwayat }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0; color:var(--fg-3); font-size:14px;">Riwayat sesi baca kamu. Data ini juga dipakai perpustakaan untuk statistik pemanfaatan repositori.</p>
+        <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:hidden;">
+          <sc-for list="{{ history }}" as="h" hint-placeholder-count="3">
+            <div style="display:flex; align-items:center; gap:14px; padding:14px 20px; border-bottom:1px solid var(--slate-200); font-size:14px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:200px;"><div style="font-weight:600;">{{ h.title }}</div><div style="font-size:12px; color:var(--fg-3);">{{ h.type }} · {{ h.when }}</div></div>
+              <span style="font-size:13px; color:var(--fg-2);">{{ h.pages }}</span>
+              <span style="font-family:var(--font-mono); font-size:13px;">{{ h.dur }}</span>
+              <button onClick="{{ h.open }}" style="height:34px; padding:0 12px; border-radius:10px; border:1px solid var(--slate-200); background:#fff; font-size:13px; font-weight:600; cursor:pointer;">Buka lagi</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noHistory }}" hint-placeholder-val="{{ false }}"><div style="padding:32px; text-align:center; color:var(--fg-3); font-size:14px;">Belum ada sesi baca.</div></sc-if>
+        </div>
+      </sc-if>
+    </main>
+  </div>
+
+  <!-- DETAIL -->
+  <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ close }}" style="position:fixed; inset:0; z-index:60; background:rgba(15,14,10,.4); display:grid; place-items:center; padding:24px;">
+      <div onClick="{{ stop }}" style="background:#fff; border-radius:24px; width:min(720px,100%); max-height:90vh; overflow:auto; box-shadow:var(--shadow-xl); padding:28px; display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; justify-content:space-between; gap:12px;">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:12px; color:var(--fg-3);">{{ sel.type }} · {{ sel.prodi }} · {{ sel.year }}</span>
+            <h3 style="margin:0; font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.3;">{{ sel.title }}</h3>
+          </div>
+          <button onClick="{{ close }}" style="width:36px; height:36px; flex:none; border:0; border-radius:10px; background:var(--slate-100); cursor:pointer;"><i class="icon-x"></i></button>
+        </div>
+        <div style="display:grid; grid-template-columns:120px 1fr; gap:6px 12px; font-size:14px;">
+          <span style="color:var(--fg-3);">Penulis</span><span>{{ sel.author }} ({{ sel.nim }})</span>
+          <span style="color:var(--fg-3);">Pembimbing</span><span>{{ sel.adv }}</span>
+          <span style="color:var(--fg-3);">Kata kunci</span><span>{{ sel.kw }}</span>
+          <span style="color:var(--fg-3);">Halaman</span><span>{{ sel.pages }} halaman · No. panggil <span style="font-family:var(--font-mono);">{{ sel.call }}</span></span>
+          <span style="color:var(--fg-3);">Hak akses</span><span>Abstrak terbuka · teks lengkap baca di tempat</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; font-weight:600; color:var(--fg-2);">Abstrak</span>
+          <p style="margin:0; font-size:14px; line-height:1.7; color:var(--fg-1); text-wrap:pretty;">{{ sel.abs }}</p>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding-top:8px; border-top:1px solid var(--slate-200);">
+          <button onClick="{{ startRead }}" disabled="{{ cannotRead }}" style="display:flex; align-items:center; gap:8px; height:46px; padding:0 20px; border:0; border-radius:12px; background:{{ readBg }}; color:#fff; font-weight:600; font-size:15px; cursor:pointer;"><i class="icon-{{ readIcon }}"></i>{{ readLabel }}</button>
+          <span style="flex:1; min-width:200px; font-size:12px; color:var(--fg-3);">{{ readNote }}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- READER -->
+  <sc-if value="{{ hasReader }}" hint-placeholder-val="{{ false }}">
+    <div onContextMenu="{{ block }}" onCopy="{{ block }}" onDragStart="{{ block }}" style="position:fixed; inset:0; z-index:70; background:var(--slate-800); display:flex; flex-direction:column; user-select:none; -webkit-user-select:none;">
+      <div style="height:56px; flex:none; display:flex; align-items:center; gap:12px; padding:0 16px; background:var(--slate-900); color:#fff;">
+        <button onClick="{{ closeReader }}" style="display:flex; align-items:center; gap:6px; height:36px; padding:0 12px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; font-weight:600; font-size:13px; cursor:pointer;"><i class="icon-x"></i>Selesai membaca</button>
+        <span style="flex:1; min-width:0; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ rd.title }}</span>
+        <span style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--slate-300); white-space:nowrap;"><i class="icon-lock"></i>Unduh, cetak, dan salin dinonaktifkan</span>
+        <span style="display:flex; align-items:center; gap:6px; height:30px; padding:0 10px; border-radius:999px; background:{{ rd.timerBg }}; color:#fff; font-family:var(--font-mono); font-size:13px; white-space:nowrap;"><i class="icon-timer"></i>{{ rd.left }}</span>
+      </div>
+      <div style="flex:1; display:flex; min-height:0;">
+        <div style="width:220px; flex:none; overflow:auto; background:var(--slate-900); color:var(--slate-300); padding:12px; display:flex; flex-direction:column; gap:2px;">
+          <span style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--slate-400); padding:6px 8px;">Daftar isi</span>
+          <sc-for list="{{ rd.toc }}" as="t" hint-placeholder-count="6">
+            <button onClick="{{ t.go }}" style="display:flex; justify-content:space-between; gap:8px; padding:8px; border:0; border-radius:8px; background:{{ t.bg }}; color:{{ t.fg }}; font-size:13px; text-align:left; cursor:pointer; font-family:var(--font-body);"><span>{{ t.label }}</span><span style="font-family:var(--font-mono); font-size:11px;">{{ t.page }}</span></button>
+          </sc-for>
+        </div>
+        <div style="flex:1; overflow:auto; padding:24px;">
+          <div style="position:relative; margin:0 auto; width:min({{ rd.w }}px,100%); aspect-ratio:1/1.414; background:#fff; border-radius:4px; box-shadow:var(--shadow-xl); padding:56px 60px; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+            <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-3);">{{ rd.title }} · hlm. {{ rd.page }}</span>
+            <span style="font-family:var(--font-display); font-weight:700; font-size:18px; margin:8px 0;">{{ rd.heading }}</span>
+            <sc-for list="{{ rd.lines }}" as="w" hint-placeholder-count="20"><div style="height:8px; width:{{ w }}%; border-radius:4px; background:var(--slate-200); flex:none;"></div></sc-for>
+            <span style="margin-top:auto; align-self:center; font-size:11px; color:var(--fg-3);">Isi karya tampil di sini. Pratinjau prototype.</span>
+            <div style="position:absolute; inset:-20%; display:grid; grid-template-columns:repeat(2,1fr); gap:60px 40px; align-content:center; transform:rotate(-28deg); pointer-events:none;">
+              <sc-for list="{{ rd.marks }}" as="m" hint-placeholder-count="10"><span style="font-size:15px; font-weight:700; color:var(--slate-900); opacity:.07; white-space:nowrap; text-align:center;">{{ m }}</span></sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="height:60px; flex:none; display:flex; align-items:center; justify-content:center; gap:14px; background:var(--slate-900); color:#fff; flex-wrap:wrap;">
+        <button onClick="{{ zoomOut }}" title="Perkecil" style="width:40px; height:40px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; cursor:pointer; font-size:17px;"><i class="icon-zoom-out"></i></button>
+        <button onClick="{{ prev }}" style="width:40px; height:40px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; cursor:pointer; font-size:18px;"><i class="icon-chevron-left"></i></button>
+        <span style="font-family:var(--font-mono); font-size:13px; white-space:nowrap; min-width:72px; text-align:center;">{{ rd.page }} / {{ rd.pages }}</span>
+        <button onClick="{{ next }}" style="width:40px; height:40px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; cursor:pointer; font-size:18px;"><i class="icon-chevron-right"></i></button>
+        <button onClick="{{ zoomIn }}" title="Perbesar" style="width:40px; height:40px; border:0; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; cursor:pointer; font-size:17px;"><i class="icon-zoom-in"></i></button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:90; display:flex; align-items:center; gap:10px; padding:14px 18px; border-radius:14px; background:var(--slate-900); color:#fff; font-size:14px; box-shadow:var(--shadow-lg); animation:toastin 200ms cubic-bezier(0.34,1.56,0.64,1);">
+      <i class="icon-{{ toastIcon }}" style="color:var(--teal-300); font-size:18px;"></i>{{ toast }}
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const W = (id,type,title,author,nim,prodi,year,adv,kw,pages,abs) => ({id,type,title,author,nim,prodi,year,adv,kw,pages,abs,call:`${type==='Skripsi'?'SK':type==='Tesis'?'TS':'DS'} ${333+id%9}.${10+id} ${author.split(' ').pop().slice(0,3).toUpperCase()}`});
+const WORKS = [
+ W(1,'Skripsi','Analisis Konflik Tanah Ulayat di Sumatera Barat','Rizky Maulana','20220145','D4 Pertanahan',2025,'Dr. Sutaryono, M.Si.','tanah ulayat; konflik agraria; nagari',112,'Penelitian ini mengkaji pola konflik tanah ulayat nagari di Kabupaten Agam dan peran lembaga adat dalam penyelesaiannya. Data dikumpulkan melalui wawancara dengan ninik mamak, kantor pertanahan, dan pemerintah nagari. Hasilnya menunjukkan konflik paling sering muncul pada pendaftaran tanah kaum yang belum memiliki batas jelas.'),
+ W(2,'Skripsi','Evaluasi PTSL Berbasis Partisipasi Masyarakat di Kabupaten Kulon Progo','Fajar Nugroho','20210233','D4 Pertanahan',2025,'Dr. Sutaryono, M.Si.','PTSL; partisipasi; pendaftaran tanah',98,'Skripsi ini mengevaluasi pelaksanaan Pendaftaran Tanah Sistematis Lengkap dengan melibatkan pokmas di tiga desa. Partisipasi masyarakat mempercepat pengumpulan data yuridis, tetapi kualitas data fisik masih bergantung pada petugas ukur.'),
+ W(3,'Skripsi','Pemetaan Partisipatif Batas Desa di Kabupaten Gunungkidul','Larasati Handayani','20210088','D4 Pertanahan',2025,'Martinho Magno, S.Si.T','pemetaan partisipatif; batas desa; GNSS',104,'Penelitian ini menerapkan pemetaan partisipatif dengan GNSS RTK dan citra drone untuk menetapkan batas desa. Hasil pemetaan disepakati dalam musyawarah antar-desa dan mengurangi sengketa batas.'),
+ W(4,'Skripsi','Penyelesaian Sengketa Tanah Wakaf melalui Mediasi','Siti Nurhaliza','20210190','D4 Pertanahan',2024,'Dr. Ratna Sari Dewi, S.H., M.Hum.','tanah wakaf; mediasi; sengketa',90,'Skripsi ini menganalisis efektivitas mediasi kantor pertanahan dalam sengketa tanah wakaf di Kota Yogyakarta. Mediasi berhasil pada 7 dari 10 kasus, terutama yang didukung dokumen ikrar wakaf.'),
+ W(5,'Skripsi','Pemanfaatan Drone RTK untuk Pengukuran Bidang Tanah Pertanian','Yohanes Kristianto','20220402','D4 Pertanahan',2024,'Martinho Magno, S.Si.T','drone; RTK; pengukuran bidang',86,'Penelitian ini membandingkan ketelitian pengukuran bidang tanah pertanian dengan drone RTK terhadap pengukuran terestris. Selisih luas rata-rata di bawah toleransi yang ditetapkan untuk pendaftaran tanah.'),
+ W(6,'Skripsi','Redistribusi Tanah Objek Reforma Agraria di Kabupaten Blitar','Annisa Putri Lestari','20220311','D4 Pertanahan',2023,'Dr. Sutaryono, M.Si.','reforma agraria; TORA; redistribusi',95,'Skripsi ini menelusuri pelaksanaan redistribusi TORA eks HGU di Kabupaten Blitar dan dampaknya terhadap akses petani penggarap.'),
+ W(7,'Tesis','Model Kadaster Multiguna untuk Perencanaan Tata Ruang Perdesaan','Dewi Anggraini','—','Magister Perencanaan Wilayah (deposit dosen)',2024,'Prof. Dr. Ir. Hartono Saputra','kadaster multiguna; tata ruang; perdesaan',168,'Tesis ini merancang model data kadaster multiguna yang mengintegrasikan informasi bidang tanah, zonasi tata ruang, dan potensi desa untuk mendukung perencanaan di tingkat desa.'),
+ W(8,'Tesis','Kepastian Hukum Hak atas Tanah Masyarakat Hukum Adat','Ratna Sari Dewi','—','Magister Ilmu Hukum (deposit dosen)',2022,'Prof. Dr. Maria S.W. Sumardjono, S.H.','hak ulayat; masyarakat hukum adat',154,'Tesis ini mengkaji perkembangan pengakuan hak ulayat dalam peraturan pertanahan dan praktik penatausahaannya di beberapa provinsi.'),
+ W(9,'Disertasi','Dinamika Penguasaan Tanah dan Reforma Agraria di Jawa, 1960–2020','Sutaryono','—','Doktor Ilmu Sosial (deposit dosen)',2023,'Prof. Dr. Gunawan Wiradi (alm.)','penguasaan tanah; sejarah agraria; Jawa',312,'Disertasi ini menelusuri perubahan struktur penguasaan tanah di Jawa sejak UUPA 1960 hingga program reforma agraria terkini, dengan studi kasus tiga desa di Jawa Tengah.'),
+ W(10,'Disertasi','Integrasi Data Spasial Pertanahan untuk Satu Peta Nasional','Muhamad Irfan Yudistira','—','Doktor Geomatika (deposit dosen)',2025,'Prof. Dr. Hasanuddin Z. Abidin','data spasial; satu peta; interoperabilitas',276,'Disertasi ini mengusulkan kerangka interoperabilitas data spasial pertanahan dengan data tematik kementerian lain untuk mendukung kebijakan satu peta.'),
+];
+const TYPE = {Skripsi:['graduation-cap','var(--teal-600)'],Tesis:['book-open-text','var(--violet)'],Disertasi:['library-big','var(--berry)']};
+const SESSION = 60*60;
+
+class Component extends DCLogic {
+  state = { tab:'Skripsi', q:'', year:'Semua', sel:null, wifi:true, presensi:false, reader:null, zoom:560, toast:null, history:[{id:3,when:'Kemarin, 10.12',pages:'hlm. 1–24',dur:'38 menit'}] };
+  componentDidMount() {
+    if (this.props.tab) this.setState({tab:this.props.tab});
+    this._tick = setInterval(()=>{ if (this.state.reader) this.setState(s=>({reader:{...s.reader,left:s.reader.left-1}})); }, 1000);
+    this._key = e => { if (!this.state.reader) return; const k=e.key.toLowerCase(); if ((e.ctrlKey||e.metaKey) && ['s','p','c','a'].includes(k)) { e.preventDefault(); this.toast('Teks lengkap hanya bisa dibaca di layar ini, ya.','lock'); } if (k==='printscreen') this.toast('Tangkapan layar tidak diizinkan untuk karya ini.','lock'); };
+    window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() { clearInterval(this._tick); window.removeEventListener('keydown', this._key); }
+  componentDidUpdate(pp) { if (this.props.tab && pp.tab!==this.props.tab) this.setState({tab:this.props.tab, sel:null}); }
+  toast(t,icon='circle-check') { this.setState({toast:{t,icon}}); clearTimeout(this._t); this._t=setTimeout(()=>this.setState({toast:null}),2600); }
+
+  renderVals() {
+    const s = this.state;
+    const onSite = s.wifi && s.presensi;
+    const ql = s.q.toLowerCase();
+    const yr = w => s.year==='Semua' || (s.year==='lama' ? w.year<=2022 : w.year===+s.year);
+    const list = WORKS.filter(w=>w.type===s.tab && yr(w) && (!ql || (w.title+w.author+w.adv+w.kw).toLowerCase().includes(ql)));
+    const deco = w => ({...w, icon:TYPE[w.type][0], color:TYPE[w.type][1], open:()=>this.setState({sel:w.id})});
+    const sel = WORKS.find(w=>w.id===s.sel);
+    const r = s.reader, rw = r ? WORKS.find(w=>w.id===r.id) : null;
+    const chapters = rw ? [['Halaman judul',1],['Abstrak',3],['Bab I Pendahuluan',7],['Bab II Tinjauan pustaka',Math.round(rw.pages*.18)],['Bab III Metode penelitian',Math.round(rw.pages*.36)],['Bab IV Hasil dan pembahasan',Math.round(rw.pages*.5)],['Bab V Penutup',Math.round(rw.pages*.86)],['Daftar pustaka',Math.round(rw.pages*.92)]] : [];
+    const setPage = n => this.setState({reader:{...this.state.reader, page:Math.min(rw.pages,Math.max(1,n)), maxPage:Math.max(this.state.reader.maxPage||1, n)}});
+    let seed = (r?.page||1)*7919 + (r?.id||1); const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
+    const now = new Date().toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const mm = n => `${String(Math.floor(Math.max(0,n)/60)).padStart(2,'0')}:${String(Math.max(0,n)%60).padStart(2,'0')}`;
+    if (r && r.left<=0) setTimeout(()=>{ if (this.state.reader) { this.endSession(); this.toast('Sesi 60 menit berakhir. Buka lagi untuk melanjutkan.','timer'); } },0);
+    return {
+      tabs:['Skripsi','Tesis','Disertasi'].map(t=>{ const on=s.tab===t; return {label:t, icon:TYPE[t][0], count:WORKS.filter(w=>w.type===t).length, bg:on?'var(--teal-50)':'transparent', fg:on?'var(--teal-700)':'var(--fg-2)', pick:()=>this.setState({tab:t, page:'katalog'})}; }).concat([{label:'Riwayat baca', icon:'history', count:s.history.length, bg:s.tab==='riwayat'?'var(--teal-50)':'transparent', fg:s.tab==='riwayat'?'var(--teal-700)':'var(--fg-2)', pick:()=>this.setState({tab:'riwayat'})}]),
+      pg:{katalog:s.tab!=='riwayat', riwayat:s.tab==='riwayat'},
+      ...(()=>{ const emb=!!this.props.embedded; return {embedded:emb, standalone:!emb, gridCols:emb?'minmax(0,1fr)':'240px minmax(0,1fr)', minH:emb?'0':'100vh', mainPad:emb?'0':'28px', embTitle:s.tab==='riwayat'?'Riwayat baca':`Baca di tempat · ${s.tab.toLowerCase()}`}; })(),
+      gate: onSite ? {label:'Di perpustakaan · teks lengkap terbuka', icon:'wifi', bg:'var(--success-soft)', fg:'var(--success)'} : {label:'Di luar perpustakaan · hanya abstrak', icon:'wifi-off', bg:'var(--slate-100)', fg:'var(--fg-2)'},
+      reqs:[
+        [s.wifi,'Terhubung ke Wi-Fi PERPUS-STPN', s.wifi?'Jaringan perpustakaan terdeteksi.':'Kamu sedang memakai jaringan di luar perpustakaan.', 'wifi', ()=>this.setState({wifi:!s.wifi}), s.wifi?'Simulasikan keluar jaringan':'Simulasikan terhubung'],
+        [s.presensi,'Presensi masuk hari ini', s.presensi?'Tercatat masuk pukul 08.12.':'Scan QR di kios pintu masuk lewat Portal Pemustaka.', 'qr-code', ()=>this.setState({presensi:!s.presensi}), s.presensi?'Batalkan simulasi':'Simulasikan presensi'],
+      ].map(([ok,label,detail,icon,fix,fixLabel])=>({label,detail,icon:ok?'circle-check':icon,bg:ok?'var(--success-soft)':'var(--slate-100)',fg:ok?'var(--success)':'var(--fg-3)',canFix:true,fix,fixLabel})),
+      heroStats:[`${WORKS.filter(w=>w.type==='Skripsi').length} skripsi`,`${WORKS.filter(w=>w.type==='Tesis').length} tesis`,`${WORKS.filter(w=>w.type==='Disertasi').length} disertasi`],
+      q:s.q, onQ:e=>this.setState({q:e.target.value}), year:s.year, onYear:e=>this.setState({year:e.target.value}),
+      list:list.map(deco), empty:!list.length, resultLabel:`${list.length} ${s.tab.toLowerCase()} ditemukan`,
+      hasSel:!!sel, sel:sel?deco(sel):{}, close:()=>this.setState({sel:null}), stop:e=>e.stopPropagation(),
+      cannotRead:!onSite, readBg:onSite?'var(--teal-400)':'var(--slate-300)', readIcon:onSite?'book-open':'lock', readLabel:onSite?'Baca teks lengkap':'Teks lengkap terkunci',
+      readNote:onSite?'Sesi baca 60 menit. Teks diberi tanda air nama dan NIM kamu, dan tidak bisa diunduh, dicetak, atau disalin.':'Datang ke perpustakaan, sambungkan ke Wi-Fi PERPUS-STPN, dan lakukan presensi masuk untuk membuka teks lengkap.',
+      startRead:()=>{ this.setState({reader:{id:sel.id, page:1, maxPage:1, left:SESSION, start:Date.now()}, sel:null}); },
+      hasReader:!!rw,
+      rd: rw ? {title:rw.title, page:r.page, pages:rw.pages, left:mm(r.left), timerBg:r.left<300?'var(--danger)':'rgba(255,255,255,.12)', w:s.zoom,
+        heading:(chapters.slice().reverse().find(c=>c[1]<=r.page)||chapters[0])[0],
+        toc:chapters.map(([label,page])=>{ const on=(chapters.slice().reverse().find(c=>c[1]<=r.page)||[])[1]===page; return {label,page,bg:on?'rgba(93,195,178,.2)':'transparent',fg:on?'#fff':'var(--slate-300)',go:()=>setPage(page)}; }),
+        lines:Array.from({length:24},(_,i)=> i%8===7 ? 0 : Math.round(68+rnd()*32)),
+        marks:Array.from({length:10},()=>`Annisa Putri Lestari · 20220311 · ${now}`)} : {},
+      block:e=>{ e.preventDefault(); this.toast('Teks lengkap hanya bisa dibaca di layar ini, ya.','lock'); },
+      prev:()=>setPage(r.page-1), next:()=>setPage(r.page+1),
+      zoomIn:()=>this.setState({zoom:Math.min(900,s.zoom+80)}), zoomOut:()=>this.setState({zoom:Math.max(400,s.zoom-80)}),
+      closeReader:()=>{ this.endSession(); this.toast('Sesi baca selesai dan tercatat di riwayat.'); },
+      history:s.history.map(h=>{ const w=WORKS.find(x=>x.id===h.id); return {...h, title:w.title, type:w.type, open:()=>this.setState({tab:w.type, sel:w.id})}; }), noHistory:!s.history.length,
+      hasToast:!!s.toast, toast:s.toast?.t, toastIcon:s.toast?.icon||'circle-check',
+    };
+  }
+  endSession() { const r=this.state.reader; if(!r) return; const min=Math.max(1,Math.round((Date.now()-r.start)/60000)); this.setState({reader:null, history:[{id:r.id, when:'Hari ini, '+new Date().toTimeString().slice(0,5).replace(':','.'), pages:`hlm. 1–${r.maxPage||r.page}`, dur:`${min} menit`}, ...this.state.history]}); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Design tokens from the Sandbox Indonesia design system
+  (design/_ds/.../colors_and_type.css). Exposed as Tailwind utilities,
+  e.g. bg-teal-400, text-fg-3, shadow-teal, rounded-lg, font-display.
+*/
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* Teal — primary / interaction */
+    --color-teal-50: #eefbf8;
+    --color-teal-100: #d3f5ee;
+    --color-teal-200: #a8ebdd;
+    --color-teal-300: #7cd9c6;
+    --color-teal-400: #5dc3b2;
+    --color-teal-500: #3fa796;
+    --color-teal-600: #2d8a7b;
+    --color-teal-700: #226b60;
+    --color-teal-800: #1a4f47;
+    --color-teal-900: #133831;
+
+    /* Sunset — accents, data-viz */
+    --color-marigold: #f59e0b;
+    --color-sunglow: #fecb34;
+    --color-amber: #fbba38;
+    --color-sunset: #fe7346;
+    --color-coral: #fe474d;
+    --color-crimson: #fe424e;
+    --color-berry: #dd2666;
+    --color-violet: #7563d3;
+    --color-plum: #210c2b;
+
+    /* Warm slate neutrals (replaces Tailwind's cool slate) */
+    --color-slate-50: #faf9f7;
+    --color-slate-100: #f2f1ed;
+    --color-slate-200: #e4e2dc;
+    --color-slate-300: #ccc9c1;
+    --color-slate-400: #9a958a;
+    --color-slate-500: #6b675d;
+    --color-slate-600: #4b473f;
+    --color-slate-700: #2f2c26;
+    --color-slate-800: #1b1914;
+    --color-slate-900: #0f0e0a;
+
+    /* Semantic status */
+    --color-success: #16a34a;
+    --color-success-soft: #dcfce7;
+    --color-warning: #f59e0b;
+    --color-warning-soft: #fef3c7;
+    --color-danger: #dc2626;
+    --color-danger-soft: #fee2e2;
+    --color-info: #2563eb;
+    --color-info-soft: #dbeafe;
+
+    /* Text tiers */
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
+
+    /* Radii: 12 for buttons, 16 for cards, 24 for modals */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+
+    /* Warm, low-contrast shadows */
+    --shadow-xs: 0 1px 2px rgba(15, 14, 10, 0.04);
+    --shadow-sm: 0 1px 3px rgba(15, 14, 10, 0.06), 0 1px 2px rgba(15, 14, 10, 0.04);
+    --shadow-md: 0 4px 12px rgba(15, 14, 10, 0.06), 0 2px 4px rgba(15, 14, 10, 0.04);
+    --shadow-lg: 0 12px 32px rgba(15, 14, 10, 0.08), 0 4px 8px rgba(15, 14, 10, 0.04);
+    --shadow-xl: 0 24px 64px rgba(15, 14, 10, 0.1), 0 8px 16px rgba(15, 14, 10, 0.05);
+    --shadow-teal: 0 8px 24px rgba(93, 195, 178, 0.28);
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* shadcn/ui semantic slots used by the starter-kit components */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@theme inline {
+    --background-image-grad-leaf: linear-gradient(135deg, #5dc3b2 0%, #2d8a7b 100%);
+    --background-image-grad-sunset: linear-gradient(135deg, #fecb34 0%, #fe7346 50%, #fe424e 100%);
+    --background-image-grad-dawn: linear-gradient(135deg, #fecb34 0%, #fe424e 100%);
+    --background-image-grad-fire: linear-gradient(135deg, #fe7346 0%, #dd2666 100%);
+    --background-image-grad-twilight: linear-gradient(135deg, #fe424e 0%, #7563d3 60%, #210c2b 100%);
+}
+
+:root {
+    --fg-1: var(--color-slate-900);
+    --fg-2: var(--color-slate-700);
+    --fg-3: var(--color-slate-500);
+    --fg-4: var(--color-slate-400);
+
+    --background: var(--color-slate-50);
+    --foreground: var(--color-slate-900);
+    --card: #ffffff;
+    --card-foreground: var(--color-slate-900);
+    --popover: #ffffff;
+    --popover-foreground: var(--color-slate-900);
+    --primary: var(--color-teal-400);
+    --primary-foreground: #ffffff;
+    --secondary: var(--color-slate-100);
+    --secondary-foreground: var(--color-slate-900);
+    --muted: var(--color-slate-100);
+    --muted-foreground: var(--color-slate-500);
+    --accent: var(--color-teal-50);
+    --accent-foreground: var(--color-teal-700);
+    --destructive: var(--color-danger);
+    --destructive-foreground: #ffffff;
+    --border: var(--color-slate-200);
+    --input: var(--color-slate-300);
+    --ring: var(--color-teal-400);
+    --chart-1: var(--color-teal-400);
+    --chart-2: var(--color-marigold);
+    --chart-3: var(--color-sunset);
+    --chart-4: var(--color-berry);
+    --chart-5: var(--color-violet);
+    --radius: 12px;
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: var(--color-slate-700);
+    --sidebar-primary: var(--color-teal-400);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: var(--color-teal-50);
+    --sidebar-accent-foreground: var(--color-teal-700);
+    --sidebar-border: var(--color-slate-200);
+    --sidebar-ring: var(--color-teal-400);
+}
+
+.dark {
+    --fg-1: var(--color-slate-50);
+    --fg-2: var(--color-slate-200);
+    --fg-3: var(--color-slate-400);
+    --fg-4: var(--color-slate-500);
+
+    --background: var(--color-slate-900);
+    --foreground: var(--color-slate-50);
+    --card: var(--color-slate-800);
+    --card-foreground: var(--color-slate-50);
+    --popover: var(--color-slate-800);
+    --popover-foreground: var(--color-slate-50);
+    --primary: var(--color-teal-400);
+    --primary-foreground: var(--color-slate-900);
+    --secondary: var(--color-slate-700);
+    --secondary-foreground: var(--color-slate-50);
+    --muted: var(--color-slate-800);
+    --muted-foreground: var(--color-slate-400);
+    --accent: var(--color-teal-900);
+    --accent-foreground: var(--color-teal-100);
+    --destructive: var(--color-coral);
+    --destructive-foreground: #ffffff;
+    --border: var(--color-slate-700);
+    --input: var(--color-slate-600);
+    --ring: var(--color-teal-300);
+    --chart-1: var(--color-teal-300);
+    --chart-2: var(--color-sunglow);
+    --chart-3: var(--color-sunset);
+    --chart-4: var(--color-berry);
+    --chart-5: var(--color-violet);
+    --sidebar-background: var(--color-slate-800);
+    --sidebar-foreground: var(--color-slate-200);
+    --sidebar-primary: var(--color-teal-400);
+    --sidebar-primary-foreground: var(--color-slate-900);
+    --sidebar-accent: var(--color-teal-900);
+    --sidebar-accent-foreground: var(--color-teal-100);
+    --sidebar-border: var(--color-slate-700);
+    --sidebar-ring: var(--color-teal-300);
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-border, currentColor);
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        font-family: var(--font-display);
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-teal-400);
+        outline-offset: 2px;
+    }
+}

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/sandbox-indonesia-design-system-99b416d5-da5b-4c8d-8045-e7b27db11bfd/colors_and_type.css">
+  <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+  <script src="_ds/sandbox-indonesia-design-system-99b416d5-da5b-4c8d-8045-e7b27db11bfd/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--slate-50); }
+    a { color: var(--teal-600); }
+    a:hover { color: var(--teal-500); }
+    * { box-sizing: border-box; }
+    input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; margin: 0; flex: none; border: 1.5px solid var(--slate-300); border-radius: 5px; background: #fff center / 14px no-repeat; cursor: pointer; }
+    input[type="checkbox"]:checked { background-color: var(--teal-500); border-color: var(--teal-500); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E"); }
+    input[type="checkbox"]:focus-visible { outline: 3px solid var(--teal-400); outline-offset: 2px; }
+    @keyframes toastin { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes roomglow { 0%, 100% { box-shadow: 0 0 4px 1px var(--glow); } 50% { box-shadow: 0 0 18px 6px var(--glow); } }
+    @keyframes slidein { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  </style>
+</helmet>
+
+<div style="display:grid; grid-template-columns:{{ gridCols }}; min-height:{{ minH }}; font-family:var(--font-body); color:var(--fg-1); background:{{ rootBg }};">
+
+  <sc-if value="{{ showShell }}" hint-placeholder-val="{{ true }}">
+  <aside style="position:sticky; top:0; height:100vh; overflow:auto; background:#fff; border-right:1px solid var(--slate-200); display:flex; flex-direction:column; padding:16px 12px; gap:4px;">
+    <div style="display:flex; align-items:center; gap:10px; padding:4px 8px 16px;">
+      <img src="assets/logo-stpn.png" alt="Logo Politeknik Agraria STPN" style="width:42px; height:42px; object-fit:contain; flex:none; background:#fff; border-radius:999px;">
+      <div style="display:flex; flex-direction:column; line-height:1.2;">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:14px;">Manajemen aset</span>
+        <span style="font-size:11px; color:var(--fg-3);">PUSTAGRA</span>
+      </div>
+    </div>
+    <sc-for list="{{ nav }}" as="g" hint-placeholder-count="2">
+      <div style="display:flex; flex-direction:column; gap:2px; padding-bottom:10px;">
+        <span style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-4); padding:6px 10px;">{{ g.label }}</span>
+        <sc-for list="{{ g.items }}" as="m" hint-placeholder-count="4">
+          <button onClick="{{ m.go }}" style="display:flex; align-items:center; gap:10px; height:38px; padding:0 10px; border:0; border-radius:10px; background:{{ m.bg }}; color:{{ m.fg }}; font-family:var(--font-body); font-size:14px; font-weight:{{ m.fw }}; cursor:pointer; text-align:left;" style-hover="background:var(--teal-50); color:var(--teal-700);">
+            <i class="icon-{{ m.icon }}" style="font-size:17px;"></i><span style="flex:1;">{{ m.label }}</span>
+            <sc-if value="{{ m.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px; font-weight:700; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--sunset); color:#fff; display:grid; place-items:center;">{{ m.badge }}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--slate-200); padding-top:12px;">
+      <a href="Portal Staf.dc.html" style="display:flex; align-items:center; gap:10px; height:38px; padding:0 10px; border-radius:10px; color:var(--fg-2); font-size:14px; text-decoration:none;" style-hover="background:var(--slate-100); color:var(--fg-1);"><i class="icon-arrow-left"></i>Kembali ke Portal Staf</a>
+    </div>
+  </aside>
+  </sc-if>
+
+  <div style="display:flex; flex-direction:column; min-width:0;">
+    <sc-if value="{{ showShell }}" hint-placeholder-val="{{ true }}">
+    <header style="position:sticky; top:0; z-index:30; height:64px; display:flex; align-items:center; gap:16px; padding:0 28px; background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--slate-200);">
+      <div style="display:flex; flex-direction:column; line-height:1.2; min-width:0; flex:1;">
+        <span style="font-size:12px; color:var(--fg-3);">Manajemen aset &amp; ruang</span>
+        <span style="font-family:var(--font-display); font-weight:700; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ pageTitle }}</span>
+      </div>
+      <div style="flex:none; display:flex; align-items:center; gap:4px; padding:4px; background:var(--slate-100); border-radius:12px;">
+        <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+          <button onClick="{{ r.pick }}" title="{{ r.hint }}" style="height:32px; padding:0 12px; border:0; border-radius:9px; background:{{ r.bg }}; color:{{ r.fg }}; box-shadow:{{ r.sh }}; font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap; font-family:var(--font-body);">{{ r.label }}</button>
+        </sc-for>
+      </div>
+      
+    </header>
+    </sc-if>
+
+    <main style="padding:{{ mainPad }}; display:flex; flex-direction:column; gap:20px; max-width:1440px; width:100%;">
+
+      <sc-if value="{{ isAsesor }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:10px; align-items:center; padding:12px 16px; border-radius:12px; background:var(--info-soft); color:var(--slate-700); font-size:14px;"><i class="icon-eye"></i>{{ roNote }}</div>
+      </sc-if>
+
+      <!-- DASBOR -->
+      <sc-if value="{{ pg.dasbor }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap:16px;">
+          <div style="background:var(--grad-leaf); color:#fff; border-radius:24px; padding:28px; display:flex; flex-direction:column; gap:18px; box-shadow:var(--shadow-lg);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-50);">Nilai akhir (NA) simulasi</span>
+                <span style="font-family:var(--font-display); font-size:60px; font-weight:800; line-height:1; letter-spacing:-.03em;">{{ naLabel }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <span style="font-family:var(--font-display); font-size:40px; font-weight:800; line-height:1; width:64px; height:64px; border-radius:18px; background:#fff; color:var(--teal-700); display:grid; place-items:center;">{{ predikat.letter }}</span>
+                <span style="font-size:13px; font-weight:600;">{{ predikat.label }}</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="position:relative; height:10px; border-radius:999px; background:rgba(255,255,255,.25);">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:{{ naPct }}%; border-radius:999px; background:#fff;"></div>
+                <sc-for list="{{ naMarks }}" as="m" hint-placeholder-count="3"><span style="position:absolute; left:{{ m.x }}%; top:-4px; width:3px; height:18px; border-radius:2px; background:var(--sunset);"></span></sc-for>
+              </div>
+              <div style="position:relative; height:16px; font-size:11px; color:var(--teal-50);">
+                <sc-for list="{{ naMarks }}" as="m" hint-placeholder-count="3"><span style="position:absolute; left:{{ m.x }}%; transform:translateX(-50%);">{{ m.label }}</span></sc-for>
+              </div>
+            </div>
+            <span style="font-size:14px; color:#fff; line-height:1.5;">{{ naNote }}</span>
+          </div>
+          <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:24px; display:flex; flex-direction:column; gap:14px;">
+            <span style="font-family:var(--font-display); font-weight:700; font-size:17px;">Kesiapan berkas</span>
+            <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px;">
+              <sc-for list="{{ modeStats }}" as="m" hint-placeholder-count="3">
+                <div style="padding:12px; border-radius:12px; background:var(--slate-50); display:flex; flex-direction:column; gap:2px;">
+                  <span style="font-family:var(--font-display); font-size:24px; font-weight:800;">{{ m.v }}</span>
+                  <span style="font-size:12px; color:var(--fg-3);">{{ m.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px;"><span>IK dengan bukti tersahkan lengkap</span><span style="font-weight:700;">{{ readyIk }} / 56</span></div>
+              <div style="height:8px; border-radius:999px; background:var(--slate-100); overflow:hidden;"><div style="height:100%; width:{{ readyPct }}%; background:var(--teal-400); border-radius:999px;"></div></div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <sc-for list="{{ buktiSummary }}" as="b" hint-placeholder-count="4"><span style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; background:{{ b.bg }}; color:{{ b.fg }};">{{ b.label }}: {{ b.v }}</span></sc-for>
+            </div>
+            <button onClick="{{ goBerkas }}" style="margin-top:auto; align-self:flex-start; display:flex; align-items:center; gap:8px; height:40px; padding:0 16px; border:0; border-radius:12px; background:var(--teal-400); color:#fff; font-weight:600; font-size:14px; cursor:pointer;" style-hover="background:var(--teal-500);"><i class="icon-file-output"></i>Siapkan berkas pengajuan</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap:16px;">
+          <sc-for list="{{ komps }}" as="k" hint-placeholder-count="6">
+            <button onClick="{{ k.open }}" style="text-align:left; border:0; background:#fff; border-radius:16px; padding:20px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:12px; cursor:pointer; font-family:var(--font-body);" style-hover="box-shadow:var(--shadow-md); transform:translateY(-2px);">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="width:36px; height:36px; border-radius:10px; background:var(--teal-50); color:var(--teal-700); display:grid; place-items:center; font-size:17px;"><i class="icon-{{ k.icon }}"></i></span>
+                <div style="flex:1; min-width:0;"><div style="font-size:12px; color:var(--fg-3);">Komponen {{ k.n }} · bobot {{ k.bobot }}</div><div style="font-family:var(--font-display); font-weight:700; font-size:16px;">{{ k.name }}</div></div>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:6px;"><span style="font-family:var(--font-display); font-size:28px; font-weight:800;">{{ k.contrib }}</span><span style="font-size:13px; color:var(--fg-3);">dari {{ k.bobot }} poin NA</span></div>
+              <div style="height:8px; border-radius:999px; background:var(--slate-100); overflow:hidden;"><div style="height:100%; width:{{ k.pct }}%; background:{{ k.bar }}; border-radius:999px;"></div></div>
+              <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--fg-3);"><span style="white-space:nowrap;">Skor {{ k.score }}/{{ k.max }} · {{ k.count }} IK</span><span style="font-weight:600; color:{{ k.lowFg }};">{{ k.lowLabel }}</span></div>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--slate-200); gap:12px; flex-wrap:wrap;">
+            <div><div style="font-family:var(--font-display); font-weight:700; font-size:17px;">Prioritas perbaikan</div><div style="font-size:13px; color:var(--fg-3);">5 IK dengan tambahan NA terbesar jika naik satu opsi</div></div>
+            <button onClick="{{ goGap }}" style="height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--slate-200); background:#fff; font-weight:600; font-size:13px; cursor:pointer;" style-hover="background:var(--slate-100);">Lihat analisis gap</button>
+          </div>
+          <sc-for list="{{ gapTop }}" as="g" hint-placeholder-count="5">
+            <button onClick="{{ g.open }}" style="width:100%; display:grid; grid-template-columns:52px minmax(0,1fr) 90px 80px; gap:12px; align-items:center; padding:12px 20px; border:0; border-bottom:1px solid var(--slate-200); background:#fff; text-align:left; cursor:pointer; font-family:var(--font-body); font-size:14px;" style-hover="background:var(--slate-50);">
+              <span style="font-family:var(--font-mono); font-weight:600; color:var(--fg-3);">{{ g.no }}</span>
+              <div style="min-width:0;"><div style="font-weight:600;">{{ g.name }}</div><div style="font-size:12px; color:var(--fg-3);">{{ g.act }}</div></div>
+              <span style="font-size:13px; color:var(--fg-2);">{{ g.from }} → {{ g.to }}</span>
+              <span style="font-family:var(--font-display); font-weight:800; color:var(--teal-700); text-align:right;">+{{ g.gain }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- INDIKATOR -->
+      <sc-if value="{{ pg.ik }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <div style="flex:1 1 260px; display:flex; align-items:center; gap:8px; height:42px; padding:0 12px; border:1px solid var(--slate-200); border-radius:12px; background:#fff; color:var(--fg-3);"><i class="icon-search"></i><input value="{{ ikQ }}" onInput="{{ onIkQ }}" placeholder="Cari nomor atau nama indikator" style="border:0; outline:0; flex:1; font-family:var(--font-body); font-size:14px; min-width:0;"></div>
+          <select value="{{ ikMode }}" onChange="{{ onIkMode }}" style="height:42px; padding:0 12px; border:1px solid var(--slate-200); border-radius:12px; font-family:var(--font-body); font-size:14px; background:#fff;">
+            <option value="Semua">Semua mode</option><option value="Otomatis">Otomatis</option><option value="Semi">Semi-otomatis</option><option value="Manual">Manual</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <sc-for list="{{ kompTabs }}" as="t" hint-placeholder-count="7"><button onClick="{{ t.pick }}" style="height:36px; padding:0 14px; border-radius:999px; border:1px solid {{ t.border }}; background:{{ t.bg }}; color:{{ t.fg }}; font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap;">{{ t.label }}</button></sc-for>
+        </div>
+        <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:auto;">
+          <div style="display:grid; grid-template-columns:52px minmax(0,1.5fr) 100px minmax(0,1.2fr) 64px 90px; gap:14px; padding:12px 20px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); font-size:12px; font-weight:600; color:var(--fg-3); text-transform:uppercase; letter-spacing:.06em; min-width:760px;"><span>IK</span><span>Indikator</span><span>Mode</span><span>Nilai terukur</span><span>Opsi</span><span>Bukti</span></div>
+          <sc-for list="{{ ikRows }}" as="r" hint-placeholder-count="8">
+            <button onClick="{{ r.open }}" style="width:100%; display:grid; grid-template-columns:52px minmax(0,1.5fr) 100px minmax(0,1.2fr) 64px 90px; gap:14px; padding:12px 20px; border:0; border-bottom:1px solid var(--slate-200); background:#fff; text-align:left; align-items:center; font-family:var(--font-body); font-size:14px; cursor:pointer; min-width:760px;" style-hover="background:var(--slate-50);">
+              <span style="font-family:var(--font-mono); font-weight:600;">{{ r.no }}</span>
+              <div style="min-width:0;"><div style="font-weight:600;">{{ r.name }}</div><div style="font-size:12px; color:var(--fg-3);">Sumber: {{ r.src }}</div></div>
+              <span style="justify-self:start; font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:{{ r.mBg }}; color:{{ r.mFg }};">{{ r.modeLabel }}</span>
+              <span style="font-size:13px; color:var(--fg-2);">{{ r.value }}</span>
+              <span style="width:32px; height:32px; border-radius:10px; background:{{ r.oBg }}; color:{{ r.oFg }}; display:grid; place-items:center; font-family:var(--font-display); font-weight:800;">{{ r.letter }}</span>
+              <span style="font-size:12px; font-weight:600; color:{{ r.bFg }}; display:flex; align-items:center; gap:4px;"><i class="icon-{{ r.bIcon }}"></i>{{ r.bLabel }}</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ ikEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:40px; text-align:center; color:var(--fg-3);">Tidak ada indikator yang cocok.</div></sc-if>
+        </div>
+      </sc-if>
+
+      <!-- GAP -->
+      <sc-if value="{{ pg.gap }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px;">
+          <div style="background:#fff; border-radius:16px; padding:18px; box-shadow:var(--shadow-sm);"><div style="font-size:13px; color:var(--fg-3);">NA sekarang</div><div style="font-family:var(--font-display); font-size:28px; font-weight:800;">{{ naLabel }} · {{ predikat.letter }}</div></div>
+          <div style="background:#fff; border-radius:16px; padding:18px; box-shadow:var(--shadow-sm);"><div style="font-size:13px; color:var(--fg-3);">Jika IK yang dicentang naik satu opsi</div><div style="font-family:var(--font-display); font-size:28px; font-weight:800; color:var(--teal-700);">{{ simNa }} · {{ simPred }}</div></div>
+          <div style="background:#fff; border-radius:16px; padding:18px; box-shadow:var(--shadow-sm);"><div style="font-size:13px; color:var(--fg-3);">Selisih ke predikat A (91)</div><div style="font-family:var(--font-display); font-size:28px; font-weight:800;">{{ toA }}</div></div>
+        </div>
+        <p style="margin:0; font-size:14px; color:var(--fg-3);">Diurutkan menurut tambahan NA terbesar. Centang IK yang akan dikerjakan untuk melihat simulasi nilai akhirnya.</p>
+        <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:auto;">
+          <sc-for list="{{ gapRows }}" as="g" hint-placeholder-count="8">
+            <div style="display:grid; grid-template-columns:32px 52px minmax(0,1.6fr) 110px 70px 110px; gap:12px; align-items:center; padding:12px 20px; border-bottom:1px solid var(--slate-200); font-size:14px; min-width:720px;">
+              <button role="checkbox" aria-checked="{{ g.on }}" onClick="{{ g.toggle }}" style="width:20px; height:20px; padding:0; border-radius:5px; border:1.5px solid {{ g.cbBorder }}; background:{{ g.cbBg }}; color:#fff; display:grid; place-items:center; cursor:pointer; font-size:13px;"><i class="icon-check" style="opacity:{{ g.cbOp }};"></i></button>
+              <span style="font-family:var(--font-mono); font-weight:600;">{{ g.no }}</span>
+              <div style="min-width:0;"><div style="font-weight:600;">{{ g.name }}</div><div style="font-size:12px; color:var(--fg-3); line-height:1.45;">{{ g.act }}</div></div>
+              <span style="font-size:12px; color:var(--fg-3);">{{ g.kompName }}</span>
+              <span style="font-size:13px; font-weight:600;">{{ g.from }} → {{ g.to }}</span>
+              <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+                <span style="font-family:var(--font-display); font-weight:800; color:var(--teal-700);">+{{ g.gain }}</span>
+                <button onClick="{{ g.open }}" title="Buka detail" style="width:30px; height:30px; border-radius:8px; border:1px solid var(--slate-200); background:#fff; cursor:pointer;"><i class="icon-chevron-right"></i></button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- BUKTI -->
+      <sc-if value="{{ pg.bukti }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <sc-for list="{{ buktiTabs }}" as="t" hint-placeholder-count="5"><button onClick="{{ t.pick }}" style="height:36px; padding:0 14px; border-radius:999px; border:1px solid {{ t.border }}; background:{{ t.bg }}; color:{{ t.fg }}; font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap;">{{ t.label }}</button></sc-for>
+        </div>
+        <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:auto;">
+          <div style="display:grid; grid-template-columns:52px minmax(0,1.8fr) minmax(0,1fr) 110px 200px; gap:14px; padding:12px 20px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); font-size:12px; font-weight:600; color:var(--fg-3); text-transform:uppercase; letter-spacing:.06em; min-width:760px;"><span>IK</span><span>Bukti fisik</span><span>Berkas</span><span>Status</span><span></span></div>
+          <sc-for list="{{ buktiRows }}" as="b" hint-placeholder-count="8">
+            <div style="display:grid; grid-template-columns:52px minmax(0,1.8fr) minmax(0,1fr) 110px 200px; gap:14px; padding:12px 20px; border-bottom:1px solid var(--slate-200); align-items:center; font-size:14px; min-width:760px;">
+              <span style="font-family:var(--font-mono); font-weight:600;">{{ b.no }}</span>
+              <div style="min-width:0;"><div style="font-weight:600;">{{ b.name }}</div><div style="font-size:12px; color:var(--fg-3);">{{ b.ikName }}</div></div>
+              <div style="min-width:0;"><div style="font-size:13px; overflow-wrap:anywhere;">{{ b.file }}</div><div style="font-size:12px; color:var(--fg-3);">{{ b.meta }}</div></div>
+              <span style="justify-self:start; font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:{{ b.bg }}; color:{{ b.fg }};">{{ b.status }}</span>
+              <div style="display:flex; gap:6px; justify-content:flex-end;">
+                <sc-if value="{{ b.canSah }}" hint-placeholder-val="{{ false }}"><button onClick="{{ b.sah }}" style="height:32px; padding:0 12px; border:0; border-radius:10px; background:var(--teal-400); color:#fff; font-size:12px; font-weight:600; cursor:pointer;">Sahkan</button></sc-if>
+                <button onClick="{{ b.open }}" style="height:32px; padding:0 12px; border-radius:10px; border:1px solid var(--slate-200); background:#fff; font-size:12px; font-weight:600; cursor:pointer;">Buka IK</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- RUANG & DENAH -->
+      <sc-if value="{{ pg.ruang }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:16px;">
+          <sc-for list="{{ ruangKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff; border-radius:16px; padding:16px 18px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:13px; color:var(--fg-3);">{{ k.label }}</span>
+              <span style="font-family:var(--font-display); font-size:26px; font-weight:800;">{{ k.v }}</span>
+              <span style="font-size:12px; color:var(--fg-3);">{{ k.sub }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start;">
+          <div style="flex:60 1 420px; min-width:0; background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:20px; display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div><div style="font-family:var(--font-display); font-weight:700; font-size:17px;">Denah ruang lantai {{ floor }}</div><div style="font-size:13px; color:var(--fg-3);">Luas lantai {{ floorLuas }} m² · klik ruang untuk detail</div></div>
+              <div style="display:flex; gap:4px; padding:4px; background:var(--slate-100); border-radius:10px;">
+                <sc-for list="{{ floors }}" as="f" hint-placeholder-count="3"><button onClick="{{ f.pick }}" style="white-space:nowrap; height:30px; padding:0 12px; border:0; border-radius:8px; background:{{ f.bg }}; color:{{ f.fg }}; box-shadow:{{ f.sh }}; font-weight:600; font-size:13px; cursor:pointer;">{{ f.label }}</button></sc-for>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <div style="position:relative; width:100%; min-width:420px; aspect-ratio:1/1; max-width:640px; margin:0 auto; background:var(--slate-50); border:2px solid var(--slate-300); border-radius:12px;">
+                <sc-for list="{{ roomBoxes }}" as="r" hint-placeholder-count="7">
+                  <button onClick="{{ r.pick }}" disabled="{{ r.isVoid }}" style="position:absolute; left:{{ r.x }}%; top:{{ r.y }}%; width:{{ r.w }}%; height:{{ r.h }}%; border-radius:4px; border:{{ r.bw }} {{ r.bstyle }} {{ r.border }}; background:{{ r.bg }}; color:{{ r.fg }}; cursor:{{ r.cursor }}; padding:6px 8px; --glow:{{ r.glow }}; animation:{{ r.anim }}; z-index:{{ r.z }}; display:flex; flex-direction:column; align-items:flex-start; justify-content:space-between; text-align:left; overflow:hidden; box-shadow:{{ r.sh }}; font-family:var(--font-body);">
+                    <span style="font-size:11px; font-weight:700; line-height:1.2;">{{ r.name }}</span>
+                    <span style="font-family:var(--font-mono); font-size:12px; font-weight:700; white-space:nowrap;">{{ r.luasLabel }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex; gap:16px; font-size:12px; color:var(--fg-3); flex-wrap:wrap;">
+              <sc-for list="{{ legend }}" as="l" hint-placeholder-count="4"><span style="display:flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; border-radius:3px; background:{{ l.bg }}; border:2px solid {{ l.border }};"></span>{{ l.label }}</span></sc-for>
+            </div>
+          </div>
+          <div style="flex:40 1 300px; min-width:0; display:flex; flex-direction:column; gap:16px;">
+            <sc-if value="{{ hasRoom }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:20px; display:flex; flex-direction:column; gap:14px; animation:slidein 200ms cubic-bezier(0.16,1,0.3,1);">
+                <div style="display:flex; justify-content:space-between; gap:12px;">
+                  <div><div style="font-size:12px; color:var(--fg-3);">Lantai {{ room.floor }}</div><div style="font-family:var(--font-display); font-weight:700; font-size:18px;">{{ room.name }}</div></div>
+                  <span style="align-self:flex-start; font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:{{ room.bg }}; color:{{ room.fg }}; white-space:nowrap;">{{ room.jenisLabel }}</span>
+                </div>
+                <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.6fr); gap:12px;">
+                  <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:600; min-width:0;">Luas (m²)<input type="number" value="{{ room.luas }}" onInput="{{ room.onLuas }}" disabled="{{ readOnly }}" style="width:100%; height:42px; padding:0 12px; border:1.5px solid var(--slate-300); border-radius:10px; font-family:var(--font-mono); font-size:14px; min-width:0;"></label>
+                  <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:600; min-width:0;">Jenis ruang
+                    <select value="{{ room.jenis }}" onChange="{{ room.onJenis }}" disabled="{{ readOnly }}" style="width:100%; max-width:100%; height:42px; padding:0 10px; border:1.5px solid var(--slate-300); border-radius:10px; font-family:var(--font-body); font-size:14px; background:#fff; min-width:0; text-overflow:ellipsis;">
+                      <sc-for list="{{ jenisOpts }}" as="o" hint-placeholder-count="7"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+                    </select>
+                  </label>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <span style="font-size:13px; font-weight:600; color:var(--fg-2);">Aset di ruang ini ({{ room.assetCount }})</span>
+                  <sc-for list="{{ room.assets }}" as="a" hint-placeholder-count="3">
+                    <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--slate-200); font-size:13px;">
+                      <div style="flex:1; min-width:0;"><div style="font-weight:600;">{{ a.name }}</div><div style="font-size:12px; color:var(--fg-3);">{{ a.kat }} · {{ a.fungsi }}</div></div>
+                      <sc-if value="{{ canEditRoom }}" hint-placeholder-val="{{ false }}">
+                        <div style="flex:none; display:flex; align-items:center; gap:2px; padding:2px; border-radius:8px; background:var(--slate-100);">
+                          <button onClick="{{ a.dec }}" aria-label="Kurangi" style="width:24px; height:24px; border:0; border-radius:6px; background:transparent; cursor:pointer; display:grid; place-items:center;" style-hover="background:#fff;"><i class="icon-minus" style="font-size:13px;"></i></button>
+                          <span style="min-width:28px; text-align:center; font-family:var(--font-mono); font-weight:600;">{{ a.qty }}</span>
+                          <button onClick="{{ a.inc }}" aria-label="Tambah" style="width:24px; height:24px; border:0; border-radius:6px; background:transparent; cursor:pointer; display:grid; place-items:center;" style-hover="background:#fff;"><i class="icon-plus" style="font-size:13px;"></i></button>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ readOnly }}" hint-placeholder-val="{{ false }}"><span style="flex:none; font-family:var(--font-mono); color:var(--fg-3);">× {{ a.qty }}</span></sc-if>
+                      <span style="flex:none; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; background:{{ a.bg }}; color:{{ a.fg }};">{{ a.kondisi }}</span>
+                      <sc-if value="{{ canEditRoom }}" hint-placeholder-val="{{ false }}"><button onClick="{{ a.del }}" aria-label="Hapus aset" style="flex:none; width:28px; height:28px; border:0; border-radius:8px; background:transparent; color:var(--fg-3); cursor:pointer; display:grid; place-items:center;" style-hover="background:var(--danger-soft); color:var(--danger);"><i class="icon-trash-2" style="font-size:14px;"></i></button></sc-if>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ room.noAssets }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:var(--fg-3);">Belum ada aset tercatat di ruang ini.</span></sc-if>
+                </div>
+                <sc-if value="{{ canEditRoom }}" hint-placeholder-val="{{ false }}">
+                  <sc-if value="{{ af.closed }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ af.open }}" style="height:40px; border-radius:10px; border:1.5px dashed var(--slate-300); background:#fff; color:var(--teal-700); font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;" style-hover="background:var(--teal-50); border-color:var(--teal-300);"><i class="icon-plus"></i>Tambah perabot / sarana ke ruang ini</button>
+                  </sc-if>
+                  <sc-if value="{{ af.isOpen }}" hint-placeholder-val="{{ false }}">
+                    <form onSubmit="{{ af.submit }}" style="display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:12px; background:var(--slate-50); border:1px solid var(--slate-200);">
+                      <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:700; font-size:14px;">Entri aset · {{ room.name }}</span><button type="button" onClick="{{ af.close }}" aria-label="Tutup" style="width:28px; height:28px; border:0; border-radius:8px; background:transparent; cursor:pointer; display:grid; place-items:center;" style-hover="background:var(--slate-100);"><i class="icon-x"></i></button></div>
+                      <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Nama barang<input value="{{ af.name }}" onInput="{{ af.onName }}" placeholder="mis. Meja baca individu" required="{{ true }}" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0;"></label>
+                      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;">
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Kategori<select value="{{ af.kat }}" onChange="{{ af.onKat }}" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0;"><sc-for list="{{ af.kats }}" as="k" hint-placeholder-count="5"><option value="{{ k }}">{{ k }}</option></sc-for></select></label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Fungsi<select value="{{ af.fungsi }}" onChange="{{ af.onFungsi }}" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0;"><sc-for list="{{ af.fungsis }}" as="f" hint-placeholder-count="5"><option value="{{ f }}">{{ f }}</option></sc-for></select></label>
+                      </div>
+                      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap:10px;">
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Jumlah<input type="number" min="1" value="{{ af.qty }}" onInput="{{ af.onQty }}" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0;"></label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Kondisi<select value="{{ af.kondisi }}" onChange="{{ af.onKondisi }}" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0;"><option value="Baik">Baik</option><option value="Rusak ringan">Rusak ringan</option><option value="Rusak berat">Rusak berat</option></select></label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Tahun perolehan<input type="number" value="{{ af.tahun }}" onInput="{{ af.onTahun }}" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0;"></label>
+                      </div>
+                      <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-2); min-width:0;">Kode inventaris (opsional)<input value="{{ af.kode }}" onInput="{{ af.onKode }}" placeholder="mis. 3.05.02.01.003" style="height:38px; padding:0 10px; border:1.5px solid var(--slate-200); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; width:100%; box-sizing:border-box; min-width:0; font-family:var(--font-mono);"></label>
+                      <span style="font-size:12px; color:var(--fg-3);">Aset baru ikut dihitung di IK sarana prasarana (2.3–2.10).</span>
+                      <div style="display:flex; gap:8px; justify-content:flex-end;">
+                        <button type="button" onClick="{{ af.close }}" style="height:38px; padding:0 14px; border-radius:10px; border:1px solid var(--slate-200); background:#fff; font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer;">Batal</button>
+                        <button type="submit" style="height:38px; padding:0 16px; border:0; border-radius:10px; background:var(--teal-400); color:#fff; font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer;" style-hover="background:var(--teal-500);">Simpan aset</button>
+                      </div>
+                    </form>
+                  </sc-if>
+                </sc-if>
+              </div>
+            </sc-if>
+            <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:20px; display:flex; flex-direction:column; gap:12px;">
+              <span style="font-family:var(--font-display); font-weight:700; font-size:16px;">Dampak ke indikator akreditasi</span>
+              <sc-for list="{{ ruangIk }}" as="i" hint-placeholder-count="2">
+                <button onClick="{{ i.open }}" style="display:flex; gap:12px; align-items:center; padding:12px; border-radius:12px; border:1px solid var(--slate-200); background:#fff; cursor:pointer; text-align:left; font-family:var(--font-body);" style-hover="background:var(--slate-50);">
+                  <span style="width:36px; height:36px; flex:none; border-radius:10px; background:{{ i.oBg }}; color:{{ i.oFg }}; display:grid; place-items:center; font-family:var(--font-display); font-weight:800;">{{ i.letter }}</span>
+                  <div style="flex:1; min-width:0;"><div style="font-weight:600; font-size:14px;">IK {{ i.no }} · {{ i.name }}</div><div style="font-size:12px; color:var(--fg-3);">{{ i.value }}</div></div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:auto;">
+          <div style="display:grid; grid-template-columns:60px minmax(0,1.6fr) minmax(0,1fr) 90px 80px; gap:14px; padding:12px 20px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); font-size:12px; font-weight:600; color:var(--fg-3); text-transform:uppercase; letter-spacing:.06em; min-width:600px;"><span>Lantai</span><span>Ruang</span><span>Jenis</span><span style="text-align:right;">Luas</span><span style="text-align:right;">Aset</span></div>
+          <sc-for list="{{ roomRows }}" as="r" hint-placeholder-count="8">
+            <button onClick="{{ r.pick }}" style="width:100%; display:grid; grid-template-columns:60px minmax(0,1.6fr) minmax(0,1fr) 90px 80px; gap:14px; padding:10px 20px; border:0; border-bottom:1px solid var(--slate-200); background:{{ r.rowBg }}; text-align:left; align-items:center; font-family:var(--font-body); font-size:14px; cursor:pointer; min-width:600px;" style-hover="background:var(--slate-50);">
+              <span style="font-family:var(--font-mono); color:var(--fg-3);">Lt {{ r.floor }}</span>
+              <span style="font-weight:600;">{{ r.name }}</span>
+              <span style="justify-self:start; font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:{{ r.bg }}; color:{{ r.fg }};">{{ r.jenisLabel }}</span>
+              <span style="font-family:var(--font-mono); text-align:right;">{{ r.luas }} m²</span>
+              <span style="text-align:right; color:var(--fg-3);">{{ r.assetCount }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- INVENTARIS -->
+      <sc-if value="{{ pg.inventaris }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap:12px;">
+          <sc-for list="{{ invIk }}" as="i" hint-placeholder-count="7">
+            <button onClick="{{ i.open }}" style="display:flex; gap:12px; align-items:center; padding:14px; border-radius:14px; border:0; background:#fff; box-shadow:var(--shadow-sm); cursor:pointer; text-align:left; font-family:var(--font-body);" style-hover="box-shadow:var(--shadow-md);">
+              <span style="width:38px; height:38px; flex:none; border-radius:10px; background:{{ i.oBg }}; color:{{ i.oFg }}; display:grid; place-items:center; font-family:var(--font-display); font-weight:800; font-size:17px;">{{ i.letter }}</span>
+              <div style="flex:1; min-width:0;"><div style="font-size:12px; color:var(--fg-3);">IK {{ i.no }}</div><div style="font-weight:600; font-size:13px; line-height:1.3;">{{ i.name }}</div><div style="font-size:12px; color:var(--fg-2);">{{ i.value }}</div></div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display:flex; gap:4px; padding:4px; background:#fff; border-radius:12px; box-shadow:var(--shadow-xs); align-self:flex-start; flex-wrap:wrap;">
+          <sc-for list="{{ invTabs }}" as="t" hint-placeholder-count="6"><button onClick="{{ t.pick }}" style="height:34px; padding:0 14px; border:0; border-radius:9px; background:{{ t.bg }}; color:{{ t.fg }}; font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap; font-family:var(--font-body);">{{ t.label }}</button></sc-for>
+        </div>
+        <sc-if value="{{ isLisensi }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:auto;">
+            <sc-for list="{{ licRows }}" as="l" hint-placeholder-count="6">
+              <div style="display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) 80px 190px; gap:14px; padding:12px 20px; border-bottom:1px solid var(--slate-200); align-items:center; font-size:14px; min-width:600px;">
+                <div style="min-width:0;"><div style="font-weight:600;">{{ l.name }}</div><div style="font-size:12px; color:var(--fg-3);">{{ l.use }}</div></div>
+                <span style="color:var(--fg-2); font-size:13px;">{{ l.lic }}</span>
+                <span style="font-family:var(--font-mono); font-size:13px;">{{ l.seat }} unit</span>
+                <select value="{{ l.status }}" onChange="{{ l.onStatus }}" disabled="{{ readOnly }}" style="height:36px; padding:0 10px; border:1.5px solid {{ l.border }}; border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; color:{{ l.fg }}; font-weight:600;">
+                  <option value="Berlisensi">Berlisensi</option><option value="Open source">Open source</option><option value="Tidak berlisensi">Tidak berlisensi</option>
+                </select>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isAset }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ hasMissingFasum }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding:14px 16px; border-radius:12px; background:var(--warning-soft); color:var(--slate-700); font-size:14px;">
+              <i class="icon-info" style="color:var(--marigold); font-size:18px;"></i><span style="flex:1; min-width:200px;">Fasilitas umum yang belum ada dari 7 jenis instrumen: <b>{{ missingFasum }}</b>.</span>
+              <sc-for list="{{ addFasum }}" as="f" hint-placeholder-count="2"><button onClick="{{ f.add }}" disabled="{{ readOnly }}" style="height:34px; padding:0 12px; border-radius:10px; border:1px solid var(--slate-300); background:#fff; font-size:13px; font-weight:600; cursor:pointer;">Catat {{ f.label }}</button></sc-for>
+            </div>
+          </sc-if>
+          <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:auto;">
+            <div style="display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1.2fr) 60px 160px; gap:14px; padding:12px 20px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); font-size:12px; font-weight:600; color:var(--fg-3); text-transform:uppercase; letter-spacing:.06em; min-width:720px;"><span>Aset</span><span>Fungsi</span><span>Ruang</span><span style="text-align:right;">Jml</span><span>Kondisi</span></div>
+            <sc-for list="{{ assetRows }}" as="a" hint-placeholder-count="8">
+              <div style="display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1.2fr) 60px 160px; gap:14px; padding:10px 20px; border-bottom:1px solid var(--slate-200); align-items:center; font-size:14px; min-width:720px;">
+                <div style="min-width:0;"><div style="font-weight:600;">{{ a.name }}</div><div style="font-size:12px; color:var(--fg-3);">{{ a.kat }}</div></div>
+                <span style="color:var(--fg-2); font-size:13px;">{{ a.fungsi }}</span>
+                <span style="color:var(--fg-2); font-size:13px;">Lt {{ a.floor }} · {{ a.roomName }}</span>
+                <span style="font-family:var(--font-mono); text-align:right;">{{ a.qty }}</span>
+                <select value="{{ a.kondisi }}" onChange="{{ a.onKondisi }}" disabled="{{ readOnly }}" style="height:36px; padding:0 10px; border:1.5px solid {{ a.border }}; border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; color:{{ a.fg }}; font-weight:600;">
+                  <option value="Baik">Baik</option><option value="Rusak ringan">Rusak ringan</option><option value="Rusak berat">Rusak berat</option>
+                </select>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- BERKAS -->
+      <sc-if value="{{ pg.berkas }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap:16px;">
+          <sc-for list="{{ docs }}" as="d" hint-placeholder-count="4">
+            <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:20px; display:flex; flex-direction:column; gap:12px;">
+              <span style="width:40px; height:40px; border-radius:10px; background:var(--teal-50); color:var(--teal-700); display:grid; place-items:center; font-size:18px;"><i class="icon-{{ d.icon }}"></i></span>
+              <div><div style="font-family:var(--font-display); font-weight:700;">{{ d.name }}</div><div style="font-size:13px; color:var(--fg-3); line-height:1.5;">{{ d.desc }}</div></div>
+              <div style="display:flex; gap:8px; margin-top:auto; flex-wrap:wrap;">
+                <sc-for list="{{ d.btns }}" as="b" hint-placeholder-count="2"><button onClick="{{ b.go }}" style="white-space:nowrap; height:36px; padding:0 12px; border-radius:10px; border:1px solid var(--slate-200); background:#fff; font-size:13px; font-weight:600; cursor:pointer;" style-hover="background:var(--slate-100);">{{ b.label }}</button></sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start;">
+          <div style="flex:55 1 420px; min-width:0; background:#fff; border-radius:16px; box-shadow:var(--shadow-md); border:1px solid var(--slate-200); padding:36px 40px; display:flex; flex-direction:column; gap:14px; font-size:13px; line-height:1.6; color:var(--slate-800);">
+            <div style="display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:2px solid var(--slate-800);">
+              <img src="assets/logo-stpn.png" alt="Logo Politeknik Agraria STPN" style="width:48px; height:48px; object-fit:contain; flex:none;">
+              <div style="line-height:1.35;"><div style="font-weight:800; font-family:var(--font-display);">DATA PROFIL PERPUSTAKAAN</div><div style="font-size:12px;">Lampiran pengajuan akreditasi · dihasilkan otomatis {{ todayLabel }}</div></div>
+            </div>
+            <div style="display:grid; grid-template-columns:200px minmax(0,1fr); gap:6px 16px;">
+              <sc-for list="{{ profil }}" as="p" hint-placeholder-count="12"><span style="color:var(--fg-3);">{{ p.k }}</span><span style="font-weight:500;">{{ p.v }}</span></sc-for>
+            </div>
+            <span style="font-size:11px; color:var(--fg-3);">Setiap angka tertaut ke data sumber: luas dari menu Ruang &amp; denah, tenaga dari master pustakawan/tendik, koleksi dari master buku &amp; e-book.</span>
+          </div>
+          <div style="flex:45 1 300px; min-width:0; background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:20px; display:flex; flex-direction:column; gap:12px;">
+            <span style="font-family:var(--font-display); font-weight:700; font-size:16px;">Pemeriksaan sebelum pengajuan</span>
+            <sc-for list="{{ checks }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:12px; background:{{ c.bg }};">
+                <i class="icon-{{ c.icon }}" style="color:{{ c.fg }}; font-size:18px; margin-top:1px;"></i>
+                <div style="flex:1;"><div style="font-weight:600; font-size:14px;">{{ c.label }}</div><div style="font-size:12px; color:var(--fg-2);">{{ c.detail }}</div></div>
+              </div>
+            </sc-for>
+            <button onClick="{{ approveSubmit }}" disabled="{{ cannotSubmit }}" style="height:46px; border:0; border-radius:12px; background:{{ submitBg }}; color:#fff; font-weight:600; font-size:15px; cursor:pointer;">{{ submitLabel }}</button>
+            <span style="font-size:12px; color:var(--fg-3);">Pengunggahan ke SiPAPI (akreditasi.perpusnas.go.id) tetap dilakukan manual oleh koordinator.</span>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+  </div>
+
+  <!-- DRAWER IK -->
+  <sc-if value="{{ hasIk }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeIk }}" style="position:fixed; inset:0; z-index:60; background:rgba(15,14,10,.4); display:flex; justify-content:flex-end;">
+      <div onClick="{{ stop }}" style="width:min(580px,100%); height:100%; overflow:auto; background:#fff; box-shadow:var(--shadow-xl); padding:28px; display:flex; flex-direction:column; gap:18px; animation:slidein 200ms cubic-bezier(0.16,1,0.3,1);">
+        <div style="display:flex; justify-content:space-between; gap:12px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:12px; color:var(--fg-3);">Komponen {{ ik.k }} · {{ ik.kompName }} · {{ ik.periode }}</span>
+            <span style="font-family:var(--font-display); font-weight:700; font-size:22px; line-height:1.25;">IK {{ ik.no }} · {{ ik.name }}</span>
+          </div>
+          <button onClick="{{ closeIk }}" style="width:36px; height:36px; flex:none; border:0; border-radius:10px; background:var(--slate-100); cursor:pointer;"><i class="icon-x"></i></button>
+        </div>
+        <div style="display:flex; gap:14px; align-items:center; padding:16px; border-radius:14px; background:var(--slate-50);">
+          <span style="width:56px; height:56px; flex:none; border-radius:14px; background:{{ ik.oBg }}; color:{{ ik.oFg }}; display:grid; place-items:center; font-family:var(--font-display); font-weight:800; font-size:26px;">{{ ik.letter }}</span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:15px;">{{ ik.value }}</div>
+            <div style="font-size:12px; color:var(--fg-3);">Mode {{ ik.modeLabel }} · sumber: {{ ik.src }}</div>
+          </div>
+          <span style="flex:none; font-size:12px; font-weight:600; color:var(--teal-700);">{{ ik.gainLabel }}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <span style="font-size:13px; font-weight:600; color:var(--fg-2);">Opsi penilaian</span>
+          <sc-for list="{{ ik.opts }}" as="o" hint-placeholder-count="4">
+            <div style="display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:12px; border:1.5px solid {{ o.border }}; background:{{ o.bg }};">
+              <span style="width:28px; height:28px; flex:none; border-radius:8px; background:{{ o.chip }}; color:{{ o.chipFg }}; display:grid; place-items:center; font-weight:800; font-family:var(--font-display); font-size:13px;">{{ o.letter }}</span>
+              <span style="flex:1; font-size:14px;">{{ o.text }}</span>
+              <span style="font-family:var(--font-mono); font-size:12px; color:var(--fg-3);">skor {{ o.score }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ ik.isAuto }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--fg-3);">Opsi dipilih otomatis dari data. Nilai di antara dua opsi dibulatkan ke opsi yang lebih rendah.</span></sc-if>
+        </div>
+        <sc-if value="{{ ik.canSet }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:16px; border-radius:14px; border:1px solid var(--slate-200);">
+            <span style="font-size:13px; font-weight:600;">{{ ik.setLabel }}</span>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ ik.setBtns }}" as="b" hint-placeholder-count="4"><button onClick="{{ b.pick }}" style="flex:1; height:38px; border-radius:10px; border:1.5px solid {{ b.border }}; background:{{ b.bg }}; color:{{ b.fg }}; font-weight:700; font-family:var(--font-display); cursor:pointer;">{{ b.letter }}</button></sc-for>
+            </div>
+            <textarea value="{{ ik.alasan }}" onInput="{{ onAlasan }}" rows="2" placeholder="Catatan alasan pemilihan opsi (wajib untuk mode manual)" style="padding:10px 12px; border:1.5px solid var(--slate-300); border-radius:10px; font-family:var(--font-body); font-size:13px; resize:vertical;"></textarea>
+          </div>
+        </sc-if>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:600; color:var(--fg-2);">Checklist bukti fisik</span><span style="font-size:12px; color:var(--fg-3);">{{ ik.bDone }} dari {{ ik.bTotal }} tersahkan</span></div>
+          <sc-for list="{{ ik.bukti }}" as="b" hint-placeholder-count="2">
+            <div style="display:flex; gap:10px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid var(--slate-200); flex-wrap:wrap;">
+              <i class="icon-{{ b.icon }}" style="color:{{ b.fg }}; font-size:18px;"></i>
+              <div style="flex:1; min-width:160px;"><div style="font-weight:600; font-size:14px;">{{ b.name }}</div><div style="font-size:12px; color:var(--fg-3); overflow-wrap:anywhere;">{{ b.file }} · {{ b.meta }}</div></div>
+              <span style="font-size:11px; font-weight:600; padding:3px 8px; border-radius:999px; background:{{ b.bg }}; color:{{ b.fg }};">{{ b.status }}</span>
+              <sc-if value="{{ b.canUpload }}" hint-placeholder-val="{{ false }}">
+                <label style="height:30px; padding:0 10px; border-radius:8px; border:1px solid var(--slate-200); background:#fff; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;"><i class="icon-upload"></i>Unggah<input type="file" onChange="{{ b.upload }}" style="display:none;"></label>
+              </sc-if>
+              <sc-if value="{{ b.canSah }}" hint-placeholder-val="{{ false }}"><button onClick="{{ b.sah }}" style="height:30px; padding:0 10px; border:0; border-radius:8px; background:var(--teal-400); color:#fff; font-size:12px; font-weight:600; cursor:pointer;">Sahkan</button></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:600;">Penanggung jawab
+            <select value="{{ ik.pic }}" onChange="{{ onPic }}" disabled="{{ readOnly }}" style="height:40px; padding:0 10px; border:1.5px solid var(--slate-300); border-radius:10px; font-family:var(--font-body); font-size:13px; background:#fff; min-width:0;">
+              <sc-for list="{{ staffOpts }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+            </select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:600;">Tenggat<input type="date" value="{{ ik.due }}" onInput="{{ onDue }}" disabled="{{ readOnly }}" style="height:40px; padding:0 10px; border:1.5px solid var(--slate-300); border-radius:10px; font-family:var(--font-body); font-size:13px; min-width:0;"></label>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; top:80px; right:24px; z-index:80; display:flex; align-items:center; gap:10px; padding:14px 18px; border-radius:14px; background:var(--slate-900); color:#fff; font-size:14px; box-shadow:var(--shadow-lg); animation:toastin 200ms cubic-bezier(0.34,1.56,0.64,1);">
+      <i class="icon-circle-check" style="color:var(--teal-300); font-size:18px;"></i>{{ toast }}
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const KOMP = [[1,'Koleksi',15,'book-copy'],[2,'Sarana dan prasarana',10,'building'],[3,'Pelayanan',35,'hand-helping'],[4,'Tenaga',15,'users'],[5,'Penyelenggaraan',15,'landmark'],[6,'Pengelolaan',10,'settings-2']];
+const C = null;
+const IKD = [
+['1.1','Kebijakan pengembangan koleksi','Semi','6 komponen, ditinjau Mar 2024',4,'> 5 komponen, ditinjau ≤ 3 thn|4–5 komponen, ditinjau ≤ 3 thn|2–3 komponen atau ditinjau > 3 thn|≤ 1 komponen / belum ada','SK kebijakan + berita acara tinjauan','Register kebijakan',''],
+['1.2','Penambahan koleksi','Otomatis','4,6% (866 judul baru)',3,'> 5%|4–5%|3–4%|< 3%','Invoice dan berita acara penerimaan','Portal Staf · Pengadaan buku','Tambah ±76 judul baru tahun ini agar melewati 5%.'],
+['1.3','Jenis koleksi','Otomatis','9 jenis berisi (5 jenis wajib ada)',4,'> 8 jenis|7–8 jenis|5–6 jenis|< 5 jenis','Daftar jenis koleksi','Portal Staf · Dashboard (koleksi per jenis)',''],
+['1.4','Prodi dengan koleksi inti','Otomatis','1 dari 1 prodi (100%)',4,'> 75%|51–75%|26–50%|≤ 25%','Pemetaan koleksi inti ke mata kuliah','SIAKAD + master buku',''],
+['1.5','Evaluasi koleksi','Semi','1×/thn, 3 dari 4 rekomendasi ditindaklanjuti',3,'1×/thn, semua ditindaklanjuti|1×/thn, sebagian ditindaklanjuti|< 1×/thn|Tidak ada evaluasi','Laporan evaluasi + berita acara penyiangan','Portal Staf · Stock opname','Selesaikan 1 rekomendasi evaluasi yang tersisa.'],
+['1.6','Seleksi bahan pustaka','Otomatis','2 sesi, 4 unsur hadir',4,'> 1×/thn, > 3 unsur|1×/thn, 3 unsur|1×/thn, 2 unsur|Tanpa sesi seleksi','Notulen sesi seleksi + daftar hadir','Portal Staf · Pengadaan (usulan pemustaka)',''],
+['1.7','Jumlah koleksi','Otomatis','18.824 judul cetak + digital',4,'> 5.000 judul|3.001–5.000 judul|1.001–3.000 judul|≤ 1.000 judul','Rekap judul cetak dan digital','Portal Staf · Buku & e-book',''],
+['1.8','Sarana akses koleksi','Semi','Web OPAC + portal pemustaka; pencarian terintegrasi belum',3,'Web, aplikasi, dan pencarian terintegrasi|2 sarana|1 sarana|Belum ada','Tangkapan layar OPAC dan portal','Website · OPAC','Gabungkan pencarian katalog, repositori, dan e-resources dalam satu kotak.'],
+['1.9','Platform e-resources','Otomatis','4 platform, bisa diakses dari luar kampus',3,'> 6 platform|5–6 platform|3–4 platform|< 3 platform','Kontrak / MoU langganan','Register e-resources','Tambah 3 platform (mis. e-Resources Perpusnas, Garuda, DOAJ).'],
+['1.10','Repositori institusi','Semi','Terbuka, 1 platform, berkebijakan',3,'Terbuka, multi-platform, berkebijakan|Terbuka, 1 platform, berkebijakan|Terbatas atau tanpa kebijakan|Belum ada','Kebijakan repositori + tautan','Repositori + Baca di tempat','Daftarkan repositori ke Garuda dan Google Scholar (OAI-PMH).'],
+['1.11','Pertumbuhan repositori','Otomatis','2,4% (52 unggahan)',3,'> 3%|2–3%|1–2%|< 1%','Statistik unggahan per tahun','Portal Staf · Bebas pustaka (unggah skripsi)','Tambah ±14 unggahan lagi tahun ini.'],
+['1.12','Pengorganisasian koleksi','Otomatis','8 dari 9 jenis terkatalog di OPAC (89%)',4,'> 80%|61–80%|41–60%|≤ 40%','Tangkapan layar OPAC per jenis','Portal Staf · Buku & e-book',''],
+['1.13','Pelestarian','Otomatis','3 jenis kegiatan dalam 3 thn',3,'> 4 kegiatan|3–4 kegiatan|1–2 kegiatan|Tidak ada','Log pelestarian + dokumentasi','Log pelestarian','Tambah 2 jenis kegiatan (mis. fumigasi dan alih media).'],
+['2.1','Luas gedung','Semi',C,C,'> 750 m² dan > 0,5 m²/sivitas, desain khusus|≥ 500 m² dan ≥ 0,3 m²/sivitas|≥ 300 m² dan ≥ 0,2 m²/sivitas|Di bawah itu','Denah dan data luas ruang','Ruang & denah',''],
+['2.2','Ruang/area','Otomatis',C,C,'4 ruang dasar + > 1 pendukung|4 ruang dasar + 1 pendukung|3 ruang dasar|≤ 2 ruang dasar','Denah ruang berlabel','Ruang & denah',''],
+['2.3','Sarana prasarana berfungsi','Otomatis',C,C,'> 75%|61–75%|41–60%|≤ 40%','Daftar inventaris + kondisi','Inventaris',''],
+['2.4','Perabot dan peralatan','Otomatis',C,C,'4 fungsi dasar + > 4 pendukung|4 dasar + 3–4 pendukung|4 dasar + 1–2 pendukung|< 4 fungsi dasar','Foto perabot per fungsi','Inventaris',''],
+['2.5','Komputer untuk layanan','Otomatis',C,C,'> 75%|51–75%|26–50%|≤ 25%','Daftar komputer per fungsi layanan','Inventaris',''],
+['2.6','Bandwidth','Semi','2,6 Mbps/orang, 9 dari 12 area',2,'> 5 Mbps/orang, semua area|3–5 Mbps/orang, sebagian besar area|1–3 Mbps/orang|< 1 Mbps/orang','Log uji kecepatan internet','Uji jaringan (dicatat manual)','Naikkan bandwidth dan pasang access point di 3 area yang belum terjangkau.'],
+['2.7','Perangkat multimedia','Otomatis',C,C,'> 5 jenis|4–5 jenis|2–3 jenis|≤ 1 jenis','Foto perangkat multimedia','Inventaris',''],
+['2.8','Lisensi perangkat lunak','Otomatis',C,C,'> 75%|61–75%|41–60%|≤ 40%','Bukti lisensi / invoice','Inventaris · Lisensi',''],
+['2.9','Sarana keamanan','Otomatis',C,C,'> 5 sarana|4–5 sarana|2–3 sarana|≤ 1 sarana','Foto dan lokasi sarana keamanan','Inventaris',''],
+['2.10','Fasilitas umum','Otomatis',C,C,'> 6 fasilitas|5–6 fasilitas|3–4 fasilitas|≤ 2 fasilitas','Foto fasilitas umum','Inventaris',''],
+['2.11','Pengawasan sarpras','Semi','Terjadwal, menyeluruh, 70% temuan ditindaklanjuti',3,'Terjadwal, menyeluruh, ditindaklanjuti|Terjadwal, sebagian ditindaklanjuti|Tidak terjadwal|Tidak ada pengawasan','Jadwal + checklist monitoring','Inventaris (cek kondisi)','Tindak lanjuti 3 temuan perbaikan yang masih terbuka.'],
+['3.1','Jam layanan','Otomatis','44,5 jam/minggu',2,'> 51 jam|46–51 jam|40–45 jam|< 40 jam','SK jam layanan','Portal Staf · CMS website (jadwal layanan)','Tambah 7 jam/minggu, mis. Sabtu sampai 16.00 dan Jumat sampai 17.00.'],
+['3.2','Jenis layanan','Otomatis','9 jenis aktif',4,'> 8 jenis|7–8 jenis|5–6 jenis|< 5 jenis','Laporan pelaksanaan layanan','Portal Staf · semua layanan',''],
+['3.3','Sirkulasi','Semi','Otomasi + perpanjangan daring; mandiri belum',3,'Otomatis, POS, mandiri|Otomatis + salah satu|Otomatis saja|Manual','Log transaksi sirkulasi','Portal Staf · Sirkulasi','Aktifkan kios self-checkout di lantai 1.'],
+['3.4','Layanan referensi','Otomatis','Luring aktif, daring belum',2,'Luring + daring, aktif, terdokumentasi|Luring + daring, sebagian terdokumentasi|Luring saja|Tidak ada','Log interaksi referensi','Layanan referensi','Buka fitur Tanya Pustakawan di portal pemustaka.'],
+['3.5','Kanal akses','Otomatis','4 kanal aktif',3,'> 5 kanal|4–5 kanal|2–3 kanal|≤ 1 kanal','Statistik penggunaan kanal','Website + Portal pemustaka','Aktifkan 2 kanal lagi (mis. WhatsApp layanan dan aplikasi mobile).'],
+['3.6','Konsultasi riset','Otomatis','3 jenis dengan sesi terlaksana',2,'> 4 jenis|4 jenis|2–3 jenis|≤ 1 jenis','Laporan sesi konsultasi','Booking konsultasi','Buka booking konsultasi untuk cek plagiarisme dan sitasi.'],
+['3.7','Silang layan','Otomatis','2 lembaga bertransaksi',2,'> 5 lembaga|4–5 lembaga|2–3 lembaga|≤ 1 lembaga','Register mitra + transaksi','Silang layan','Aktifkan silang layan dengan 2 perpustakaan mitra lagi.'],
+['3.8','Literasi informasi','Otomatis','12 kegiatan',4,'> 10 kegiatan|7–10 kegiatan|4–6 kegiatan|≤ 3 kegiatan','Daftar hadir (presensi QR) + materi','Website · Berita kegiatan',''],
+['3.9','Layanan ekstensi','Otomatis','2 kegiatan dalam 3 thn',3,'> 3 kegiatan|2–3 kegiatan|1 kegiatan|Tidak ada','Laporan kegiatan ekstensi','Kegiatan','Adakan 2 kegiatan ekstensi lagi, mis. pojok baca di desa binaan.'],
+['3.10','Pengaduan','Otomatis','86% aduan ditindaklanjuti',4,'> 80%|61–80%|41–60%|≤ 40%','Rekap tiket aduan','Sistem pengaduan',''],
+['3.11','Orientasi','Otomatis','2×/thn, khusus per prodi',4,'> 1×, khusus per prodi|1×, khusus per prodi|1×, umum|Tidak ada','Daftar hadir orientasi','Kegiatan',''],
+['4.1','Kualifikasi kepala perpustakaan','Manual','S-2 bidang lain, 3 kriteria terpenuhi',3,'S-2/S-3 ilmu perpustakaan + 3 kriteria|S-2 bidang lain + 3 kriteria|S-1 + 2 kriteria|Di bawah itu','Ijazah + SK pengangkatan kepala','Portal Staf · Pustakawan','Ikutkan kepala perpustakaan pendidikan atau diklat ilmu perpustakaan.'],
+['4.2','Kualifikasi tenaga','Otomatis','4 dari 8 S-1 relevan (50%)',2,'> 90%|71–90%|50–70%|< 50%','Ijazah tenaga perpustakaan','Portal Staf · Pustakawan & tendik','Dukung tenaga melanjutkan S-1 ilmu perpustakaan.'],
+['4.3','Jumlah pustakawan','Otomatis',C,C,'> 75%|51–75%|26–50%|≤ 25%','SK pustakawan','Portal Staf · Pustakawan + SIAKAD',''],
+['4.4','Jumlah tenaga teknis','Otomatis',C,C,'> 75%|51–75%|26–50%|≤ 25%','SK tenaga teknis','Portal Staf · Tendik + SIAKAD',''],
+['4.5','Sertifikasi kompetensi','Otomatis','2 dari 8 tersertifikasi (25%)',2,'> 70%|51–70%|25–50%|< 25%','Sertifikat kompetensi','Register sertifikat','Daftarkan 4 tenaga ke uji kompetensi pustakawan.'],
+['4.6','Pengembangan keprofesian (PKB)','Otomatis','3,4 kali per orang',3,'> 5 kali|3–5 kali|1–2 kali|Tidak ada','Sertifikat pelatihan / seminar','Log PKB','Tambah kegiatan PKB tim sampai rata-rata 5 kali per orang.'],
+['5.1','Status organisasi','Manual','Unit pelaksana, setara eselon 3',3,'Unit mandiri, setara eselon 2|Setara eselon 3|Setara eselon 4|Di bawah unit lain','Statuta + SK pendirian','Dokumen kelembagaan','Ajukan perubahan kedudukan perpustakaan di statuta.'],
+['5.2','Perangkat aturan','Semi','4 dokumen disahkan',3,'> 5 dokumen|4–5 dokumen|2–3 dokumen|≤ 1 dokumen','Dokumen aturan bertanda tangan','Dokumen kelembagaan','Sahkan 2 aturan lagi, mis. tata tertib dan SOP repositori.'],
+['5.3','Perencanaan dan kinerja','Semi','92% capaian IKU',3,'> 95%|86–95%|76–85%|≤ 75%','Renja + laporan capaian IKU','Rencana kerja','Kejar 2 IKU yang belum tercapai di triwulan IV.'],
+['5.4','Struktur organisasi','Manual','3 jenjang, uraian tugas jelas',3,'> 3 jenjang, uraian jelas|3 jenjang, uraian jelas|2 jenjang|Tanpa struktur','Bagan struktur + uraian tugas','Dokumen kelembagaan','Tambah jenjang koordinator layanan dalam struktur.'],
+['5.5','Pelibatan pemangku kepentingan','Semi','4 unsur terlibat',3,'> 5 unsur|4–5 unsur|2–3 unsur|≤ 1 unsur','Notulen rapat / FGD','Log keterlibatan','Libatkan 2 unsur lagi, mis. alumni dan kantor pertanahan mitra.'],
+['5.6','Komitmen pimpinan','Semi','5 bentuk, nomor 1–3 ada',3,'> 5 bentuk, nomor 1–3 ada|4–5 bentuk|2–3 bentuk|≤ 1 bentuk','Surat/SK dukungan pimpinan','Bukti dukungan','Dokumentasikan 1 bentuk dukungan pimpinan lagi.'],
+['5.7','Pengakuan kinerja','Manual','Penghargaan tingkat provinsi',3,'Nasional/internasional|Provinsi|Kabupaten/kota atau internal|Belum ada','Sertifikat penghargaan','Register penghargaan','Ikuti lomba perpustakaan perguruan tinggi tingkat nasional.'],
+['6.1','Anggaran','Otomatis','Rata-rata naik 7,8% per tahun',3,'> 10%, alokasi jelas|6–10%|1–5%|Tidak naik','DIPA / RKA 3 tahun','Anggaran','Ajukan kenaikan anggaran minimal 12% untuk tahun depan.'],
+['6.2','Website','Manual','8 dari 9 fitur, diperbarui mingguan',3,'Mudah, menarik, selalu diperbarui|Lengkap, diperbarui berkala|Kurang lengkap|Tidak ada','Tangkapan layar website + log CMS','Portal Staf · CMS website','Lengkapi fitur ke-9 (Tanya Pustakawan) di website.'],
+['6.3','Otomasi dan integrasi','Semi','SIAKAD terintegrasi, SSO belum',3,'Integrasi penuh + SSO|Integrasi SIAKAD saja|Otomasi tanpa integrasi|Manual','Dokumen integrasi API','Pengaturan sistem','Aktifkan login SSO kampus untuk pemustaka dan staf.'],
+['6.4','Kerja sama','Otomatis','4 mitra dengan kegiatan tahun ini',3,'> 5 lembaga|4–5 lembaga|2–3 lembaga|≤ 1 lembaga','MoU/PKS + laporan kegiatan','Register kerja sama','Jalankan kegiatan dengan 2 mitra lagi.'],
+['6.5','Inovasi','Manual','4 jenis: presensi QR, denah rak, e-book, baca di tempat',3,'> 5 jenis|4–5 jenis|2–3 jenis|≤ 1 jenis','Proposal + statistik pemanfaatan inovasi','Portal Staf + Baca di tempat','Dokumentasikan 2 inovasi lagi lengkap dengan statistik pemanfaatan.'],
+['6.6','Dukungan akreditasi lembaga','Otomatis','100% prodi didukung',4,'> 75%|51–75%|26–50%|≤ 25%','Surat dukungan akreditasi prodi','Log dukungan akreditasi',''],
+['6.7','Pemanfaatan','Semi','68% sivitas aktif, belum ada pengguna luar negeri',3,'> 75%, termasuk luar negeri|61–75%|41–60%|≤ 40%','Statistik pemanfaatan','Portal Staf · Kunjungan & sirkulasi','Naikkan pemanfaatan lewat kelas literasi untuk angkatan baru.'],
+['6.8','Indeks kepuasan','Otomatis','82% puas/sangat puas, ditindaklanjuti',4,'> 75%, ditindaklanjuti|61–75%|41–60%|≤ 40%','Laporan survei kepuasan','Survei kepuasan',''],
+];
+const SIVITAS = 3280, PUSTAKAWAN = 2, TEKNIS = 6;
+const JENIS = {koleksi:['Dasar · koleksi','d'],baca:['Dasar · baca','d'],kerja:['Dasar · kerja/pengolahan','d'],layanan:['Dasar · layanan','d'],pendukung:['Pendukung','p'],fasum:['Fasilitas umum','f'],non:['Non-layanan','n']};
+const JSTYLE = {d:['var(--success-soft)','var(--success)','var(--success)'],p:['var(--warning-soft)','var(--marigold)','#92400E'],f:['rgba(255,221,176,0.9)','#EFA45A','#8A4A10'],n:['var(--slate-100)','var(--slate-300)','var(--fg-3)']};
+const ROOMS0 = [
+ ['f1',1,'Ruang Dosen','kerja',24,0,0,17,26],['f2',1,'Ruang Dosen','kerja',22,17,0,25,16],['f3',1,'P4MI','kerja',42,42,0,21,36],['f4',1,'Ruang PPPM','kerja',32,63,0,37,16],
+ ['f5',1,'Klinik','fasum',32,0,26,17,34],['f6',1,'Humas','kerja',38,0,60,17,40],['f7',1,'Ruang Dosen','kerja',28,17,16,25,20],['f8',1,'Selasar','pendukung',18,63,16,16,20],['f9',1,'Selasar & area tengah','pendukung',220,17,36,62,64],
+ ['f10',1,'Toilet','fasum',18,79,16,21,21],['f11',1,'Tangga','non',16,79,37,21,20],['f12',1,'Ruang Dosen','kerja',26,79,57,21,22],['f13',1,'Ruang Kapti','kerja',24,79,79,21,21],
+ ['r8',2,'Rak buku','koleksi',72,0,0,18,100],['r9',2,'Ruang baca & komputer penelusuran','baca',76,18,0,19,100],['r20',2,'Ruang pengelolaan','kerja',59,37,0,40,37],['r10',2,'Ruang kepala perpustakaan','pendukung',23,77,0,23,25],
+ ['r21',2,'Void','non',0,37,37,23,26],['r22',2,'Loket peminjaman & warung kejujuran','layanan',17,37,63,23,19],['r31',2,'Area baca tambahan','baca',11,37,82,15,18],['r23',2,'Lobi & mesin presensi','pendukung',31,60,37,17,45],['r11',2,'Area loker','pendukung',23,77,57,23,25],
+ ['r12',2,'Toilet','fasum',14,77,25,23,15],['r13',2,'Tangga','non',16,77,40,23,17],['r24',2,'Area lesehan','pendukung',18,52,82,25,18],['r17',2,'Ruang TI & pengelolaan','pendukung',17,77,82,23,18],
+ ['r14',3,'Ruang koleksi skripsi, tesis & disertasi','koleksi',126,0,0,77,41],['r25',3,'Meja petugas','layanan',26,77,0,23,28],['r26',3,'Ruang referensi, koleksi asing & arsip','koleksi',50,0,41,33,38],['r27',3,'Void','non',0,33,41,27,37],
+ ['r28',3,'Studio musik','pendukung',28,0,79,33,21],['r18',3,'Ruang tunggu','pendukung',25,60,41,17,37],['r15',3,'Area diskusi','pendukung',59,33,78,67,22],['r29',3,'Toilet','fasum',14,77,28,23,15],['r30',3,'Tangga','non',32,77,43,23,35],
+].map(([id,floor,name,jenis,luas,x,y,w,h])=>({id,floor,name,jenis,luas,x,y,w,h,luar:floor===1}));
+const A = (id,name,kat,fungsi,room,qty,kondisi)=>({id,name,kat,fungsi,room,qty,kondisi});
+const ASSETS0 = [
+ A(1,'Rak buku baja double face','Perabot','Penyimpanan koleksi','r8',42,'Baik'),A(2,'Rak buku kayu','Perabot','Penyimpanan koleksi','r8',18,'Rusak ringan'),A(3,'Rak buku baja','Perabot','Penyimpanan koleksi','r8',30,'Baik'),
+ A(4,'Meja baca kelompok','Perabot','Membaca','r9',24,'Baik'),A(5,'Kursi baca','Perabot','Membaca','r9',120,'Baik'),A(6,'Kursi baca lama','Perabot','Membaca','r9',16,'Rusak berat'),
+ A(7,'Meja sirkulasi','Perabot','Layanan sirkulasi','r22',2,'Baik'),A(8,'Meja kerja pengolahan','Perabot','Kerja pengolahan','r20',4,'Baik'),A(9,'Rak display koleksi baru','Perabot','Display koleksi baru','r8',3,'Baik'),
+ A(10,'Troli buku','Perabot','Troli buku','r20',4,'Baik'),A(11,'Sofa baca santai','Perabot','Area baca santai','r9',6,'Baik'),A(12,'Papan informasi','Perabot','Papan informasi','r23',2,'Baik'),A(13,'Meja diskusi','Perabot','Diskusi kelompok','r15',8,'Baik'),
+ A(14,'PC sirkulasi','Komputer','Sirkulasi','r22',2,'Baik'),A(15,'PC OPAC','Komputer','OPAC','r9',6,'Baik'),A(16,'PC pengolahan','Komputer','Pengolahan','r20',3,'Baik'),A(17,'Server repositori','Komputer','Repositori','r17',1,'Baik'),
+ A(18,'Terminal baca di tempat','Komputer','Baca di tempat','r14',4,'Baik'),A(19,'PC area komputer','Komputer','Akses internet','r18',10,'Baik'),A(20,'PC area komputer (lama)','Komputer','Akses internet','r18',2,'Rusak berat'),
+ A(21,'Proyektor','Multimedia','Proyektor','r18',2,'Baik'),A(22,'Smart TV 65 inci','Multimedia','Layar TV','r15',4,'Baik'),A(23,'Sound system','Multimedia','Sound system','r18',1,'Baik'),A(24,'Kamera dokumentasi','Multimedia','Kamera','r20',1,'Baik'),
+ A(25,'Scanner buku A3','Multimedia','Scanner','r20',1,'Rusak berat'),A(26,'Printer multifungsi','Multimedia','Printer','r22',2,'Baik'),A(27,'Perangkat video conference','Multimedia','Video conference','r15',1,'Baik'),
+ A(28,'CCTV','Keamanan','CCTV','r23',8,'Baik'),A(29,'APAR','Keamanan','APAR','r23',6,'Baik'),A(30,'Security gate','Keamanan','Security gate','r23',1,'Rusak ringan'),A(31,'Detektor asap','Keamanan','Detektor asap','r9',10,'Baik'),
+ A(32,'Alarm kebakaran','Keamanan','Alarm kebakaran','r23',1,'Baik'),A(33,'Rambu jalur evakuasi','Keamanan','Jalur evakuasi','r23',12,'Baik'),A(34,'Kotak P3K','Keamanan','P3K','r22',2,'Baik'),
+ A(35,'Toilet','Fasilitas umum','Toilet','r12',6,'Baik'),A(36,'Mushola','Fasilitas umum','Mushola','r23',1,'Baik'),A(37,'Loker pemustaka (80 pintu)','Fasilitas umum','Loker','r23',80,'Baik'),A(38,'Area parkir','Fasilitas umum','Parkir','r23',1,'Baik'),A(39,'Pantry','Fasilitas umum','Pantry','r20',1,'Baik'),
+];
+const FASUM7 = ['Toilet','Mushola','Loker','Parkir','Pantry','Ruang laktasi','Akses disabilitas'];
+const PERABOT_DASAR = ['Penyimpanan koleksi','Membaca','Layanan sirkulasi','Kerja pengolahan'];
+const KOMP_FUNGSI = ['Sirkulasi','OPAC','Referensi','Pengolahan','Repositori','Baca di tempat'];
+const LIC0 = [['Windows 11 Pro','Sistem operasi PC layanan','OEM',25,'Berlisensi'],['Microsoft Office 2021','Pengolahan dan administrasi','Volume license',12,'Berlisensi'],['SLiMS (otomasi perpustakaan)','Katalog dan sirkulasi','GPL v3',1,'Open source'],['Antivirus endpoint','Keamanan PC','Langganan tahunan',25,'Berlisensi'],['Adobe Acrobat Pro','Pengolahan PDF skripsi','—',3,'Tidak berlisensi'],['Zotero','Kelas literasi sitasi','AGPL',12,'Open source'],['Turnitin','Cek plagiarisme','Langganan institusi',1,'Berlisensi'],['CorelDRAW','Desain poster kegiatan','—',1,'Tidak berlisensi'],['QGIS','Area komputer (SIG)','GPL',12,'Open source']].map(([name,use,lic,seat,status],i)=>({id:i+1,name,use,lic,seat,status}));
+const STAFF = ['Yosep Nai Helly, S.SiT., M.A','Martinho Magno, S.Si.T','Ety Kusummanningsih, S.P., S.ST., M.M.','Sujilah, S.H','Lita Gunawati, S.E','Mujiana Suryanta','Sugiharto','Muhamad Irfan Yudistira, S.ST., M.Eng'];
+const L = ['a','b','c','d'];
+const OST = {4:['var(--success-soft)','var(--success)'],3:['var(--teal-50)','var(--teal-700)'],2:['var(--warning-soft)','#92400E'],1:['var(--danger-soft)','var(--danger)']};
+const BST = {Disahkan:['var(--success-soft)','var(--success)','circle-check'],Draf:['var(--warning-soft)','#92400E','file-clock'],Kedaluwarsa:['var(--danger-soft)','var(--danger)','calendar-x'],'Belum ada':['var(--slate-100)','var(--fg-3)','circle-dashed']};
+const fmtN = (n,d=0) => n.toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const T0 = new Date(); T0.setHours(0,0,0,0);
+const fmtD = d => d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+const initBukti = () => { const out = {}; IKD.forEach(([no,,mode,,,,doc],i)=>{
+  const st = i%7===3?'Belum ada':i%5===1?'Draf':i%11===4?'Kedaluwarsa':'Disahkan';
+  const st2 = i%6===2?'Belum ada':i%9===5?'Draf':'Disahkan';
+  const f = (name,status,file) => ({id:no+'-'+name.length, name, status, file: status==='Belum ada'?'—':file, by: status==='Belum ada'?'':'Martinho Magno', date: status==='Belum ada'?'':fmtD(new Date(T0.getTime()-(i%30+2)*864e5))});
+  const slug = 'IK'+no.replace('.','_');
+  out[no] = mode==='Otomatis'
+    ? [f('Rekap data dari sistem (dihasilkan otomatis)','Disahkan',`${slug}_rekap_sistem.pdf`), f(doc,st,`${slug}_bukti.pdf`)]
+    : [f(doc,st,`${slug}_bukti.pdf`), f(mode==='Manual'?'Catatan alasan pemilihan opsi':'Konfirmasi petugas atas data sistem',st2,`${slug}_konfirmasi.pdf`)];
+}); return out; };
+
+class Component extends DCLogic {
+  state = { page:'ruang', role:'koordinator', rooms:ROOMS0, assets:ASSETS0, lic:LIC0, manual:{}, alasan:{}, pic:{}, due:{}, bukti:initBukti(),
+    ikSel:null, kompF:0, ikQ:'', ikMode:'Semua', gapSel:{}, buktiF:'Semua', floor:2, roomSel:'r8', invTab:'Semua', toast:null, submitted:false, calcAt:new Date() };
+
+  toast(t) { this.setState({toast:t}); clearTimeout(this._t); this._t = setTimeout(()=>this.setState({toast:null}), 2600); }
+
+  computeM3() {
+    const s = this.state;
+    const luas = s.rooms.filter(r=>!r.luar).reduce((a,r)=>a+(+r.luas||0),0), per = luas/SIVITAS;
+    const dasar = ['koleksi','baca','kerja','layanan'].filter(j=>s.rooms.some(r=>!r.luar&&r.jenis===j)).length;
+    const pend = s.rooms.filter(r=>!r.luar&&r.jenis==='pendukung').length;
+    const units = s.assets.reduce((a,x)=>a+x.qty,0), baik = s.assets.filter(x=>x.kondisi==='Baik').reduce((a,x)=>a+x.qty,0), pctBaik = units?baik/units*100:0;
+    const works = x => x.kondisi!=='Rusak berat';
+    const perabot = s.assets.filter(x=>x.kat==='Perabot'&&works(x));
+    const pDasar = PERABOT_DASAR.filter(f=>perabot.some(x=>x.fungsi===f)).length;
+    const pPend = new Set(perabot.filter(x=>!PERABOT_DASAR.includes(x.fungsi)).map(x=>x.fungsi)).size;
+    const kf = KOMP_FUNGSI.filter(f=>s.assets.some(x=>x.kat==='Komputer'&&x.fungsi===f&&works(x))).length, pctK = kf/KOMP_FUNGSI.length*100;
+    const mm = new Set(s.assets.filter(x=>x.kat==='Multimedia'&&works(x)).map(x=>x.fungsi)).size;
+    const lic = s.lic.filter(l=>l.status!=='Tidak berlisensi').length, pctL = lic/s.lic.length*100;
+    const sec = new Set(s.assets.filter(x=>x.kat==='Keamanan'&&works(x)).map(x=>x.fungsi)).size;
+    const fas = FASUM7.filter(f=>s.assets.some(x=>x.kat==='Fasilitas umum'&&x.fungsi===f&&works(x)));
+    const pctOpt = p => p>75?4:p>60?3:p>40?2:1;
+    return {
+      luas, per, fasMissing:FASUM7.filter(f=>!fas.includes(f)),
+      '2.1':[`${fmtN(luas)} m² · ${fmtN(per,2)} m²/sivitas (${fmtN(SIVITAS)} sivitas)`, luas>750&&per>0.5?4:luas>=500&&per>=0.3?3:luas>=300&&per>=0.2?2:1, `Butuh ${fmtN(Math.max(0,Math.ceil(SIVITAS*0.5-luas)))} m² lagi untuk > 0,5 m²/sivitas, plus desain khusus.`],
+      '2.2':[`${dasar} ruang dasar + ${pend} ruang pendukung`, dasar===4&&pend>1?4:dasar===4&&pend===1?3:dasar===3?2:1, 'Lengkapi 4 ruang dasar dan minimal 2 ruang pendukung.'],
+      '2.3':[`${fmtN(pctBaik,1)}% unit berfungsi baik (${fmtN(baik)} dari ${fmtN(units)})`, pctOpt(pctBaik), 'Perbaiki atau ganti aset rusak sampai > 75% berfungsi baik.'],
+      '2.4':[`${pDasar} fungsi dasar + ${pPend} fungsi pendukung`, pDasar===4&&pPend>4?4:pDasar===4&&pPend>=3?3:pDasar===4&&pPend>=1?2:1, 'Lengkapi perabot pendukung sampai lebih dari 4 fungsi.'],
+      '2.5':[`${kf} dari ${KOMP_FUNGSI.length} fungsi layanan berkomputer (${fmtN(pctK)}%)`, pctK>75?4:pctK>50?3:pctK>25?2:1, 'Tambahkan komputer untuk fungsi layanan yang belum punya.'],
+      '2.7':[`${mm} jenis perangkat multimedia berfungsi`, mm>5?4:mm>=4?3:mm>=2?2:1, 'Perbaiki perangkat rusak atau tambah jenis perangkat baru.'],
+      '2.8':[`${lic} dari ${s.lic.length} aplikasi berlisensi/open source (${fmtN(pctL)}%)`, pctOpt(pctL), 'Ganti aplikasi tanpa lisensi dengan versi berlisensi atau open source.'],
+      '2.9':[`${sec} jenis sarana keamanan berfungsi`, sec>5?4:sec>=4?3:sec>=2?2:1, 'Tambah sarana keamanan atau keselamatan.'],
+      '2.10':[`${fas.length} dari 7 fasilitas umum`, fas.length>6?4:fas.length>=5?3:fas.length>=3?2:1, `Lengkapi: ${FASUM7.filter(f=>!fas.includes(f)).join(', ')||'—'}.`],
+    };
+  }
+
+  computeAll() {
+    const s = this.state, m3 = this.computeM3();
+    const need = SIVITAS/600, needT = SIVITAS/1200, pP = PUSTAKAWAN/need*100, pT = TEKNIS/needT*100;
+    const ratioOpt = p => p>75?4:p>50?3:p>25?2:1;
+    const calc = {...m3,
+      '4.3':[`${PUSTAKAWAN} pustakawan dari kebutuhan ${fmtN(need,1)} (${fmtN(pP)}%)`, ratioOpt(pP), `Tambah ${Math.max(0,Math.floor(need*0.75)+1-PUSTAKAWAN)} pustakawan agar rasio > 75% (1:600 anggota).`],
+      '4.4':[`${TEKNIS} tenaga teknis dari kebutuhan ${fmtN(needT,1)} (${fmtN(pT)}%)`, ratioOpt(pT), ''],
+    };
+    return IKD.map(([no,name,mode,value,score,opts,doc,src,act])=>{
+      const k = +no.split('.')[0], c = calc[no];
+      let v = c?c[0]:value, sc = c?c[1]:score, a = c?c[2]:act;
+      if (mode!=='Otomatis' && s.manual[no]) sc = s.manual[no];
+      return {no,name,mode,value:v,score:sc,auto:sc,opts:opts.split('|'),doc,src,act:a,k};
+    });
+  }
+
+  renderVals() {
+    const emb = !!this.props.embedded;
+    const s = emb ? {...this.state, page:this.props.section||'ruang', role:'koordinator'} : this.state, iks = this.computeAll();
+    const canEdit = s.role==='koordinator', canApprove = s.role==='kepala';
+    const guard = fn => (...args) => { if (this.state.role!=='koordinator') { this.toast('Mode baca saja. Perubahan data hanya oleh petugas aset.'); return; } return fn(...args); };
+    const kStats = KOMP.map(([n,name,bobot,icon])=>{ const list=iks.filter(i=>i.k===n); const score=list.reduce((a,i)=>a+i.score,0), max=list.length*4; return {n,name,bobot,icon,score,max,count:list.length,contrib:score/max*bobot,low:list.filter(i=>i.score<=2).length}; });
+    const NA = kStats.reduce((a,k)=>a+k.contrib,0);
+    const pred = na => na>=91?['A','Sangat baik']:na>=76?['B','Baik']:na>=60?['C','Cukup baik']:['–','Tidak terakreditasi'];
+    const [pl,plab] = pred(NA);
+    const gainOf = i => { const k=kStats[i.k-1]; return k.bobot/k.max; };
+    const kName = n => KOMP[n-1][1];
+    const gaps = iks.filter(i=>i.score<4).map(i=>({...i, gain:gainOf(i)})).sort((a,b)=>b.gain-a.gain||a.score-b.score);
+    const open = no => () => this.setState({ikSel:no});
+    const ostyle = sc => OST[sc];
+    const bOf = no => s.bukti[no]||[];
+    const bDoneOf = no => bOf(no).filter(b=>b.status==='Disahkan').length;
+    const readyIk = iks.filter(i=>bDoneOf(i.no)===bOf(i.no).length).length;
+    const allB = Object.entries(s.bukti).flatMap(([no,l])=>l.map(b=>({...b,no})));
+    const cnt = st => allB.filter(b=>b.status===st).length;
+
+    const setB = (no,id,patch) => this.setState({bukti:{...this.state.bukti,[no]:this.state.bukti[no].map(b=>b.id===id?{...b,...patch}:b)}});
+    const decoB = (b,no) => { const st=BST[b.status]; return {...b, bg:st[0], fg:st[1], icon:st[2], meta: b.status==='Belum ada'?'belum diunggah':`${b.by} · ${b.date}`,
+      canUpload: canEdit && b.status!=='Disahkan', canSah: canApprove && b.status==='Draf',
+      upload: e => { if (this.state.role!=='koordinator') return; const f=e.target.files[0]; if(!f) return; setB(no,b.id,{status:'Draf',file:f.name,by:s.role==='kepala'?'Yosep Nai Helly':'Martinho Magno',date:fmtD(new Date())}); this.toast('Bukti terunggah sebagai draf. Menunggu pengesahan kepala perpustakaan.'); },
+      sah: () => { setB(no,b.id,{status:'Disahkan'}); this.toast(`Bukti IK ${no} disahkan.`); }}; };
+
+    const pages = [['dasbor','Dasbor skor','gauge'],['ik','Indikator (56 IK)','list-checks'],['gap','Analisis gap','trending-up',gaps.length],['bukti','Bank bukti','folder-check',cnt('Draf')]];
+    const pagesM3 = [['ruang','Ruang & denah','layout-grid'],['inventaris','Inventaris & lisensi','boxes']];
+    const pagesOut = [['berkas','Berkas pengajuan','file-output']];
+    const titles = {dasbor:'Dasbor skor akreditasi',ik:'Indikator kunci',gap:'Analisis gap',bukti:'Bank bukti fisik',ruang:'Manajemen ruang & denah',inventaris:'Inventaris sarana & lisensi',berkas:'Berkas pengajuan SiPAPI'};
+    const mk = arr => arr.map(([id,label,icon,badge])=>{ const on=s.page===id; return {label,icon,go:()=>this.setState(id==='ruang'?{page:id, floor:2, roomSel:'r8'}:{page:id}),bg:on?'var(--teal-50)':'transparent',fg:on?'var(--teal-700)':'var(--fg-2)',fw:on?600:500,hasBadge:!!badge,badge}; });
+    const pg = {}; Object.keys(titles).forEach(k=>pg[k]=s.page===k);
+
+    // IK table
+    const q = s.ikQ.toLowerCase();
+    const ikRows = iks.filter(i=>(!s.kompF||i.k===s.kompF)&&(s.ikMode==='Semua'||i.mode===s.ikMode)&&(!q||(i.no+' '+i.name).toLowerCase().includes(q))).map(i=>{
+      const o=ostyle(i.score), d=bDoneOf(i.no), t=bOf(i.no).length;
+      return {...i, letter:L[4-i.score], oBg:o[0], oFg:o[1], modeLabel:i.mode==='Semi'?'Semi-otomatis':i.mode, mBg:i.mode==='Otomatis'?'var(--teal-50)':i.mode==='Semi'?'var(--warning-soft)':'var(--slate-100)', mFg:i.mode==='Otomatis'?'var(--teal-700)':i.mode==='Semi'?'#92400E':'var(--fg-2)',
+        bLabel:`${d}/${t} sah`, bFg:d===t?'var(--success)':'#92400E', bIcon:d===t?'circle-check':'circle-alert', open:open(i.no)}; });
+
+    // drawer
+    let ik = {};
+    const sel = iks.find(i=>i.no===s.ikSel);
+    if (sel) {
+      const o = ostyle(sel.score), g = gainOf(sel);
+      ik = {...sel, kompName:kName(sel.k), letter:L[4-sel.score], oBg:o[0], oFg:o[1], modeLabel:sel.mode==='Semi'?'semi-otomatis':sel.mode.toLowerCase(),
+        periode: /(3 thn|ekstensi|Pelestarian|Pengakuan|Anggaran|Dukungan akreditasi)/.test(sel.value+sel.name)?'jendela 3 tahun':'1 tahun terakhir',
+        gainLabel: sel.score<4?`+${fmtN(g,2)} NA jika naik satu opsi`:'Sudah opsi tertinggi',
+        opts: sel.opts.map((t,j)=>{ const sc=4-j, on=sc===sel.score; return {letter:L[j], text:t, score:sc, border:on?'var(--teal-400)':'var(--slate-200)', bg:on?'var(--teal-50)':'#fff', chip:on?'var(--teal-400)':'var(--slate-100)', chipFg:on?'#fff':'var(--fg-2)'}; }),
+        isAuto: sel.mode==='Otomatis', canSet: canEdit && sel.mode!=='Otomatis',
+        setLabel: sel.mode==='Manual'?'Pilih opsi (wajib dengan bukti dan alasan)':'Konfirmasi atau koreksi opsi dari data sistem',
+        setBtns: [4,3,2,1].map(sc=>{ const on=sc===sel.score; return {letter:L[4-sc], bg:on?'var(--teal-400)':'#fff', fg:on?'#fff':'var(--fg-1)', border:on?'var(--teal-400)':'var(--slate-200)', pick:guard(()=>{ this.setState({manual:{...this.state.manual,[sel.no]:sc}}); this.toast(`Opsi IK ${sel.no} diubah ke ${L[4-sc]}. Tercatat di jejak audit.`); })}; }),
+        alasan: s.alasan[sel.no]||'', bukti: bOf(sel.no).map(b=>decoB(b,sel.no)), bDone:bDoneOf(sel.no), bTotal:bOf(sel.no).length,
+        pic: s.pic[sel.no] || STAFF[(+sel.no.replace('.',''))%STAFF.length], due: s.due[sel.no] || '2026-11-30'};
+    }
+
+    // M3
+    const m3 = this.computeM3();
+    const ikMini = no => { const i=iks.find(x=>x.no===no), o=ostyle(i.score); return {no, name:i.name, value:i.value, letter:L[4-i.score], oBg:o[0], oFg:o[1], open:open(no)}; };
+    const roomOf = id => s.rooms.find(r=>r.id===id) || {};
+    const assetsIn = id => s.assets.filter(a=>a.room===id);
+    const KST = {Baik:['var(--success-soft)','var(--success)'],'Rusak ringan':['var(--warning-soft)','#92400E'],'Rusak berat':['var(--danger-soft)','var(--danger)']};
+    const decoRoom = r => { const j=JENIS[r.jenis], st=JSTYLE[j[1]]; return {...r, jenisLabel:j[0], bg:st[0], border:st[1], fg:st[2], assetCount:assetsIn(r.id).length}; };
+    const floorRooms = s.rooms.filter(r=>r.floor===s.floor);
+    const rs = s.rooms.find(r=>r.id===s.roomSel);
+    const setRoom = (id,patch) => this.state.role!=='koordinator' ? null : this.setState({rooms:this.state.rooms.map(r=>r.id===id?{...r,...patch}:r)});
+    const setA = (id,fn) => this.setState({assets:this.state.assets.map(x=>x.id===id?fn(x):x)});
+    const room = rs ? {...decoRoom(rs), assets:assetsIn(rs.id).map(a=>({...a, bg:KST[a.kondisi][0], fg:KST[a.kondisi][1],
+        inc:()=>setA(a.id,x=>({...x,qty:x.qty+1})), dec:()=>setA(a.id,x=>({...x,qty:Math.max(1,x.qty-1)})),
+        del:()=>{ this.setState({assets:this.state.assets.filter(x=>x.id!==a.id)}); this.toast(`${a.name} dihapus dari ${rs.name}.`); }})), noAssets:!assetsIn(rs.id).length,
+      onLuas:e=>setRoom(rs.id,{luas:Math.max(0,parseFloat(e.target.value)||0)}), onJenis:e=>setRoom(rs.id,{jenis:e.target.value})} : {};
+
+    const FK = {Perabot:[...new Set([...PERABOT_DASAR, ...s.assets.filter(x=>x.kat==='Perabot').map(x=>x.fungsi)])], Komputer:[...new Set([...KOMP_FUNGSI, ...s.assets.filter(x=>x.kat==='Komputer').map(x=>x.fungsi)])], Fasilitas_umum:FASUM7};
+    ['Multimedia','Keamanan'].forEach(k=>FK[k]=[...new Set(s.assets.filter(x=>x.kat===k).map(x=>x.fungsi))]);
+    const fOf = k => FK[k.replace(' ','_')]||FK[k]||[];
+    const f0 = s.af||{};
+    const setF = p => this.setState({af:{...this.state.af,...p}});
+    const afKat = f0.kat||'Perabot', afFungsi = f0.fungsi||fOf(afKat)[0]||'';
+    const af = {isOpen:!!s.af, closed:!s.af, name:f0.name||'', kat:afKat, fungsi:afFungsi, qty:f0.qty??1, kondisi:f0.kondisi||'Baik', tahun:f0.tahun??new Date().getFullYear(), kode:f0.kode||'',
+      kats:['Perabot','Komputer','Multimedia','Keamanan','Fasilitas umum'], fungsis:fOf(afKat),
+      open:()=>this.setState({af:{}}), close:()=>this.setState({af:null}),
+      onName:e=>setF({name:e.target.value}), onKat:e=>setF({kat:e.target.value, fungsi:fOf(e.target.value)[0]||''}), onFungsi:e=>setF({fungsi:e.target.value}),
+      onQty:e=>setF({qty:Math.max(1,parseInt(e.target.value)||1)}), onKondisi:e=>setF({kondisi:e.target.value}), onTahun:e=>setF({tahun:parseInt(e.target.value)||''}), onKode:e=>setF({kode:e.target.value}),
+      submit:e=>{ e.preventDefault(); if(!rs||!(f0.name||'').trim()) return; const as=this.state.assets; const id=Math.max(0,...as.map(x=>x.id))+1;
+        this.setState({af:null, assets:[...as, {...A(id,f0.name.trim(),afKat,afFungsi,rs.id,f0.qty??1,f0.kondisi||'Baik'), tahun:f0.tahun, kode:f0.kode}]});
+        this.toast(`${f0.name.trim()} × ${f0.qty??1} ditambahkan ke ${rs.name}. Skor IK sarana dihitung ulang.`); }};
+    const invKats = ['Semua','Perabot','Komputer','Multimedia','Keamanan','Fasilitas umum','Lisensi'];
+    const assetRows = s.assets.filter(a=>s.invTab==='Semua'||a.kat===s.invTab).map(a=>{ const r=roomOf(a.room), k=KST[a.kondisi]; return {...a, floor:r.floor, roomName:r.name, fg:k[1], border:k[1],
+      onKondisi:guard(e=>{ this.setState({assets:this.state.assets.map(x=>x.id===a.id?{...x,kondisi:e.target.value}:x)}); this.toast('Kondisi diperbarui. Skor IK sarana dihitung ulang.'); })}; });
+    const LST = {Berlisensi:'var(--success)','Open source':'var(--teal-700)','Tidak berlisensi':'var(--danger)'};
+
+    // berkas
+    const totalJudul = 18824;
+    const checks = [
+      [readyIk===56,'Semua IK punya bukti tersahkan',`${readyIk} dari 56 IK lengkap · ${cnt('Draf')} draf menunggu pengesahan`],
+      [cnt('Kedaluwarsa')===0,'Tidak ada bukti kedaluwarsa',`${cnt('Kedaluwarsa')} bukti perlu diperbarui`],
+      [iks.filter(i=>i.mode==='Manual').every(i=>(s.alasan[i.no]||'').trim()||s.manual[i.no]===undefined),'IK manual disertai alasan','Isi alasan untuk setiap opsi manual yang diubah'],
+      [true,'Formulir terisi dari data sistem','Formulir Pengajuan, Data Profil, dan Pernyataan Sertifikat siap dihasilkan'],
+    ].map(([ok,label,detail])=>({label,detail,icon:ok?'circle-check':'circle-alert',bg:ok?'var(--success-soft)':'var(--warning-soft)',fg:ok?'var(--success)':'#92400E',ok}));
+    const cannotSubmit = !canApprove || s.submitted || !checks.every(c=>c.ok);
+    const dl = n => () => this.toast(`${n} sedang dihasilkan.`);
+
+    const marks = [[60,'C 60'],[76,'B 76'],[91,'A 91']];
+    return {
+      nav:[{label:'Sarana & aset',items:mk(pagesM3)}],
+      showShell:!emb, gridCols:emb?'minmax(0,1fr)':'240px minmax(0,1fr)', minH:emb?'0':'100vh', rootBg:emb?'transparent':'var(--slate-50)', mainPad:emb?'0':'28px',
+      pageTitle:titles[s.page], pg, readOnly:!canEdit, isAsesor:!canEdit, roNote: s.role==='kepala' ? 'Mode baca saja. Kepala perpustakaan bisa melihat semua data ruang dan aset, tetapi tidak bisa mengubahnya.' : 'Mode baca saja. Pimpinan dan asesor bisa melihat data ruang dan aset, tetapi tidak bisa mengubahnya.',
+      roles:[['kepala','Kepala','Baca saja, mengesahkan bukti, menyetujui pengajuan'],['koordinator','Petugas aset','Mengubah data ruang, aset, dan lisensi'],['asesor','Asesor','Baca saja']].map(([id,label,hint])=>{ const on=s.role===id; return {label,hint,bg:on?'#fff':'transparent',fg:on?'var(--fg-1)':'var(--fg-3)',sh:on?'var(--shadow-sm)':'none',pick:()=>this.setState({role:id})}; }),
+      recalc:()=>{ this.setState({calcAt:new Date()}); this.toast('56 IK dihitung ulang dari data terbaru.'); },
+      naLabel:fmtN(NA,2), naPct:Math.min(100,NA), predikat:{letter:pl,label:plab}, naMarks:marks.map(([x,label])=>({x,label})),
+      naNote: NA>=91 ? 'Sudah di rentang predikat A. Jaga bukti tetap tersahkan sampai visitasi.' : `Butuh ${fmtN(91-NA,2)} poin lagi untuk predikat A. Komponen Pelayanan (bobot 35) memberi tambahan terbesar per IK.`,
+      modeStats:[['Otomatis',iks.filter(i=>i.mode==='Otomatis').length],['Semi-otomatis',iks.filter(i=>i.mode==='Semi').length],['Manual',iks.filter(i=>i.mode==='Manual').length]].map(([label,v])=>({label,v})),
+      readyIk, readyPct:Math.round(readyIk/56*100),
+      buktiSummary:['Disahkan','Draf','Kedaluwarsa','Belum ada'].map(k=>({label:k,v:cnt(k),bg:BST[k][0],fg:BST[k][1]})),
+      komps:kStats.map(k=>({...k, contrib:fmtN(k.contrib,2), pct:Math.round(k.score/k.max*100), bar:k.score/k.max>=0.8?'var(--teal-400)':k.score/k.max>=0.65?'var(--marigold)':'var(--sunset)', lowLabel:k.low?`${k.low} IK di opsi c/d`:'Tidak ada opsi c/d', lowFg:k.low?'var(--sunset)':'var(--success)', open:()=>this.setState({page:'ik',kompF:k.n})})),
+      gapTop:gaps.slice(0,5).map(g=>({...g, from:L[4-g.score], to:L[3-g.score], gain:fmtN(g.gain,2), act:g.act||'—', open:open(g.no)})),
+      goGap:()=>this.setState({page:'gap'}), goBerkas:()=>this.setState({page:'berkas'}),
+      ikQ:s.ikQ, onIkQ:e=>this.setState({ikQ:e.target.value}), ikMode:s.ikMode, onIkMode:e=>this.setState({ikMode:e.target.value}),
+      kompTabs:[[0,'Semua'],...KOMP.map(([n,name])=>[n,`${n}. ${name}`])].map(([n,label])=>{ const on=s.kompF===n; return {label,bg:on?'var(--teal-400)':'#fff',fg:on?'#fff':'var(--fg-2)',border:on?'var(--teal-400)':'var(--slate-200)',pick:()=>this.setState({kompF:n})}; }),
+      ikRows, ikEmpty:!ikRows.length,
+      hasIk:!!sel, ik, closeIk:()=>this.setState({ikSel:null}), stop:e=>e.stopPropagation(),
+      onAlasan:e=>s.role!=='koordinator'?null:this.setState({alasan:{...this.state.alasan,[s.ikSel]:e.target.value}}),
+      onPic:e=>s.role!=='koordinator'?null:this.setState({pic:{...this.state.pic,[s.ikSel]:e.target.value}}), onDue:e=>s.role!=='koordinator'?null:this.setState({due:{...this.state.due,[s.ikSel]:e.target.value}}), staffOpts:STAFF,
+      gapRows:gaps.map(g=>({...g, kompName:kName(g.k), from:L[4-g.score], to:L[3-g.score], gain:fmtN(g.gain,2), act:g.act||'—', on:!!s.gapSel[g.no], cbBg:s.gapSel[g.no]?'var(--teal-500)':'#fff', cbBorder:s.gapSel[g.no]?'var(--teal-500)':'var(--slate-300)', cbOp:s.gapSel[g.no]?1:0, toggle:()=>this.setState({gapSel:{...this.state.gapSel,[g.no]:!this.state.gapSel[g.no]}}), open:open(g.no)})),
+      simNa:fmtN(NA+gaps.filter(g=>s.gapSel[g.no]).reduce((a,g)=>a+g.gain,0),2), simPred:pred(NA+gaps.filter(g=>s.gapSel[g.no]).reduce((a,g)=>a+g.gain,0))[0], toA:NA>=91?'Sudah A':`${fmtN(91-NA,2)} poin`,
+      buktiTabs:['Semua','Draf','Belum ada','Kedaluwarsa','Disahkan'].map(k=>{ const on=s.buktiF===k; return {label:`${k} (${k==='Semua'?allB.length:cnt(k)})`,bg:on?'var(--teal-400)':'#fff',fg:on?'#fff':'var(--fg-2)',border:on?'var(--teal-400)':'var(--slate-200)',pick:()=>this.setState({buktiF:k})}; }),
+      buktiRows:allB.filter(b=>s.buktiF==='Semua'||b.status===s.buktiF).map(b=>({...decoB(b,b.no), no:b.no, ikName:IKD.find(x=>x[0]===b.no)[1], open:open(b.no)})),
+      floor:s.floor, floorLuas:fmtN(floorRooms.reduce((a,r)=>a+(+r.luas||0),0)),
+      floors:[1,2,3].map(f=>{ const on=s.floor===f; return {label:`Lantai ${f}`,bg:on?'#fff':'transparent',fg:on?'var(--fg-1)':'var(--fg-3)',sh:on?'var(--shadow-sm)':'none',pick:()=>this.setState({floor:f, roomSel:s.rooms.find(r=>r.floor===f).id})}; }),
+      roomBoxes:floorRooms.map(r=>{ const d=decoRoom(r), on=r.id===s.roomSel; const isVoid = r.name==='Void', locked = isVoid || r.name==='Tangga'; return {...d, isVoid:locked, luasLabel:r.luas?`${r.luas} m²`:'—', bw:on?'3px':'2px', bstyle:isVoid?'dashed':'solid', sh:'none', border:d.border, cursor:locked?'default':'pointer', glow:`color-mix(in srgb, ${d.border} 70%, transparent)`, anim:on?'roomglow 1.6s ease-in-out infinite':'none', z:on?2:1, pick:locked?undefined:()=>this.setState({roomSel:r.id})}; }),
+      legend:[['Ruang dasar','d'],['Ruang pendukung','p'],['Fasilitas umum','f'],['Non-layanan','n']].map(([label,k])=>({label,bg:JSTYLE[k][0],border:JSTYLE[k][1]})),
+      ruangKpis:[['Luas perpustakaan',`${fmtN(m3.luas)} m²`,'Lantai 2–3 · lantai 1 bukan area perpustakaan'],['Luas per sivitas',`${fmtN(m3.per,2)} m²`,`${fmtN(SIVITAS)} sivitas · syarat a > 0,5`],['Ruang dasar',`${['koleksi','baca','kerja','layanan'].filter(j=>s.rooms.some(r=>!r.luar&&r.jenis===j)).length} / 4`,'koleksi, baca, kerja, layanan'],['Ruang pendukung',s.rooms.filter(r=>!r.luar&&r.jenis==='pendukung').length,'diskusi, IT, multimedia, dll']].map(([label,v,sub])=>({label,v,sub})),
+      hasRoom:!!rs, room, af, canEditRoom:canEdit, jenisOpts:Object.entries(JENIS).map(([v,[label]])=>({v,label})),
+      ruangIk:['2.1','2.2'].map(ikMini),
+      roomRows:s.rooms.filter(r=>r.name!=='Void'&&r.name!=='Tangga').map(r=>({...decoRoom(r), rowBg:r.id===s.roomSel?'var(--teal-50)':'#fff', pick:()=>this.setState({floor:r.floor, roomSel:r.id, af:null})})),
+      invIk:['2.3','2.4','2.5','2.7','2.8','2.9','2.10'].map(ikMini),
+      invTabs:invKats.map(k=>{ const on=s.invTab===k; return {label:k,bg:on?'var(--teal-400)':'transparent',fg:on?'#fff':'var(--fg-2)',pick:()=>this.setState({invTab:k})}; }),
+      isLisensi:s.invTab==='Lisensi', isAset:s.invTab!=='Lisensi', assetRows,
+      licRows:s.lic.map(l=>({...l, fg:LST[l.status], border:LST[l.status], onStatus:guard(e=>{ this.setState({lic:this.state.lic.map(x=>x.id===l.id?{...x,status:e.target.value}:x)}); this.toast('Status lisensi diperbarui. IK 2.8 dihitung ulang.'); })})),
+      hasMissingFasum:!!m3.fasMissing.length && (s.invTab==='Semua'||s.invTab==='Fasilitas umum'), missingFasum:m3.fasMissing.join(', '),
+      addFasum:m3.fasMissing.map(f=>({label:f.toLowerCase(), add:guard(()=>{ this.setState({assets:[...this.state.assets, A(Date.now(),f==='Akses disabilitas'?'Ramp dan jalur pemandu disabilitas':f,'Fasilitas umum',f,f==='Ruang laktasi'?'r10':'r23',1,'Baik')]}); this.toast(`${f} tercatat. IK 2.10 dihitung ulang.`); })})),
+      docs:[['file-text','Formulir pengajuan','Identitas lembaga dan permohonan akreditasi, terisi dari data profil.',['PDF','DOCX']],['id-card','Data profil perpustakaan','Luas, koleksi, tenaga, sivitas, dan jam layanan dari data sistem.',['PDF','DOCX']],['award','Pernyataan penulisan sertifikat','Nama lembaga dan kepala perpustakaan sesuai penulisan di sertifikat.',['PDF','DOCX']],['folder-archive','Paket bukti (ZIP)','Bukti tersahkan, tersusun per komponen dan nomor IK untuk SiPAPI.',['Unduh ZIP','Snapshot']]]
+        .map(([icon,name,desc,btns])=>({icon,name,desc,btns:btns.map(b=>({label:b, go: b==='Snapshot' ? ()=>this.toast(`Snapshot penilaian ${fmtD(new Date())} disimpan (NA ${fmtN(NA,2)}).`) : dl(`${name} (${b})`)}))})),
+      todayLabel:fmtD(new Date()),
+      profil:[['Nama perpustakaan','Perpustakaan Politeknik Agraria'],['Lembaga induk','Politeknik Agraria (STPN), Kementerian ATR/BPN'],['Alamat','Jl. Tata Bumi No. 5, Banyuraden, Gamping, Sleman, D.I. Yogyakarta'],['Kepala perpustakaan','Yosep Nai Helly, S.SiT., M.A'],['Luas gedung',`${fmtN(m3.luas)} m² (3 lantai, ${s.rooms.length} ruang)`],['Luas per sivitas',`${fmtN(m3.per,2)} m²`],['Jumlah sivitas',`${fmtN(SIVITAS)} (2.950 mahasiswa, 148 dosen, 182 tendik)`],['Jumlah koleksi',`${fmtN(totalJudul)} judul · 42.354 eksemplar`],['Jenis koleksi','9 jenis'],['Pustakawan',`${PUSTAKAWAN} orang`],['Tenaga teknis',`${TEKNIS} orang`],['Jam layanan','44,5 jam per minggu'],['Nilai akhir simulasi',`${fmtN(NA,2)} (${pl} · ${plab})`]].map(([k,v])=>({k,v})),
+      checks, cannotSubmit, submitBg:cannotSubmit?'var(--slate-300)':'var(--teal-400)',
+      submitLabel: s.submitted?'Pengajuan disetujui':!canApprove?'Persetujuan oleh kepala perpustakaan':'Setujui pengajuan',
+      approveSubmit:()=>{ this.setState({submitted:true}); this.toast('Pengajuan disetujui. Koordinator bisa mengunggah berkas ke SiPAPI.'); },
+      hasToast:!!s.toast, toast:s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

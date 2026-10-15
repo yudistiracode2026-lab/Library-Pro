@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/sandbox-indonesia-design-system-99b416d5-da5b-4c8d-8045-e7b27db11bfd/colors_and_type.css">
+  
+  <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+  <script src="_ds/sandbox-indonesia-design-system-99b416d5-da5b-4c8d-8045-e7b27db11bfd/_ds_bundle.js"></script>
+  <script src="./image-slot.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--slate-50); }
+    a { color: var(--teal-600); }
+    a:hover { color: var(--teal-500); }
+    * { box-sizing: border-box; }
+    input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; margin: 0; flex: none; border: 1.5px solid var(--slate-300); border-radius: 5px; background: #fff center / 14px no-repeat; cursor: pointer; }
+    input[type="checkbox"]:checked { background-color: var(--teal-500); border-color: var(--teal-500); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E"); }
+    input[type="checkbox"]:focus-visible { outline: 3px solid var(--teal-400); outline-offset: 2px; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:var(--slate-50); color:var(--fg-1); font-family:var(--font-body);">
+
+  <!-- NAV -->
+  <header style="position:sticky; top:0; z-index:40; background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--slate-200);">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px; height:68px; display:flex; align-items:center; gap:24px;">
+      <a href="#beranda" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--fg-1);">
+        <img src="assets/logo-stpn.png" alt="Logo Politeknik Agraria STPN" style="width:46px; height:46px; object-fit:contain; flex:none; background:#fff; border-radius:999px;">
+        <span style="display:flex; flex-direction:column; line-height:1.15;">
+          <span style="font-family:var(--font-display); font-weight:800; font-size:15px; letter-spacing:.04em;">PUSTAGRA</span>
+          <span style="font-size:12px; color:var(--fg-3);">Perpustakaan Politeknik Agraria STPN</span>
+        </span>
+      </a>
+      <nav style="display:flex; gap:4px; margin-left:auto; flex-wrap:wrap;">
+        <sc-for list="{{ navLinks }}" as="l" hint-placeholder-count="6">
+          <a href="{{ l.href }}" style="padding:8px 12px; border-radius:8px; font-size:14px; font-weight:500; color:var(--fg-2); text-decoration:none;" style-hover="background:var(--teal-50); color:var(--teal-700);">{{ l.label }}</a>
+        </sc-for>
+      </nav>
+      <div style="display:flex; gap:8px;">
+        <a href="Portal Pemustaka.dc.html" style="display:flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:12px; background:var(--teal-400); color:#fff; font-weight:600; font-size:14px; text-decoration:none; box-shadow:var(--shadow-teal);" style-hover="background:var(--teal-500); color:#fff;"><i class="icon-log-in"></i>Masuk pemustaka</a>
+        <a href="Portal Staf.dc.html" style="display:flex; align-items:center; gap:8px; height:40px; padding:0 14px; border-radius:12px; border:1px solid var(--slate-200); background:#fff; color:var(--fg-2); font-weight:600; font-size:14px; text-decoration:none;" style-hover="background:var(--slate-100); color:var(--fg-1);"><i class="icon-shield-check"></i>Staf</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section id="beranda" style="max-width:1200px; margin:0 auto; padding:64px 24px 48px; display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:48px; align-items:center;">
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      <span style="display:inline-flex; align-self:flex-start; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; background:var(--teal-50); color:var(--teal-700); font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;"><i class="icon-map-pin"></i>Yogyakarta · sejak 1963</span>
+      <h1 style="margin:0; font-family:var(--font-display); font-size:52px; line-height:1.08; letter-spacing:-.02em; font-weight:800; text-wrap:balance;">Sumber pengetahuan pertanahan dan agraria Indonesia</h1>
+      <p style="margin:0; font-size:18px; line-height:1.65; color:var(--fg-2); max-width:520px; text-wrap:pretty;">Cari buku, skripsi, jurnal, dan peta koleksi Perpustakaan Politeknik Agraria. Pinjam, perpanjang, dan urus bebas pustaka langsung dari portal pemustaka.</p>
+      <form onSubmit="{{ submitHero }}" style="display:flex; gap:8px; background:#fff; padding:8px; border-radius:16px; box-shadow:var(--shadow-lg); max-width:560px;">
+        <div style="flex:1; display:flex; align-items:center; gap:10px; padding:0 12px; color:var(--fg-3);">
+          <i class="icon-search" style="font-size:20px;"></i>
+          <input value="{{ q }}" onInput="{{ onQ }}" placeholder="Judul, pengarang, subjek, atau ISBN" style="flex:1; border:0; outline:0; font-size:16px; font-family:var(--font-body); height:44px; background:transparent; color:var(--fg-1); min-width:0;">
+        </div>
+        <button type="submit" style="height:48px; padding:0 20px; border:0; border-radius:12px; background:var(--teal-400); color:#fff; font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:var(--teal-500);" style-active="background:var(--teal-600); transform:scale(.98);">Cari di OPAC</button>
+      </form>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:13px; color:var(--fg-3);">
+        <span>Populer:</span>
+        <sc-for list="{{ popular }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.go }}" style="border:1px solid var(--slate-200); background:#fff; border-radius:999px; padding:4px 12px; font-size:13px; color:var(--fg-2); cursor:pointer;" style-hover="background:var(--teal-50); border-color:var(--teal-200); color:var(--teal-700);">{{ p.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="position:relative; height:440px;">
+      <div style="position:absolute; inset:0 0 40px 40px; border-radius:24px; overflow:hidden; box-shadow:var(--shadow-xl);">
+        <image-slot id="hero-gedung" shape="rect" placeholder="Foto gedung / ruang baca perpustakaan"></image-slot>
+      </div>
+      <div style="position:absolute; left:0; bottom:0; background:#fff; border-radius:16px; padding:16px 20px; box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:12px; background:{{ openBg }}; color:{{ openFg }}; display:grid; place-items:center; font-size:22px;"><i class="icon-clock"></i></span>
+        <div>
+          <div style="font-weight:700; font-family:var(--font-display);">{{ openLabel }}</div>
+          <div style="font-size:13px; color:var(--fg-3);">{{ openSub }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section style="max-width:1200px; margin:0 auto; padding:0 24px 64px;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px;">
+      <sc-for list="{{ stats }}" as="s" hint-placeholder-count="6">
+        <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:10px;">
+          <span style="width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background:{{ s.bg }}; color:{{ s.fg }}; font-size:18px;"><i class="icon-{{ s.icon }}"></i></span>
+          <div style="font-family:var(--font-display); font-size:28px; font-weight:800; letter-spacing:-.02em;">{{ s.value }}</div>
+          <div style="font-size:13px; color:var(--fg-3);">{{ s.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- OPAC -->
+  <section id="opac" style="background:#fff; border-top:1px solid var(--slate-200); border-bottom:1px solid var(--slate-200);">
+    <div style="max-width:1200px; margin:0 auto; padding:72px 24px; display:flex; flex-direction:column; gap:28px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <span style="font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-600);">OPAC · katalog daring</span>
+          <h2 style="margin:0; font-family:var(--font-display); font-size:36px; font-weight:700; letter-spacing:-.01em;">Cari koleksi</h2>
+        </div>
+        <span style="font-size:14px; color:var(--fg-3);">{{ resultCount }} hasil ditemukan</span>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <div style="flex:1 1 320px; display:flex; align-items:center; gap:10px; height:48px; padding:0 14px; border:1.5px solid var(--slate-300); border-radius:12px; background:#fff; color:var(--fg-3);">
+          <i class="icon-search"></i>
+          <input value="{{ q }}" onInput="{{ onQ }}" placeholder="Ketik kata kunci…" style="flex:1; border:0; outline:0; font-size:15px; font-family:var(--font-body); background:transparent; color:var(--fg-1); min-width:0;">
+        </div>
+        <select value="{{ field }}" onChange="{{ onField }}" style="height:48px; padding:0 14px; border:1.5px solid var(--slate-300); border-radius:12px; font-family:var(--font-body); font-size:14px; background:#fff; color:var(--fg-1);">
+          <option value="all">Semua bidang</option>
+          <option value="title">Judul</option>
+          <option value="author">Pengarang</option>
+          <option value="subject">Subjek</option>
+          <option value="isbn">ISBN</option>
+        </select>
+        <select value="{{ opacType }}" onChange="{{ onType }}" style="height:48px; padding:0 14px; border:1.5px solid var(--slate-300); border-radius:12px; font-family:var(--font-body); font-size:14px; background:#fff; color:var(--fg-1);">
+          <option value="all">Semua jenis</option>
+          <option value="Buku">Buku</option>
+          <option value="Skripsi">Skripsi</option>
+          <option value="Jurnal">Jurnal</option>
+          <option value="Peta">Peta</option>
+        </select>
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px; color:var(--fg-2); cursor:pointer;">
+          <input type="checkbox" checked="{{ availOnly }}" onChange="{{ toggleAvail }}" style="width:18px; height:18px; accent-color:var(--teal-500);">Hanya yang tersedia
+        </label>
+      </div>
+      <div style="display:flex; flex-direction:column; border:1px solid var(--slate-200); border-radius:16px; overflow:hidden;">
+        <sc-for list="{{ results }}" as="b" hint-placeholder-count="5">
+          <div style="display:grid; grid-template-columns:56px minmax(0,1fr) auto; gap:20px; align-items:center; padding:16px 20px; border-bottom:1px solid var(--slate-200); background:#fff;" style-hover="background:var(--slate-50);">
+            <div style="width:56px; height:76px; border-radius:6px; background:{{ b.color }}; color:{{ b.ink }}; padding:6px; font-size:8px; font-weight:700; font-family:var(--font-display); line-height:1.15; overflow:hidden; box-shadow:var(--shadow-sm);">{{ b.title }}</div>
+            <div style="display:flex; flex-direction:column; gap:4px; min-width:0;">
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--slate-100); color:var(--fg-2);">{{ b.type }}</span>
+                <span style="font-family:var(--font-mono); font-size:12px; color:var(--fg-3);">{{ b.call }}</span>
+              </div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:17px;">{{ b.title }}</div>
+              <div style="font-size:14px; color:var(--fg-3);">{{ b.author }} · {{ b.publisher }}, {{ b.year }}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end;">
+              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                <span style="font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:{{ b.availBg }}; color:{{ b.availFg }};">{{ b.availLabel }}</span>
+                <span style="font-size:12px; color:var(--fg-3); display:flex; align-items:center; gap:4px;"><i class="icon-map-pin"></i>Rak {{ b.rak }}</span>
+              </div>
+              <button onClick="{{ b.open }}" style="height:40px; padding:0 14px; border-radius:12px; border:1px solid var(--slate-200); background:#fff; font-weight:600; font-size:14px; color:var(--fg-1); cursor:pointer;" style-hover="background:var(--teal-50); border-color:var(--teal-200); color:var(--teal-700);">Detail</button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:48px; text-align:center; color:var(--fg-3); display:flex; flex-direction:column; gap:8px; align-items:center;">
+            <i class="icon-search-x" style="font-size:28px;"></i>
+            <div>Belum ada koleksi yang cocok. Coba kata kunci lain, ya.</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERI KLASIFIKASI -->
+  <section id="koleksi" style="max-width:1200px; margin:0 auto; padding:80px 24px; display:flex; flex-direction:column; gap:28px;">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <span style="font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-600);">Galeri koleksi</span>
+      <h2 style="margin:0; font-family:var(--font-display); font-size:36px; font-weight:700;">Jelajahi berdasarkan klasifikasi DDC</h2>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <sc-for list="{{ classTabs }}" as="c" hint-placeholder-count="10">
+        <button onClick="{{ c.pick }}" style="display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; border:1px solid {{ c.border }}; background:{{ c.bg }}; color:{{ c.fg }}; font-size:14px; font-weight:500; cursor:pointer;">
+          <span style="font-family:var(--font-mono); font-size:12px;">{{ c.code }}</span>{{ c.name }}
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:24px;">
+      <sc-for list="{{ gallery }}" as="b" hint-placeholder-count="6">
+        <button onClick="{{ b.open }}" style="display:flex; flex-direction:column; gap:10px; border:0; background:transparent; padding:0; text-align:left; cursor:pointer; font-family:var(--font-body);" style-hover="transform:translateY(-2px);">
+          <div style="aspect-ratio:2/3; width:100%; border-radius:8px; background:{{ b.color }}; color:{{ b.ink }}; padding:14px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow-md);">
+            <span style="font-family:var(--font-mono); font-size:10px; opacity:.85;">{{ b.call }}</span>
+            <span style="font-family:var(--font-display); font-weight:800; font-size:15px; line-height:1.2;">{{ b.title }}</span>
+            <span style="font-size:11px; opacity:.85;">{{ b.author }}</span>
+          </div>
+          <div style="font-size:14px; font-weight:600; color:var(--fg-1); line-height:1.3;">{{ b.title }}</div>
+          <div style="font-size:12px; color:var(--fg-3);">{{ b.year }} · {{ b.availLabel }}</div>
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- FASILITAS -->
+  <section id="fasilitas" style="background:var(--teal-50);">
+    <div style="max-width:1200px; margin:0 auto; padding:80px 24px; display:flex; flex-direction:column; gap:28px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span style="font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-700);">Fasilitas</span>
+        <h2 style="margin:0; font-family:var(--font-display); font-size:36px; font-weight:700;">Ruang untuk membaca, berdiskusi, dan meneliti</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
+        <sc-for list="{{ facilities }}" as="f" hint-placeholder-count="6">
+          <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); display:flex; flex-direction:column;">
+            <div style="height:160px;"><image-slot id="{{ f.slot }}" shape="rect" placeholder="{{ f.ph }}"></image-slot></div>
+            <div style="padding:20px; display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-weight:700; font-size:17px;"><i class="icon-{{ f.icon }}" style="color:var(--teal-600);"></i>{{ f.name }}</div>
+              <div style="font-size:14px; color:var(--fg-3); line-height:1.55;">{{ f.desc }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAYANAN + JADWAL -->
+  <section id="layanan" style="max-width:1200px; margin:0 auto; padding:80px 24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:48px;">
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span style="font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-600);">Layanan</span>
+        <h2 style="margin:0; font-family:var(--font-display); font-size:36px; font-weight:700;">Apa yang bisa kami bantu</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+        <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+          <div style="display:flex; gap:12px; padding:16px; border-radius:12px; background:#fff; border:1px solid var(--slate-200);">
+            <span style="width:36px; height:36px; flex:none; border-radius:10px; background:var(--teal-50); color:var(--teal-700); display:grid; place-items:center;"><i class="icon-{{ s.icon }}"></i></span>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <div style="font-weight:600; font-size:15px;">{{ s.name }}</div>
+              <div style="font-size:13px; color:var(--fg-3); line-height:1.5;">{{ s.desc }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div id="jadwal" style="display:flex; flex-direction:column; gap:24px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span style="font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-600);">Jadwal layanan</span>
+        <h2 style="margin:0; font-family:var(--font-display); font-size:36px; font-weight:700;">Jam buka</h2>
+      </div>
+      <div style="background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); overflow:hidden;">
+        <sc-for list="{{ schedule }}" as="d" hint-placeholder-count="5">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--slate-200); background:{{ d.bg }};">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-weight:600;">{{ d.day }}</span>
+              <sc-if value="{{ d.today }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--teal-400); color:#fff;">Hari ini</span></sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+              <span style="font-family:var(--font-mono); font-size:14px; color:{{ d.fg }};">{{ d.hours }}</span>
+              <span style="font-size:12px; color:var(--fg-3);">{{ d.note }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:12px; padding:16px; border-radius:12px; background:var(--warning-soft); color:var(--slate-700); font-size:14px; line-height:1.5;">
+        <i class="icon-info" style="color:var(--marigold); font-size:18px;"></i>
+        <span>Layanan sirkulasi ditutup 30 menit sebelum perpustakaan tutup. Pada masa ujian akhir, ruang baca buka hingga 21.00.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BERITA -->
+  <section id="berita" style="background:#fff; border-top:1px solid var(--slate-200);">
+    <div style="max-width:1200px; margin:0 auto; padding:80px 24px; display:flex; flex-direction:column; gap:28px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span style="font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--teal-600);">Berita &amp; pengumuman</span>
+        <h2 style="margin:0; font-family:var(--font-display); font-size:36px; font-weight:700;">Kabar perpustakaan</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+        <sc-for list="{{ news }}" as="n" hint-placeholder-count="3">
+          <article style="display:flex; flex-direction:column; gap:12px; padding:24px; border-radius:16px; background:var(--slate-50); border:1px solid var(--slate-200);">
+            <div style="display:flex; gap:8px; align-items:center; font-size:12px;">
+              <span style="font-weight:600; padding:3px 10px; border-radius:999px; background:{{ n.tagBg }}; color:{{ n.tagFg }};">{{ n.tag }}</span>
+              <span style="color:var(--fg-3);">{{ n.date }}</span>
+            </div>
+            <h3 style="margin:0; font-family:var(--font-display); font-size:19px; font-weight:700; line-height:1.3;">{{ n.title }}</h3>
+            <p style="margin:0; font-size:14px; color:var(--fg-3); line-height:1.6;">{{ n.excerpt }}</p>
+          </article>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:var(--slate-900); color:var(--slate-300);">
+    <div style="max-width:1200px; margin:0 auto; padding:56px 24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:32px; font-size:14px; line-height:1.7;">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px; color:#fff; font-family:var(--font-display); font-weight:800;"><img src="assets/logo-stpn.png" alt="Logo Politeknik Agraria STPN" style="width:42px; height:42px; object-fit:contain; flex:none; background:#fff; border-radius:999px;">Perpustakaan STPN</div>
+        <span>Jl. Tata Bumi No. 5, Banyuraden, Gamping, Sleman, D.I. Yogyakarta 55293</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <span style="color:#fff; font-weight:600;">Kontak</span>
+        <span>(0274) 587239</span>
+        <span>perpustakaan@stpn.ac.id</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <span style="color:#fff; font-weight:600;">Tautan</span>
+        <a href="#opac" style="color:var(--slate-300);">OPAC</a>
+        <a href="Portal Pemustaka.dc.html" style="color:var(--slate-300);">Portal pemustaka</a>
+        <a href="Portal Staf.dc.html" style="color:var(--slate-300);">Portal staf</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DETAIL -->
+  <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:fixed; inset:0; z-index:60; background:rgba(15,14,10,.4); display:grid; place-items:center; padding:24px;">
+      <div onClick="{{ stop }}" style="background:#fff; border-radius:24px; width:min(720px, 100%); max-height:90vh; overflow:auto; box-shadow:var(--shadow-xl); display:grid; grid-template-columns:180px minmax(0,1fr); gap:28px; padding:28px;">
+        <div style="aspect-ratio:2/3; border-radius:8px; background:{{ detail.color }}; color:{{ detail.ink }}; padding:16px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow-md);">
+          <span style="font-family:var(--font-mono); font-size:11px;">{{ detail.call }}</span>
+          <span style="font-family:var(--font-display); font-weight:800; font-size:17px; line-height:1.2;">{{ detail.title }}</span>
+          <span style="font-size:12px;">{{ detail.author }}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div style="display:flex; justify-content:space-between; gap:12px;">
+            <h3 style="margin:0; font-family:var(--font-display); font-size:24px; font-weight:700; line-height:1.25;">{{ detail.title }}</h3>
+            <button onClick="{{ closeDetail }}" style="width:36px; height:36px; flex:none; border:0; border-radius:10px; background:var(--slate-100); cursor:pointer; font-size:18px;"><i class="icon-x"></i></button>
+          </div>
+          <div style="display:grid; grid-template-columns:120px 1fr; gap:8px 12px; font-size:14px;">
+            <span style="color:var(--fg-3);">Pengarang</span><span>{{ detail.author }}</span>
+            <span style="color:var(--fg-3);">Penerbit</span><span>{{ detail.publisher }}, {{ detail.year }}</span>
+            <span style="color:var(--fg-3);">ISBN</span><span style="font-family:var(--font-mono);">{{ detail.isbn }}</span>
+            <span style="color:var(--fg-3);">No. panggil</span><span style="font-family:var(--font-mono);">{{ detail.call }}</span>
+            <span style="color:var(--fg-3);">Subjek</span><span>{{ detail.subject }}</span>
+            <span style="color:var(--fg-3);">Eksemplar</span><span>{{ detail.avail }} tersedia dari {{ detail.eks }}</span>
+            <span style="color:var(--fg-3);">Lokasi</span><span>Lantai {{ detail.lantai }} · Rak {{ detail.rak }}</span>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:auto;">
+            <a href="Portal Pemustaka.dc.html" style="display:flex; align-items:center; gap:8px; height:44px; padding:0 18px; border-radius:12px; border:1px solid var(--slate-200); color:var(--fg-1); font-weight:600; text-decoration:none;" style-hover="background:var(--slate-100); color:var(--fg-1);"><i class="icon-map"></i>Lihat di denah rak</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CLS = [
+  ['000','Karya umum & komputer','var(--teal-700)','#fff'],
+  ['100','Filsafat & psikologi','var(--violet)','#fff'],
+  ['200','Agama','var(--teal-500)','#fff'],
+  ['300','Ilmu sosial & hukum','var(--berry)','#fff'],
+  ['400','Bahasa','var(--marigold)','var(--slate-900)'],
+  ['500','Sains & matematika','var(--teal-600)','#fff'],
+  ['600','Teknologi terapan','var(--sunset)','#fff'],
+  ['700','Seni & tata ruang','var(--coral)','#fff'],
+  ['800','Sastra','var(--plum)','#fff'],
+  ['900','Sejarah & geografi','var(--teal-800)','#fff'],
+];
+const B = (id,title,author,publisher,year,cls,call,rak,eks,avail,subject,type='Buku') =>
+  ({id,title,author,publisher,year,cls,call,rak,eks,avail,subject,type,isbn:'978-602-'+(1000+id*37)+'-'+(10+id)+'-'+(id%9)});
+const BOOKS = [
+  B(1,'Hukum Agraria Indonesia','Boedi Harsono','Djambatan',2008,'300','346.04 HAR h','B3',12,7,'Hukum agraria; UUPA'),
+  B(2,'Pengantar Ilmu Ukur Tanah','Sri Wahyuni','Andi',2019,'500','526.9 WAH p','D1',8,2,'Survei; pengukuran'),
+  B(3,'Sistem Informasi Geografis: Konsep dan Aplikasi','Eddy Prahasta','Informatika',2014,'900','910.285 PRA s','E2',10,4,'SIG; geospasial'),
+  B(4,'Kebijakan Pertanahan Nasional','Tim Pusat Kajian STPN','STPN Press',2021,'300','333.3 TIM k','B1',6,0,'Kebijakan; pertanahan'),
+  B(5,'Reforma Agraria dan Keadilan Sosial','Gunawan Wiradi','STPN Press',2017,'300','333.31 WIR r','B1',9,5,'Reforma agraria'),
+  B(6,'Kartografi Dasar','Rini Astuti','Gadjah Mada University Press',2016,'500','526 AST k','D1',5,3,'Kartografi; peta'),
+  B(7,'Fotogrametri dan Penginderaan Jauh','Hartono Saputra','ITB Press',2018,'600','621.367 SAP f','D3',7,1,'Penginderaan jauh'),
+  B(8,'Pendaftaran Tanah di Indonesia','Adrian Sutedi','Sinar Grafika',2020,'300','346.043 SUT p','B3',11,6,'Pendaftaran tanah; sertifikat'),
+  B(9,'Metodologi Penelitian Kualitatif','Lexy Moleong','Remaja Rosdakarya',2017,'000','001.42 MOL m','A1',14,9,'Metode penelitian'),
+  B(10,'Python untuk Data Spasial','Dimas Prakoso','Elex Media',2022,'000','005.133 PRA p','A2',4,2,'Pemrograman; GIS'),
+  B(11,'Filsafat Ilmu','Jujun S. Suriasumantri','Pustaka Sinar Harapan',2015,'100','101 SUR f','A3',8,5,'Filsafat'),
+  B(12,'Etika Profesi Aparatur Negara','Nur Hidayat','Kencana',2019,'100','174 HID e','A3',5,4,'Etika; ASN'),
+  B(13,'Fikih Pertanahan','Ahmad Syafii','Pustaka Pelajar',2016,'200','297.4 SYA f','A4',3,3,'Hukum Islam; tanah'),
+  B(14,'Bahasa Indonesia untuk Karya Ilmiah','Dewi Kartika','Erlangga',2020,'400','499.221 KAR b','C1',10,8,'Penulisan ilmiah'),
+  B(15,'English for Surveyors','Michael Grant','Routledge',2013,'400','428 GRA e','C1',4,1,'Bahasa Inggris'),
+  B(16,'Geodesi Satelit','Hasanuddin Z. Abidin','Pradnya Paramita',2015,'500','526.1 ABI g','D2',6,2,'Geodesi; GNSS'),
+  B(17,'Statistika Spasial','Yuli Rahmawati','Deepublish',2021,'500','519.5 RAH s','D2',5,5,'Statistik'),
+  B(18,'Teknik Pengukuran GNSS','Bambang Setiadi','ITB Press',2023,'600','526.982 SET t','D3',6,0,'GNSS; RTK'),
+  B(19,'Penatagunaan Tanah dan Tata Ruang','Arif Wibowo','STPN Press',2022,'700','711.4 WIB p','C2',8,3,'Tata ruang'),
+  B(20,'Arsitektur Lanskap Perdesaan','Laras Pertiwi','Kanisius',2018,'700','712 PER a','C2',3,2,'Lanskap; desa'),
+  B(21,'Bumi Manusia','Pramoedya Ananta Toer','Lentera Dipantara',2011,'800','899.221 3 TOE b','C3',4,1,'Novel'),
+  B(22,'Laskar Pelangi','Andrea Hirata','Bentang Pustaka',2008,'800','899.221 3 HIR l','C3',3,0,'Novel'),
+  B(23,'Sejarah Agraria Indonesia','Noer Fauzi Rachman','Insist Press',2012,'900','959.8 RAC s','E1',6,4,'Sejarah agraria'),
+  B(24,'Atlas Nasional Indonesia','Badan Informasi Geospasial','BIG',2019,'900','912.598 BAD a','E2',2,2,'Atlas','Peta'),
+  B(25,'Ekonomi Sumber Daya Lahan','Sitorus Manurung','IPB Press',2017,'300','333.7 MAN e','B2',7,3,'Ekonomi lahan'),
+  B(26,'Mediasi Sengketa Pertanahan','Ratna Sari Dewi','Kencana',2021,'300','346.04 DEW m','B3',5,2,'Sengketa; mediasi'),
+  B(27,'Analisis Konflik Tanah Ulayat di Sumatera Barat','Rizky Maulana','Skripsi D4 Pertanahan',2025,'300','SK 333.2 MAU a','R1',1,1,'Tanah ulayat','Skripsi'),
+  B(28,'Jurnal Bhumi Vol. 10 No. 2','Politeknik Agraria','STPN Press',2024,'300','J 333 BHU','J1',3,3,'Jurnal agraria','Jurnal'),
+];
+const RAK_LANTAI = {A:1,B:1,C:2,D:2,E:2,R:3,J:3};
+
+class Component extends DCLogic {
+  state = { q:'', field:'all', opacType:'all', availOnly:false, cls:'300', detailId:null };
+
+  deco(b) {
+    const c = CLS.find(x => x[0]===b.cls);
+    const avail = b.avail>0;
+    return { ...b, color:c[2], ink:c[3], lantai:RAK_LANTAI[b.rak[0]],
+      availLabel: avail ? `${b.avail} tersedia` : 'Sedang dipinjam',
+      availBg: avail ? 'var(--success-soft)' : 'var(--warning-soft)',
+      availFg: avail ? 'var(--success)' : '#92400E',
+      open: () => this.setState({detailId:b.id}) };
+  }
+
+  scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior:'smooth' });
+  }
+
+  renderVals() {
+    const { q, field, opacType, availOnly, cls, detailId } = this.state;
+    const ql = q.trim().toLowerCase();
+    const match = b => {
+      if (!ql) return true;
+      const f = { title:b.title, author:b.author, subject:b.subject, isbn:b.isbn };
+      return field==='all' ? Object.values(f).join(' ').toLowerCase().includes(ql) : f[field].toLowerCase().includes(ql);
+    };
+    const results = BOOKS.filter(b => match(b) && (opacType==='all'||b.type===opacType) && (!availOnly||b.avail>0)).map(b=>this.deco(b));
+
+    const now = new Date(); const dow = now.getDay(); const hm = now.getHours()+now.getMinutes()/60;
+    const sched = [
+      { day:'Senin – Kamis', days:[1,2,3,4], hours:'08.00 – 16.00', o:8, c:16, note:'Istirahat 12.00 – 13.00' },
+      { day:'Jumat', days:[5], hours:'08.00 – 16.30', o:8, c:16.5, note:'Istirahat 11.30 – 13.00' },
+      { day:'Sabtu', days:[6], hours:'09.00 – 13.00', o:9, c:13, note:'Ruang baca saja' },
+      { day:'Minggu & libur nasional', days:[0], hours:'Tutup', o:0, c:0, note:'Repositori daring tetap aktif' },
+    ];
+    const today = sched.find(s => s.days.includes(dow));
+    const isOpen = today.c>0 && hm>=today.o && hm<today.c;
+
+    return {
+      navLinks: [['#beranda','Beranda'],['#opac','OPAC'],['#koleksi','Koleksi'],['#fasilitas','Fasilitas'],['#layanan','Layanan'],['#berita','Berita']].map(([href,label])=>({href,label})),
+      q, field, opacType, availOnly,
+      onQ: e => this.setState({ q:e.target.value }),
+      onField: e => this.setState({ field:e.target.value }),
+      onType: e => this.setState({ opacType:e.target.value }),
+      toggleAvail: () => this.setState({ availOnly:!availOnly }),
+      submitHero: e => { e.preventDefault(); this.scrollTo('opac'); },
+      popular: ['Reforma agraria','SIG','Pendaftaran tanah','GNSS'].map(label => ({ label, go: () => { this.setState({ q: label==='SIG'?'geografis':label, field:'all' }); this.scrollTo('opac'); } })),
+      openLabel: isOpen ? 'Buka sekarang' : 'Sedang tutup',
+      openSub: today.c>0 ? `Hari ini ${today.hours}` : 'Buka lagi Senin 08.00',
+      openBg: isOpen ? 'var(--success-soft)' : 'var(--slate-100)',
+      openFg: isOpen ? 'var(--success)' : 'var(--fg-3)',
+      stats: [
+        ['book-copy','18.452','Judul koleksi','var(--teal-50)','var(--teal-700)'],
+        ['library-big','42.310','Eksemplar','var(--teal-50)','var(--teal-700)'],
+        ['graduation-cap','2.146','Skripsi digital','var(--warning-soft)','#92400E'],
+        ['newspaper','64','Jurnal berlangganan','var(--warning-soft)','#92400E'],
+        ['users','3.218','Pemustaka aktif','var(--danger-soft)','var(--berry)'],
+        ['footprints','5.874','Kunjungan bulan ini','var(--danger-soft)','var(--berry)'],
+      ].map(([icon,value,label,bg,fg])=>({icon,value,label,bg,fg})),
+      results, resultCount: results.length, noResults: results.length===0,
+      classTabs: CLS.map(([code,name]) => { const on = code===cls; return { code, name: `${name} (${BOOKS.filter(b=>b.cls===code).length})`,
+        bg: on?'var(--teal-400)':'#fff', fg: on?'#fff':'var(--fg-2)', border: on?'var(--teal-400)':'var(--slate-200)', pick: () => this.setState({cls:code}) }; }),
+      gallery: BOOKS.filter(b=>b.cls===cls).map(b=>this.deco(b)),
+      facilities: [
+        ['fac-baca','book-open','Ruang baca utama','120 kursi, pencahayaan alami, dan area senyap di lantai 2.','Foto ruang baca'],
+        ['fac-diskusi','users-round','Ruang diskusi','4 ruang untuk 6–10 orang. Tanyakan ketersediaan di meja sirkulasi.','Foto ruang diskusi'],
+        ['fac-opac','monitor','Komputer OPAC & internet','12 unit komputer dengan akses e-jurnal dan repositori.','Foto area komputer'],
+        ['fac-agraria','map','Pojok koleksi agraria','Koleksi khusus peta, arsip pertanahan, dan terbitan STPN Press.','Foto pojok agraria'],
+        ['fac-repo','graduation-cap','Ruang skripsi & repositori','Skripsi, tugas akhir, dan laporan PKL sejak 1995.','Foto rak skripsi'],
+        ['fac-loker','lock','Loker & Wi-Fi','80 loker dengan kartu anggota. Wi-Fi kampus di seluruh lantai.','Foto loker'],
+      ].map(([slot,icon,name,desc,ph])=>({slot,icon,name,desc,ph})),
+      services: [
+        ['repeat','Sirkulasi','Pinjam hingga 3 buku selama 7 hari, bisa diperpanjang sekali.'],
+        ['file-check-2','Bebas pustaka','Cek pinjaman dan unggah skripsi untuk surat bebas pustaka.'],
+        ['tablet-smartphone','E-book','Pinjam dan baca e-book langsung dari portal pemustaka.'],
+        ['book-lock','Baca di tempat','Baca teks lengkap skripsi, tesis, dan disertasi di perpustakaan.'],
+        ['message-circle-question','Layanan referensi','Bantuan penelusuran literatur dan sitasi.'],
+        ['database','Repositori digital','Akses skripsi dan jurnal STPN secara daring.'],
+        ['lightbulb','Usulan koleksi','Usulkan buku yang belum ada di perpustakaan.'],
+      ].map(([icon,name,desc])=>({icon,name,desc})),
+      schedule: sched.map(s => { const t = s===today; return { ...s, today:t, bg: t?'var(--teal-50)':'#fff', fg: s.c>0?'var(--fg-1)':'var(--danger)' }; }),
+      news: [
+        ['Pengumuman','2 Okt 2026','Batas pengajuan bebas pustaka wisuda periode Oktober','Pengajuan dibuka hingga 20 Oktober 2026 melalui portal pemustaka. Pastikan tidak ada pinjaman aktif.','var(--warning-soft)','#92400E'],
+        ['Koleksi baru','25 Sep 2026','84 judul baru bidang survei dan pemetaan','Termasuk buku GNSS, fotogrametri drone, dan analisis spasial berbasis Python.','var(--teal-50)','var(--teal-700)'],
+        ['Kegiatan','18 Sep 2026','Kelas literasi informasi untuk mahasiswa baru','Belajar menelusur e-jurnal dan mengelola sitasi dengan Zotero, setiap Rabu.','var(--danger-soft)','var(--berry)'],
+      ].map(([tag,date,title,excerpt,tagBg,tagFg])=>({tag,date,title,excerpt,tagBg,tagFg})),
+      hasDetail: detailId!=null,
+      detail: detailId!=null ? this.deco(BOOKS.find(b=>b.id===detailId)) : {},
+      closeDetail: () => this.setState({detailId:null}),
+      stop: e => e.stopPropagation(),
+    };
+  }
+}
+</script>
+</body>
+</html>
