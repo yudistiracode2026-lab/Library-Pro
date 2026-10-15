@@ -14,6 +14,24 @@ export interface NavGroup {
     items: NavItem[];
 }
 
+export interface SelectOption {
+    value: string;
+    label: string;
+}
+
+/** Laravel LengthAwarePaginator serialized to JSON. */
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+}
+
 export interface StafMenuItem {
     key: string;
     label: string;
@@ -39,6 +57,7 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     stafMenu: StafMenuGroup[] | null;
+    flash: { success: string | null; error: string | null };
     [key: string]: unknown;
 }
 

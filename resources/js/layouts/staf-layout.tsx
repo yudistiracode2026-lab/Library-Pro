@@ -1,4 +1,5 @@
 import { AppShell } from '@/components/app-shell';
+import { FlashToast } from '@/components/flash-toast';
 import { StafHeader } from '@/components/staf/staf-header';
 import { StafSidebar } from '@/components/staf/staf-sidebar';
 import { SidebarInset } from '@/components/ui/sidebar';
@@ -20,6 +21,7 @@ export default function StafLayout({ title, group, children }: StafLayoutProps) 
                 <StafHeader title={title} crumb={group ? `Portal staf · ${group}` : 'Portal staf'} />
                 <main className="flex w-full max-w-[1440px] flex-col gap-6 p-4 md:p-7">{children}</main>
             </SidebarInset>
+            <FlashToast />
         </AppShell>
     );
 }

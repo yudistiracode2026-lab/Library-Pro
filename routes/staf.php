@@ -16,10 +16,20 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
                 continue;
             }
 
-            $route = Route::get($page['path'], PageController::class)->name($page['key']);
+            Route::middleware($page['admin_only'] ? ['role:admin'] : [])->group(function () use ($page) {
+                ['key' => $key, 'path' => $path, 'controller' => $controller] = $page;
 
-            if ($page['admin_only']) {
-                $route->middleware('role:admin');
-            }
+                if ($controller === null) {
+                    Route::get($path, PageController::class)->name($key);
+
+                    return;
+                }
+
+                Route::get($path, [$controller, 'index'])->name($key);
+                Route::get("{$path}/ekspor", [$controller, 'export'])->name("{$key}.export");
+                Route::post($path, [$controller, 'store'])->name("{$key}.store");
+                Route::put("{$path}/{record}", [$controller, 'update'])->name("{$key}.update");
+                Route::delete("{$path}/{record}", [$controller, 'destroy'])->name("{$key}.destroy");
+            });
         }
     });

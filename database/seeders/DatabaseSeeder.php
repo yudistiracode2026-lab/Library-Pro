@@ -38,5 +38,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'pemustaka@perpus.test',
             'title' => 'Mahasiswa D4 Pertanahan',
         ]);
+
+        $this->call(MasterDataSeeder::class);
     }
 }

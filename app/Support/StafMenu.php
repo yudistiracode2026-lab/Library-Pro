@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Http\Controllers\Staf\Master;
 use App\Models\User;
 
 /**
@@ -13,6 +14,7 @@ use App\Models\User;
  *
  * Page keys double as route names under the "staf." prefix and their path
  * under /staf (dots become slashes): "aset.ruang" => /staf/aset/ruang.
+ * Pages with a "controller" are built; the rest show a placeholder.
  */
 class StafMenu
 {
@@ -24,13 +26,13 @@ class StafMenu
             ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard', 'stage' => 1],
         ]],
         ['label' => 'Master data', 'items' => [
-            ['key' => 'buku', 'label' => 'Buku & e-book', 'title' => 'Master buku & e-book', 'icon' => 'book-copy', 'stage' => 2,
+            ['key' => 'buku', 'controller' => Master\BookController::class, 'label' => 'Buku & e-book', 'title' => 'Master buku & e-book', 'icon' => 'book-copy', 'stage' => 2,
                 'description' => 'Katalog buku cetak dan e-book: bibliografi, eksemplar, klasifikasi DDC, dan lokasi rak.'],
-            ['key' => 'pengarang', 'label' => 'Pengarang', 'title' => 'Master pengarang', 'icon' => 'pen-tool', 'stage' => 2,
+            ['key' => 'pengarang', 'controller' => Master\AuthorController::class, 'label' => 'Pengarang', 'title' => 'Master pengarang', 'icon' => 'pen-tool', 'stage' => 2,
                 'description' => 'Daftar pengarang untuk entri katalog dan pencarian.'],
-            ['key' => 'penerbit', 'label' => 'Penerbit', 'title' => 'Master penerbit', 'icon' => 'building-2', 'stage' => 2,
+            ['key' => 'penerbit', 'controller' => Master\PublisherController::class, 'label' => 'Penerbit', 'title' => 'Master penerbit', 'icon' => 'building-2', 'stage' => 2,
                 'description' => 'Daftar penerbit beserta kota terbit.'],
-            ['key' => 'penyedia', 'label' => 'Penyedia buku', 'title' => 'Master penyedia buku', 'icon' => 'truck', 'stage' => 2,
+            ['key' => 'penyedia', 'controller' => Master\SupplierController::class, 'label' => 'Penyedia buku', 'title' => 'Master penyedia buku', 'icon' => 'truck', 'stage' => 2,
                 'description' => 'Toko dan distributor yang dipakai untuk pengadaan.'],
             ['key' => 'aset', 'label' => 'Manajemen aset', 'icon' => 'boxes', 'children' => [
                 ['key' => 'aset.ruang', 'label' => 'Ruang & denah', 'title' => 'Manajemen aset · ruang & denah', 'icon' => 'layout-grid', 'stage' => 4,
@@ -38,11 +40,11 @@ class StafMenu
                 ['key' => 'aset.inventaris', 'label' => 'Inventaris & lisensi', 'title' => 'Manajemen aset · inventaris & lisensi', 'icon' => 'package', 'stage' => 4,
                     'description' => 'Inventaris perangkat, perabot, dan lisensi perangkat lunak.'],
             ]],
-            ['key' => 'pemustaka', 'label' => 'Pemustaka', 'title' => 'Master pemustaka', 'icon' => 'id-card', 'stage' => 2,
+            ['key' => 'pemustaka', 'controller' => Master\MemberController::class, 'label' => 'Pemustaka', 'title' => 'Master pemustaka', 'icon' => 'id-card', 'stage' => 2,
                 'description' => 'Data anggota perpustakaan: mahasiswa, dosen, dan tamu.'],
-            ['key' => 'pustakawan', 'label' => 'Pustakawan', 'title' => 'Master pustakawan', 'icon' => 'user-cog', 'stage' => 2, 'admin_only' => true,
+            ['key' => 'pustakawan', 'controller' => Master\EmployeeController::class, 'label' => 'Pustakawan', 'title' => 'Master pustakawan', 'icon' => 'user-cog', 'stage' => 2, 'admin_only' => true,
                 'description' => 'Akun dan jabatan fungsional pustakawan.'],
-            ['key' => 'tendik', 'label' => 'Tendik', 'title' => 'Master tendik', 'icon' => 'briefcase', 'stage' => 2, 'admin_only' => true,
+            ['key' => 'tendik', 'controller' => Master\EmployeeController::class, 'label' => 'Tendik', 'title' => 'Master tendik', 'icon' => 'briefcase', 'stage' => 2, 'admin_only' => true,
                 'description' => 'Tenaga kependidikan yang bertugas di perpustakaan.'],
         ]],
         ['label' => 'Layanan', 'items' => [
@@ -109,6 +111,7 @@ class StafMenu
                 foreach ($item['children'] ?? [$item] as $page) {
                     $pages[] = [
                         'admin_only' => false,
+                        'controller' => null,
                         'title' => $page['label'],
                         'description' => null,
                         ...$page,
