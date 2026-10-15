@@ -46,8 +46,8 @@ export default function Welcome() {
                         Sumber pengetahuan pertanahan dan agraria Indonesia
                     </h1>
                     <p className="text-fg-2 max-w-xl text-lg leading-relaxed text-pretty">
-                        Cari buku, skripsi, jurnal, dan peta koleksi Perpustakaan Politeknik Agraria. Halaman ini sementara, dan akan
-                        diganti dengan website perpustakaan lengkap.
+                        Cari buku, skripsi, jurnal, dan peta koleksi Perpustakaan Politeknik Agraria. Halaman ini sementara, dan akan diganti dengan
+                        website perpustakaan lengkap.
                     </p>
                 </main>
             </div>
