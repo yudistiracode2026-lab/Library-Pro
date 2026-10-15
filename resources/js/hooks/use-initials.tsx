@@ -1,11 +1,14 @@
 export function useInitials() {
+    // "Muhamad Irfan Yudistira, S.ST., M.Eng" -> "MI": drop academic titles
+    // after the first comma, then take the first two words.
     const getInitials = (fullName: string): string => {
-        const names = fullName.trim().split(' ');
+        const names = fullName.split(',')[0].trim().split(/\s+/).filter(Boolean);
 
-        if (names.length === 0) return '';
-        if (names.length === 1) return names[0].charAt(0).toUpperCase();
-
-        return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`.toUpperCase();
+        return names
+            .slice(0, 2)
+            .map((name) => name.charAt(0))
+            .join('')
+            .toUpperCase();
     };
 
     return getInitials;

@@ -1,0 +1,73 @@
+import {
+    Award,
+    BookCopy,
+    Boxes,
+    Briefcase,
+    Building2,
+    Cctv,
+    CircleDashed,
+    ClipboardCheck,
+    ClipboardList,
+    Clock4,
+    FileCheck2,
+    FileOutput,
+    FolderCheck,
+    Gauge,
+    IdCard,
+    LayoutDashboard,
+    LayoutGrid,
+    LayoutTemplate,
+    ListChecks,
+    LucideProps,
+    Map,
+    NotebookPen,
+    Package,
+    PenTool,
+    QrCode,
+    Repeat,
+    Settings,
+    ShoppingCart,
+    TrendingUp,
+    Truck,
+    UserCog,
+} from 'lucide-react';
+import { ComponentType } from 'react';
+
+// Icon names come from app/Support/StafMenu.php (Lucide kebab-case names).
+const ICONS: Record<string, ComponentType<LucideProps>> = {
+    award: Award,
+    'book-copy': BookCopy,
+    boxes: Boxes,
+    briefcase: Briefcase,
+    'building-2': Building2,
+    cctv: Cctv,
+    'clipboard-check': ClipboardCheck,
+    'clipboard-list': ClipboardList,
+    'clock-4': Clock4,
+    'file-check-2': FileCheck2,
+    'file-output': FileOutput,
+    'folder-check': FolderCheck,
+    gauge: Gauge,
+    'id-card': IdCard,
+    'layout-dashboard': LayoutDashboard,
+    'layout-grid': LayoutGrid,
+    'layout-template': LayoutTemplate,
+    'list-checks': ListChecks,
+    map: Map,
+    'notebook-pen': NotebookPen,
+    package: Package,
+    'pen-tool': PenTool,
+    'qr-code': QrCode,
+    repeat: Repeat,
+    settings: Settings,
+    'shopping-cart': ShoppingCart,
+    'trending-up': TrendingUp,
+    truck: Truck,
+    'user-cog': UserCog,
+};
+
+export function StafIcon({ name, ...props }: { name: string } & LucideProps) {
+    const Icon = ICONS[name] ?? CircleDashed;
+
+    return <Icon {...props} />;
+}

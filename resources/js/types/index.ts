@@ -14,6 +14,19 @@ export interface NavGroup {
     items: NavItem[];
 }
 
+export interface StafMenuItem {
+    key: string;
+    label: string;
+    icon: string;
+    href: string | null;
+    children: Omit<StafMenuItem, 'children'>[] | null;
+}
+
+export interface StafMenuGroup {
+    label: string;
+    items: StafMenuItem[];
+}
+
 export interface NavItem {
     title: string;
     url: string;
@@ -25,13 +38,18 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    stafMenu: StafMenuGroup[] | null;
     [key: string]: unknown;
 }
+
+export type UserRole = 'admin' | 'pustakawan' | 'pemustaka';
 
 export interface User {
     id: number;
     name: string;
     email: string;
+    role: UserRole;
+    title: string | null;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;

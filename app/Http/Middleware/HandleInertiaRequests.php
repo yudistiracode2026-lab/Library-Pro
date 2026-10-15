@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\StafMenu;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'stafMenu' => fn () => $request->user()?->isStaff() ? StafMenu::for($request->user()) : null,
         ]);
     }
 }
