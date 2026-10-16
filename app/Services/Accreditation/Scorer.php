@@ -115,6 +115,25 @@ class Scorer
     /**
      * @return array{letter: string, label: string}
      */
+    /**
+     * Number, name, measured value, and option letter for the given IK,
+     * for the "dampak ke indikator" cards on the asset pages.
+     *
+     * @param  list<string>  $numbers
+     * @return list<array{number: string, name: string, value: string|null, letter: string|null}>
+     */
+    public function brief(array $numbers): array
+    {
+        $results = $this->evaluate();
+
+        return collect($numbers)->map(fn ($n) => $results->get($n))->filter()->map(fn ($r) => [
+            'number' => $r['indicator']->number,
+            'name' => $r['indicator']->name,
+            'value' => $r['value'],
+            'letter' => $r['score'] ? self::LETTERS[$r['score']] : null,
+        ])->values()->all();
+    }
+
     public static function predicate(float $finalScore): array
     {
         foreach (self::PREDICATES as [$min, $letter, $label]) {

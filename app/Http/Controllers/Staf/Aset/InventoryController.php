@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\License;
 use App\Models\Room;
+use App\Services\Accreditation\Scorer;
 use App\Support\CsvExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class InventoryController extends Controller
         $tab = in_array($tab, [...Asset::CATEGORIES, 'Lisensi'], true) ? $tab : 'Semua';
 
         return Inertia::render('staf/aset/inventaris', [
+            'indicators' => app(Scorer::class)->brief(['2.3', '2.4', '2.5', '2.7', '2.8', '2.9', '2.10']),
             'tab' => $tab,
             'counts' => Asset::selectRaw('category, count(*) as total')->groupBy('category')->pluck('total', 'category')
                 ->put('Lisensi', License::count())->put('Semua', Asset::count()),

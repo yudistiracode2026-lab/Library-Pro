@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staf\Aset;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\Room;
+use App\Services\Accreditation\Scorer;
 use App\Support\LibrarySettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class RoomController extends Controller
         $sivitas = (int) LibrarySettings::get('sivitas');
 
         return Inertia::render('staf/aset/ruang', [
+            'indicators' => app(Scorer::class)->brief(['2.1', '2.2']),
             'kpis' => [
                 'area' => round($area, 1),
                 'perSivitas' => $sivitas > 0 ? round($area / $sivitas, 2) : 0,

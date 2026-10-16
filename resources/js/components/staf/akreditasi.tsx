@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
 import { type ReactNode, useRef } from 'react';
 
@@ -14,7 +14,7 @@ export function LetterBadge({ letter, large }: { letter: string | null; large?: 
     return (
         <span
             title={letter ? `Opsi ${letter}` : 'Belum dinilai'}
-            className={`font-display grid flex-none place-items-center rounded-[8px] font-extrabold uppercase ${large ? 'size-12 text-2xl' : 'size-8 text-sm'} ${letter ? tone[letter] : 'text-fg-4 bg-slate-100 dark:bg-slate-700'}`}
+            className={`font-display grid flex-none place-items-center font-extrabold ${large ? 'size-14 rounded-[14px] text-[26px]' : 'size-8 rounded-[10px] text-base'} ${letter ? tone[letter] : 'text-fg-4 bg-slate-100 dark:bg-slate-700'}`}
         >
             {letter ?? '–'}
         </span>
@@ -71,4 +71,39 @@ export function formatSize(bytes: number | null): string {
     return bytes > 1024 * 1024
         ? `${(bytes / 1024 / 1024).toLocaleString('id-ID', { maximumFractionDigits: 1 })} MB`
         : `${Math.round(bytes / 1024)} KB`;
+}
+
+export interface IndicatorBrief {
+    number: string;
+    name: string;
+    value: string | null;
+    letter: string | null;
+}
+
+/** Compact IK card linking to its detail, as on the asset pages of the prototype. */
+export function IndicatorCard({ ik, compact }: { ik: IndicatorBrief; compact?: boolean }) {
+    return (
+        <Link
+            href={route('staf.akreditasi.indikator', { ik: ik.number })}
+            className={`flex items-center gap-3 bg-white text-left dark:bg-slate-800 ${compact ? 'rounded-[14px] p-3.5 shadow-sm hover:shadow-md' : 'rounded-md border border-slate-200 p-3 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900'}`}
+        >
+            <LetterBadge letter={ik.letter} />
+            <div className="min-w-0 flex-1">
+                {compact ? (
+                    <>
+                        <div className="text-fg-3 text-xs">IK {ik.number}</div>
+                        <div className="text-[13px] leading-tight font-semibold">{ik.name}</div>
+                        <div className="text-fg-2 text-xs">{ik.value}</div>
+                    </>
+                ) : (
+                    <>
+                        <div className="text-sm font-semibold">
+                            IK {ik.number} · {ik.name}
+                        </div>
+                        <div className="text-fg-3 text-xs">{ik.value}</div>
+                    </>
+                )}
+            </div>
+        </Link>
+    );
 }

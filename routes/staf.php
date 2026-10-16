@@ -151,6 +151,7 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
             Route::post('bukti/{evidence}/sahkan', 'approveEvidence')->name('bukti.approve');
             Route::get('bukti/{evidence}/berkas', 'evidenceFile')->name('bukti.file');
             Route::post('snapshot', 'snapshot')->name('snapshot');
+            Route::post('berkas/setujui', 'approveSubmission')->name('berkas.approve');
             Route::get('berkas/paket-bukti', 'evidencePackage')->name('berkas.package');
             Route::get('berkas/{type}', 'document')->name('berkas.document');
         });

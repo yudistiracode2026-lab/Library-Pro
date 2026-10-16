@@ -24,6 +24,8 @@ class LibrarySettings
         'sivitas' => 3280,
         // Semester procurement budget in rupiah.
         'procurement_budget' => 25000000,
+        // When the head of library approved the SiPAPI submission (null until then).
+        'accreditation_approved_at' => null,
     ];
 
     public static function get(string $key): mixed

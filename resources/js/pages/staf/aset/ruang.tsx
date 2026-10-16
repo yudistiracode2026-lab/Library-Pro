@@ -1,10 +1,11 @@
+import { IndicatorCard, type IndicatorBrief } from '@/components/staf/akreditasi';
 import { Badge } from '@/components/staf/master/cells';
 import { Button, Card, CardTitle, IconButton, inputClass, Kpi } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { type SelectOption } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { Minus, Plus, Trash2, X } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
 interface RoomRow {
     id: number;
@@ -33,6 +34,7 @@ interface AssetRow {
 }
 
 interface RuangProps {
+    indicators: IndicatorBrief[];
     kpis: { area: number; perSivitas: number; sivitas: number; basic: number; supporting: number };
     floor: number;
     rooms: RoomRow[];
@@ -58,7 +60,7 @@ const nf = (n: number, digits = 0) => n.toLocaleString('id-ID', { minimumFractio
 
 const go = (params: Record<string, number>) => router.get(route('staf.aset.ruang'), params, { preserveState: true, preserveScroll: true });
 
-export default function Ruang({ kpis, floor, rooms, selected, options }: RuangProps) {
+export default function Ruang({ kpis, floor, rooms, selected, options, indicators }: RuangProps) {
     const room = rooms.find((r) => r.id === selected?.id) ?? null;
     const floorRooms = rooms.filter((r) => r.floor === floor);
     const floorArea = floorRooms.reduce((sum, r) => sum + r.area, 0);
@@ -67,18 +69,13 @@ export default function Ruang({ kpis, floor, rooms, selected, options }: RuangPr
         <StafLayout title="Manajemen aset · ruang & denah" group="Master data">
             <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
                 <Kpi label="Luas perpustakaan" value={`${nf(kpis.area)} m²`} sub="Lantai 2–3 · lantai 1 bukan area perpustakaan" />
-                <Kpi
-                    label="Luas per sivitas"
-                    value={`${nf(kpis.perSivitas, 2)} m²`}
-                    sub={`${nf(kpis.sivitas)} sivitas · syarat lebih dari 0,5`}
-                    tone={kpis.perSivitas > 0.5 ? 'ok' : 'warn'}
-                />
-                <Kpi label="Ruang dasar" value={`${kpis.basic} / 4`} sub="koleksi, baca, kerja, layanan" tone={kpis.basic === 4 ? 'ok' : 'warn'} />
+                <Kpi label="Luas per sivitas" value={`${nf(kpis.perSivitas, 2)} m²`} sub={`${nf(kpis.sivitas)} sivitas · syarat lebih dari 0,5`} />
+                <Kpi label="Ruang dasar" value={`${kpis.basic} / 4`} sub="koleksi, baca, kerja, layanan" />
                 <Kpi label="Ruang pendukung" value={String(kpis.supporting)} sub="diskusi, IT, multimedia, dll" />
             </div>
 
-            <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-                <Card>
+            <div className="flex flex-wrap items-start gap-4">
+                <Card className="min-w-0 flex-[60_1_420px] gap-3.5 md:p-5">
                     <CardTitle
                         aside={
                             <div className="flex gap-1 rounded-[10px] bg-slate-100 p-1 dark:bg-slate-700">
@@ -99,7 +96,7 @@ export default function Ruang({ kpis, floor, rooms, selected, options }: RuangPr
                     </CardTitle>
                     <p className="text-fg-3 -mt-2 text-[13px]">Luas lantai {nf(floorArea)} m² · klik ruang untuk detail</p>
                     <div className="overflow-x-auto">
-                        <div className="relative aspect-[100/66] w-full min-w-[480px] rounded-md bg-slate-50 dark:bg-slate-900">
+                        <div className="relative mx-auto aspect-square w-full max-w-[640px] min-w-[420px] rounded-md border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-900">
                             {floorRooms.map((r) => {
                                 const on = r.id === room?.id;
 
@@ -110,11 +107,11 @@ export default function Ruang({ kpis, floor, rooms, selected, options }: RuangPr
                                         disabled={r.fixed}
                                         onClick={() => go({ ruang: r.id })}
                                         title={`${r.name} · ${r.typeLabel}${r.area ? ` · ${r.area} m²` : ''}`}
-                                        className={`absolute flex flex-col items-center justify-center overflow-hidden rounded-[4px] p-1 text-center text-[11px] leading-tight font-semibold ${GROUP_STYLE[r.group]} ${r.name === 'Void' ? 'border-2 border-dashed' : on ? 'z-10 border-[3px] shadow-lg' : 'border-2'} ${r.fixed ? 'cursor-default' : 'cursor-pointer hover:brightness-95'}`}
+                                        className={`absolute flex flex-col items-start justify-between overflow-hidden rounded-[4px] px-2 py-1.5 text-left ${GROUP_STYLE[r.group]} ${r.name === 'Void' ? 'border-2 border-dashed' : on ? 'z-10 [animation:roomglow_1.6s_ease-in-out_infinite] border-[3px]' : 'border-2'} ${r.fixed ? 'cursor-default' : 'cursor-pointer'}`}
                                         style={{ left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%` }}
                                     >
-                                        <span className="line-clamp-3">{r.name}</span>
-                                        {r.area > 0 && <span className="font-mono text-[10px] font-medium opacity-80">{r.area} m²</span>}
+                                        <span className="text-[11px] leading-tight font-bold">{r.name}</span>
+                                        <span className="font-mono text-xs font-bold whitespace-nowrap">{r.area > 0 ? `${r.area} m²` : '—'}</span>
                                     </button>
                                 );
                             })}
@@ -130,7 +127,15 @@ export default function Ruang({ kpis, floor, rooms, selected, options }: RuangPr
                     </div>
                 </Card>
 
-                {room && selected && <RoomDetail key={room.id} room={room} assets={selected.assets} options={options} />}
+                <div className="flex min-w-0 flex-[40_1_300px] flex-col gap-4">
+                    {room && selected && <RoomDetail key={room.id} room={room} assets={selected.assets} options={options} />}
+                    <Card className="gap-3 md:p-5">
+                        <span className="font-display text-base font-bold">Dampak ke indikator akreditasi</span>
+                        {indicators.map((ik) => (
+                            <IndicatorCard key={ik.number} ik={ik} />
+                        ))}
+                    </Card>
+                </div>
             </div>
 
             <Card className="gap-0 p-0 md:p-0">

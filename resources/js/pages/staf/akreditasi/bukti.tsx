@@ -1,9 +1,6 @@
-import { EVIDENCE_TONE, formatSize, UploadButton } from '@/components/staf/akreditasi';
-import { Badge } from '@/components/staf/master/cells';
-import { Button, Card, PillTabs } from '@/components/staf/ui';
+import { formatSize } from '@/components/staf/akreditasi';
 import StafLayout from '@/layouts/staf-layout';
 import { Link, router } from '@inertiajs/react';
-import { ExternalLink } from 'lucide-react';
 
 interface BuktiProps {
     status: string;
@@ -24,100 +21,93 @@ interface BuktiProps {
     accept: string;
 }
 
-export default function Bukti({ status, counts, items, canApprove, accept }: BuktiProps) {
+const COLS = 'grid-cols-[52px_minmax(0,1.8fr)_minmax(0,1fr)_110px_200px]';
+
+const TONE: Record<string, string> = {
+    Disahkan: 'bg-success-soft text-success',
+    Draf: 'bg-warning-soft text-amber-800',
+    Kedaluwarsa: 'bg-danger-soft text-danger',
+    'Belum ada': 'text-fg-3 bg-slate-100 dark:bg-slate-700',
+};
+
+export default function Bukti({ status, counts, items, canApprove }: BuktiProps) {
     return (
         <StafLayout title="Akreditasi · bank bukti fisik" group="Akreditasi">
-            <p className="text-fg-3 -mb-2 text-sm">
-                Unggah berkas PDF, JPG, PNG, DOCX, XLSX, atau MP4 (maks. 25 MB). Bukti baru tersimpan sebagai draf sampai disahkan kepala
-                perpustakaan.
-            </p>
-            <PillTabs
-                tabs={['', 'Belum ada', 'Draf', 'Disahkan', 'Kedaluwarsa'].map((s) => ({
-                    label: s || 'Semua',
-                    href: route('staf.akreditasi.bukti', s ? { status: s } : {}),
-                    active: status === s,
-                    count: counts[s] ?? 0,
-                }))}
-            />
-            <Card className="gap-0 p-0 md:p-0">
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-[860px] text-sm">
-                        <thead className="text-fg-3 border-b border-slate-200 bg-slate-50 text-left text-xs tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900">
-                            <tr>
-                                {['IK', 'Bukti fisik', 'Berkas', 'Status', ''].map((h) => (
-                                    <th key={h} className="px-5 py-3 font-semibold">
-                                        {h}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items.map((e) => (
-                                <tr key={e.id} className="border-b border-slate-200 dark:border-slate-700">
-                                    <td className="px-5 py-3 font-mono font-semibold">{e.indicator.number}</td>
-                                    <td className="px-5 py-3">
-                                        <div className="font-semibold">{e.label}</div>
-                                        <div className="text-fg-3 text-xs">{e.indicator.name}</div>
-                                    </td>
-                                    <td className="px-5 py-3">
-                                        {e.file ? (
-                                            <a
-                                                href={e.file}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="flex items-center gap-1.5 text-teal-700 hover:text-teal-500 dark:text-teal-200"
-                                            >
-                                                <ExternalLink className="size-3.5 flex-none" />
-                                                <span className="max-w-[220px] truncate">{e.fileName}</span>
-                                            </a>
-                                        ) : (
-                                            <span className="text-fg-4">—</span>
-                                        )}
-                                        {e.file && (
-                                            <div className="text-fg-3 text-xs">
-                                                {formatSize(e.size)} · {e.uploadedAt}
-                                                {e.validUntil && ` · berlaku s.d. ${e.validUntil}`}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="px-5 py-3">
-                                        <Badge tone={EVIDENCE_TONE[e.status]}>{e.status}</Badge>
-                                    </td>
-                                    <td className="px-5 py-3">
-                                        <div className="flex justify-end gap-1.5">
-                                            <UploadButton evidenceId={e.id} accept={accept}>
-                                                {e.file ? 'Ganti' : 'Unggah'}
-                                            </UploadButton>
-                                            {canApprove && e.file && e.status !== 'Disahkan' && (
-                                                <Button
-                                                    size="sm"
-                                                    className="h-[30px]"
-                                                    onClick={() =>
-                                                        router.post(
-                                                            route('staf.akreditasi.bukti.approve', e.id),
-                                                            {},
-                                                            { preserveScroll: true, preserveState: true },
-                                                        )
-                                                    }
-                                                >
-                                                    Sahkan
-                                                </Button>
-                                            )}
-                                            <Link
-                                                href={route('staf.akreditasi.indikator', { ik: e.indicator.number })}
-                                                className="text-fg-1 inline-flex h-[30px] items-center rounded-[8px] border border-slate-200 bg-white px-2.5 text-xs font-semibold hover:bg-slate-100 dark:bg-slate-800"
-                                            >
-                                                Buka IK
-                                            </Link>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {items.length === 0 && <p className="text-fg-3 py-10 text-center text-sm">Tidak ada bukti di kategori ini.</p>}
+            <div className="flex flex-wrap gap-1.5">
+                {['', 'Draf', 'Belum ada', 'Kedaluwarsa', 'Disahkan'].map((st) => (
+                    <Link
+                        key={st}
+                        href={route('staf.akreditasi.bukti', st ? { status: st } : {})}
+                        preserveScroll
+                        className={`flex h-9 items-center rounded-full border px-3.5 text-[13px] font-semibold whitespace-nowrap ${status === st ? 'border-teal-400 bg-teal-400 text-white' : 'text-fg-2 border-slate-200 bg-white dark:bg-slate-800'}`}
+                    >
+                        {st || 'Semua'} ({counts[st] ?? 0})
+                    </Link>
+                ))}
+            </div>
+            <section className="overflow-auto rounded-lg bg-white shadow-sm dark:bg-slate-800">
+                <div
+                    className={`text-fg-3 grid min-w-[760px] ${COLS} gap-3.5 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900`}
+                >
+                    <span>IK</span>
+                    <span>Bukti fisik</span>
+                    <span>Berkas</span>
+                    <span>Status</span>
+                    <span />
                 </div>
-            </Card>
+                {items.map((e) => (
+                    <div
+                        key={e.id}
+                        className={`grid min-w-[760px] ${COLS} items-center gap-3.5 border-b border-slate-200 px-5 py-3 text-sm dark:border-slate-700`}
+                    >
+                        <span className="font-mono font-semibold">{e.indicator.number}</span>
+                        <div className="min-w-0">
+                            <div className="font-semibold">{e.label}</div>
+                            <div className="text-fg-3 text-xs">{e.indicator.name}</div>
+                        </div>
+                        <div className="min-w-0">
+                            {e.file ? (
+                                <a
+                                    href={e.file}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-fg-1 text-[13px] [overflow-wrap:anywhere] hover:text-teal-700"
+                                >
+                                    {e.fileName}
+                                </a>
+                            ) : (
+                                <div className="text-[13px]">—</div>
+                            )}
+                            <div className="text-fg-3 text-xs">
+                                {e.file
+                                    ? `${formatSize(e.size)} · ${e.uploadedAt}${e.validUntil ? ` · s.d. ${e.validUntil}` : ''}`
+                                    : 'belum diunggah'}
+                            </div>
+                        </div>
+                        <span className={`justify-self-start rounded-full px-2.5 py-[3px] text-xs font-semibold ${TONE[e.status]}`}>{e.status}</span>
+                        <div className="flex justify-end gap-1.5">
+                            {canApprove && e.file && e.status === 'Draf' && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        router.post(route('staf.akreditasi.bukti.approve', e.id), {}, { preserveScroll: true, preserveState: true })
+                                    }
+                                    className="h-8 cursor-pointer rounded-[10px] bg-teal-400 px-3 text-xs font-semibold text-white hover:bg-teal-500"
+                                >
+                                    Sahkan
+                                </button>
+                            )}
+                            <Link
+                                href={route('staf.akreditasi.indikator', { ik: e.indicator.number })}
+                                className="text-fg-1 flex h-8 items-center rounded-[10px] border border-slate-200 bg-white px-3 text-xs font-semibold hover:bg-slate-100 dark:bg-slate-800"
+                            >
+                                Buka IK
+                            </Link>
+                        </div>
+                    </div>
+                ))}
+                {items.length === 0 && <p className="text-fg-3 py-10 text-center text-sm">Tidak ada bukti di kategori ini.</p>}
+            </section>
         </StafLayout>
     );
 }

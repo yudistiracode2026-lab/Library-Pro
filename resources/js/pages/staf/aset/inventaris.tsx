@@ -1,5 +1,6 @@
+import { IndicatorCard, type IndicatorBrief } from '@/components/staf/akreditasi';
 import { RecordForm } from '@/components/staf/master/record-form';
-import { Alert, Button, Card, IconButton, Kpi, PillTabs } from '@/components/staf/ui';
+import { Alert, Button, Card, IconButton, PillTabs } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { type SelectOption } from '@/types';
 import { router } from '@inertiajs/react';
@@ -28,6 +29,7 @@ interface LicenseRow {
 }
 
 interface InventarisProps {
+    indicators: IndicatorBrief[];
     tab: string;
     counts: Record<string, number>;
     assets: AssetRow[];
@@ -51,7 +53,7 @@ const LICENSE_STYLE: Record<string, string> = {
 
 const selectClass = 'h-[34px] cursor-pointer rounded-[9px] border-[1.5px] bg-white px-2 text-[13px] font-semibold dark:bg-slate-800';
 
-export default function Inventaris({ tab, counts, assets, licenses, missingFacilities, summary, options }: InventarisProps) {
+export default function Inventaris({ tab, assets, licenses, missingFacilities, options, indicators }: InventarisProps) {
     const [form, setForm] = useState<'asset' | 'license' | null>(null);
     const isLicense = tab === 'Lisensi';
     const tabs = ['Semua', ...options.categories, 'Lisensi'];
@@ -59,26 +61,10 @@ export default function Inventaris({ tab, counts, assets, licenses, missingFacil
 
     return (
         <StafLayout title="Manajemen aset · inventaris & lisensi" group="Master data">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-                <Kpi label="Unit aset tercatat" value={summary.units.toLocaleString('id-ID')} sub={`${counts.Semua ?? 0} jenis barang`} />
-                <Kpi
-                    label="Perlu perbaikan"
-                    value={summary.damaged.toLocaleString('id-ID')}
-                    sub="unit rusak ringan atau berat"
-                    tone={summary.damaged ? 'warn' : 'ok'}
-                />
-                <Kpi
-                    label="Fasilitas umum wajib"
-                    value={`${7 - missingFacilities.length} / 7`}
-                    sub="toilet, mushola, loker, parkir, pantry, laktasi, disabilitas"
-                    tone={missingFacilities.length ? 'warn' : 'ok'}
-                />
-                <Kpi
-                    label="Perangkat lunak tanpa lisensi"
-                    value={String(summary.unlicensed)}
-                    sub="perlu diganti atau dibeli"
-                    tone={summary.unlicensed ? 'warn' : 'ok'}
-                />
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,210px),1fr))] gap-3">
+                {indicators.map((ik) => (
+                    <IndicatorCard key={ik.number} ik={ik} compact />
+                ))}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -87,7 +73,6 @@ export default function Inventaris({ tab, counts, assets, licenses, missingFacil
                         label: t,
                         href: route('staf.aset.inventaris', t === 'Semua' ? {} : { kategori: t }),
                         active: tab === t,
-                        count: counts[t] ?? 0,
                     }))}
                 />
                 <div className="flex gap-2">

@@ -18,6 +18,7 @@ use App\Support\WebsiteContent;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -44,17 +45,10 @@ class AccreditationController extends Controller
 
         return Inertia::render('staf/akreditasi/dasbor', [
             ...$summary,
-            'modeStats' => [
-                'computed' => $results->where('computed', true)->count(),
-                'manual' => $results->filter(fn ($r) => ! $r['computed'] && $r['score'] !== null)->count(),
-                'unscored' => $results->whereNull('score')->count(),
-            ],
+            'modeStats' => collect(Indicator::MODES)->mapWithKeys(fn ($m) => [$m => $results->filter(fn ($r) => $r['indicator']->mode === $m)->count()]),
             'evidence' => collect(Evidence::STATUSES)->mapWithKeys(fn ($s) => [$s => $evidence->filter(fn (Evidence $e) => $e->effectiveStatus() === $s)->count()]),
             'readyIndicators' => $evidence->groupBy('indicator_id')->filter(fn ($items) => $items->every(fn (Evidence $e) => $e->effectiveStatus() === Evidence::APPROVED))->count(),
             'gap' => $this->gapRows($results)->take(5)->values(),
-            'snapshots' => AccreditationSnapshot::latest('taken_at')->limit(5)->get()->map(fn ($s) => [
-                'id' => $s->id, 'taken_at' => $s->taken_at->translatedFormat('j M Y, H.i'), 'finalScore' => $s->final_score, 'predicate' => $s->predicate,
-            ]),
         ]);
     }
 
@@ -116,12 +110,33 @@ class AccreditationController extends Controller
         $results = $this->scorer->evaluate();
         $summary = $this->scorer->summary($results);
 
+        $profile = $this->profile();
+        $head = Employee::where('is_head', true)->first();
+        $approvedAt = LibrarySettings::get('accreditation_approved_at');
+
         return Inertia::render('staf/akreditasi/berkas', [
             'finalScore' => $summary['finalScore'],
             'predicate' => $summary['predicate'],
-            'unscored' => $results->whereNull('score')->count(),
             'approvedEvidence' => Evidence::where('status', Evidence::APPROVED)->whereNotNull('file_path')->count(),
-            'missingEvidence' => Evidence::where('status', '!=', Evidence::APPROVED)->count(),
+            'checks' => $this->submissionChecks($results),
+            'canApprove' => $this->canApprove(request()->user()),
+            'approvedAt' => $approvedAt ? Carbon::parse($approvedAt)->translatedFormat('j M Y, H.i') : null,
+            'today' => now()->translatedFormat('j M Y'),
+            'profile' => [
+                ['Nama perpustakaan', 'Perpustakaan Politeknik Agraria'],
+                ['Lembaga induk', 'Politeknik Agraria (STPN), Kementerian ATR/BPN'],
+                ['Alamat', 'Jl. Tata Bumi No. 5, Banyuraden, Gamping, Sleman, D.I. Yogyakarta'],
+                ['Kepala perpustakaan', $head?->name ?? '—'],
+                ['Luas gedung', number_format($profile['area'], 0, ',', '.').' m² ('.Room::where('outside_library', false)->count().' ruang)'],
+                ['Luas per sivitas', number_format($profile['area'] / max(1, $profile['sivitas']), 2, ',', '.').' m²'],
+                ['Jumlah sivitas', number_format($profile['sivitas'], 0, ',', '.')],
+                ['Jumlah koleksi', number_format($profile['printed'] + $profile['ebooks'], 0, ',', '.').' judul · '.number_format($profile['copies'], 0, ',', '.').' eksemplar'],
+                ['Jenis koleksi', Book::distinct()->count('collection_type').' jenis'],
+                ['Pustakawan', $profile['librarians']->count().' orang'],
+                ['Tenaga teknis', $profile['support'].' orang'],
+                ['Jam layanan', number_format($profile['hours'], 1, ',', '.').' jam per minggu'],
+                ['Nilai akhir simulasi', number_format($summary['finalScore'], 2, ',', '.')." ({$summary['predicate']['letter']} · {$summary['predicate']['label']})"],
+            ],
             'snapshots' => AccreditationSnapshot::latest('taken_at')->limit(10)->get()->map(fn ($s) => [
                 'id' => $s->id, 'taken_at' => $s->taken_at->translatedFormat('j M Y, H.i'), 'finalScore' => $s->final_score, 'predicate' => $s->predicate,
             ]),
@@ -253,6 +268,45 @@ class AccreditationController extends Controller
         $zip->close();
 
         return response()->download($zipPath, 'paket-bukti-akreditasi-'.now()->format('Y-m-d').'.zip')->deleteFileAfterSend();
+    }
+
+    /**
+     * The head of library approves the submission once every check passes.
+     */
+    public function approveSubmission(Request $request): RedirectResponse
+    {
+        abort_unless($this->canApprove($request->user()), 403);
+
+        if (collect($this->submissionChecks($this->scorer->evaluate()))->contains('ok', false)) {
+            return back()->with('error', 'Masih ada pemeriksaan yang belum terpenuhi.');
+        }
+
+        LibrarySettings::save(['accreditation_approved_at' => now()->toDateTimeString()]);
+
+        return back()->with('success', 'Pengajuan disetujui. Koordinator bisa mengunggah berkas ke SiPAPI.');
+    }
+
+    /**
+     * Checks before submission, as listed in the prototype.
+     *
+     * @param  Collection<string, mixed>  $results
+     * @return list<array{label: string, detail: string, ok: bool}>
+     */
+    private function submissionChecks(Collection $results): array
+    {
+        $evidence = Evidence::all();
+        $ready = $evidence->groupBy('indicator_id')->filter(fn ($items) => $items->every(fn (Evidence $e) => $e->effectiveStatus() === Evidence::APPROVED))->count();
+        $drafts = $evidence->filter(fn (Evidence $e) => $e->effectiveStatus() === Evidence::DRAFT)->count();
+        $expired = $evidence->filter(fn (Evidence $e) => $e->effectiveStatus() === Evidence::EXPIRED)->count();
+        $total = $results->count();
+        $manualWithoutNote = $results->filter(fn ($r) => ! $r['computed'] && $r['indicator']->manual_score !== null && blank($r['indicator']->manual_note))->count();
+
+        return [
+            ['label' => 'Semua IK punya bukti tersahkan', 'detail' => "{$ready} dari {$total} IK lengkap · {$drafts} draf menunggu pengesahan", 'ok' => $ready === $total],
+            ['label' => 'Tidak ada bukti kedaluwarsa', 'detail' => "{$expired} bukti perlu diperbarui", 'ok' => $expired === 0],
+            ['label' => 'IK manual disertai alasan', 'detail' => $manualWithoutNote ? "{$manualWithoutNote} IK belum punya catatan alasan" : 'Setiap opsi manual punya catatan alasan', 'ok' => $manualWithoutNote === 0],
+            ['label' => 'Formulir terisi dari data sistem', 'detail' => 'Formulir Pengajuan, Data Profil, dan Pernyataan Sertifikat siap dihasilkan', 'ok' => true],
+        ];
     }
 
     private function canApprove(User $user): bool

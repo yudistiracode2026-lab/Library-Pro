@@ -156,6 +156,21 @@ class AccreditationTest extends TestCase
             ->where('rows.0.gain', 0.8));
     }
 
+    public function test_only_the_head_approves_a_submission_once_every_check_passes()
+    {
+        $this->actingAs(User::factory()->pustakawan()->create())->post('/staf/akreditasi/berkas/setujui')->assertForbidden();
+
+        $this->actingAs(User::factory()->admin()->create());
+        $this->post('/staf/akreditasi/berkas/setujui')->assertSessionHas('error');
+        $this->assertNull(LibrarySettings::get('accreditation_approved_at'));
+
+        Storage::disk('local')->put('bukti/a.pdf', '%PDF');
+        Evidence::query()->update(['status' => Evidence::APPROVED, 'file_path' => 'bukti/a.pdf']);
+        $this->post('/staf/akreditasi/berkas/setujui')->assertSessionHas('success');
+        $this->assertNotNull(LibrarySettings::get('accreditation_approved_at'));
+        $this->get('/staf/akreditasi/berkas')->assertInertia(fn (Assert $page) => $page->whereNot('approvedAt', null));
+    }
+
     public function test_pages_documents_package_and_snapshot()
     {
         $this->actingAs(User::factory()->admin()->create());
