@@ -45,6 +45,22 @@ class Member extends Model
     /**
      * @return HasMany<ClearanceRequest, $this>
      */
+    /**
+     * @return HasMany<EbookLoan, $this>
+     */
+    public function ebookLoans(): HasMany
+    {
+        return $this->hasMany(EbookLoan::class);
+    }
+
+    /**
+     * @return HasMany<ReadingSession, $this>
+     */
+    public function readingSessions(): HasMany
+    {
+        return $this->hasMany(ReadingSession::class);
+    }
+
     public function clearanceRequests(): HasMany
     {
         return $this->hasMany(ClearanceRequest::class);

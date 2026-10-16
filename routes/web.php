@@ -4,7 +4,6 @@ use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', WebsiteController::class)->name('home');
 
@@ -15,7 +14,7 @@ Route::middleware(['auth'])->group(function () {
             return to_route('staf.dashboard');
         }
 
-        return Inertia::render('pemustaka/beranda');
+        return to_route('pemustaka.beranda');
     })->name('dashboard');
 });
 
@@ -25,5 +24,6 @@ Route::get('presensi', [PresenceController::class, 'show'])->name('presensi');
 Route::post('presensi', [PresenceController::class, 'store'])->middleware('auth')->name('presensi.store');
 
 require __DIR__.'/staf.php';
+require __DIR__.'/pemustaka.php';
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

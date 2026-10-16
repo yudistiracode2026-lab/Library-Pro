@@ -58,6 +58,7 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     stafMenu: StafMenuGroup[] | null;
+    member: { name: string; member_number: string; study_program: string | null } | null;
     flash: { success: string | null; error: string | null };
     [key: string]: unknown;
 }

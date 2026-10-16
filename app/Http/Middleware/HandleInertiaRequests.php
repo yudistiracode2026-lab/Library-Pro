@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'member' => fn () => $request->user()?->member?->only(['name', 'member_number', 'study_program']),
             'stafMenu' => fn () => $request->user()?->isStaff() ? StafMenu::for($request->user()) : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

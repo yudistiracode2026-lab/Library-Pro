@@ -28,7 +28,9 @@ class StafPortalTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        $this->get('/dashboard')->assertInertia(fn (Assert $page) => $page->component('pemustaka/beranda'));
+        $this->get('/dashboard')->assertRedirect('/pemustaka');
+        // An account the circulation desk has not linked to a member yet.
+        $this->get('/pemustaka')->assertInertia(fn (Assert $page) => $page->component('pemustaka/belum-terhubung'));
     }
 
     public function test_members_cannot_open_the_staff_portal()
@@ -82,7 +84,7 @@ class StafPortalTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        $this->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('stafMenu', null));
+        $this->get('/pemustaka')->assertInertia(fn (Assert $page) => $page->where('stafMenu', null));
     }
 
     public function test_every_menu_link_resolves_to_a_route()

@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Rack;
 use App\Support\FloorPlan;
+use App\Support\Shelving;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -45,7 +46,7 @@ class SearchMapController extends Controller
                     'books' => $r->books_count,
                 ]),
             ])->values(),
-            'rack' => $rack ? $this->rackDetail($rack, $book) : null,
+            'rack' => $rack ? Shelving::rack($rack, $book) : null,
         ]);
     }
 
@@ -83,39 +84,5 @@ class SearchMapController extends Controller
                 'available' => $b->available_count,
                 'copies' => $b->copies_count,
             ]);
-    }
-
-    /**
-     * Books stand in call-number order, filling shelves from the first one
-     * with the same number of titles on each.
-     *
-     * @return array<string, mixed>
-     */
-    private function rackDetail(Rack $rack, ?Book $selected): array
-    {
-        $books = $rack->books()->where('type', Book::PRINTED)->orderBy('call_number')->get(['id', 'title', 'call_number']);
-        $perShelf = max(1, (int) ceil($books->count() / Rack::SHELVES));
-        $placed = $books->values()->map(fn (Book $b, int $i) => [
-            'id' => $b->id,
-            'title' => $b->title,
-            'call_number' => $b->call_number,
-            'shelf' => intdiv($i, $perShelf) + 1,
-        ]);
-
-        return [
-            'code' => $rack->code,
-            'name' => $rack->name,
-            'floor' => $rack->floor,
-            'highlightShelf' => $selected ? $placed->firstWhere('id', $selected->id)['shelf'] ?? null : null,
-            'shelves' => collect(range(1, Rack::SHELVES))->map(function (int $n) use ($placed) {
-                $onShelf = $placed->where('shelf', $n);
-
-                return [
-                    'number' => $n,
-                    'range' => $onShelf->isEmpty() ? 'Kosong' : $onShelf->first()['call_number'].' – '.$onShelf->last()['call_number'],
-                ];
-            }),
-            'books' => $placed,
-        ];
     }
 }

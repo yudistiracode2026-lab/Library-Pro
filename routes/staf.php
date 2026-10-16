@@ -9,6 +9,7 @@ use App\Http\Controllers\Staf\CirculationController;
 use App\Http\Controllers\Staf\ClearanceController;
 use App\Http\Controllers\Staf\CmsController;
 use App\Http\Controllers\Staf\DashboardController;
+use App\Http\Controllers\Staf\Master\BookController;
 use App\Http\Controllers\Staf\OpnameController;
 use App\Http\Controllers\Staf\OvertimeController;
 use App\Http\Controllers\Staf\ProcurementController;
@@ -24,6 +25,9 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
     ->name('staf.')
     ->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        // E-book file read in the member portal.
+        Route::post('buku/{book}/berkas', [BookController::class, 'uploadFile'])->name('buku.file');
 
         // Master data CRUD, generated from the menu.
         foreach (StafMenu::pages() as $page) {

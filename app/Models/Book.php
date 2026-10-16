@@ -18,8 +18,16 @@ class Book extends Model
 
     protected $fillable = [
         'type', 'title', 'author_id', 'publisher_id', 'year', 'isbn', 'ddc_class', 'collection_type',
-        'acquisition', 'donor', 'call_number', 'rack_id', 'format', 'file_size_mb', 'license_count', 'status',
+        'acquisition', 'donor', 'call_number', 'rack_id', 'format', 'file_size_mb', 'license_count', 'status', 'file_path',
     ];
+
+    /**
+     * @return HasMany<EbookLoan, $this>
+     */
+    public function ebookLoans(): HasMany
+    {
+        return $this->hasMany(EbookLoan::class);
+    }
 
     protected function casts(): array
     {

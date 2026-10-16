@@ -40,9 +40,10 @@ class PresenceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate(['purpose' => ['required', Rule::in(Visit::PURPOSES)]]);
+        $data = $request->validate(['purpose' => ['required', Rule::in(Visit::PURPOSES)], 't' => ['nullable', 'string']]);
 
-        if (! $this->unlocked($request)) {
+        // The scanner in the member portal sends the kiosk code itself.
+        if (! $this->unlocked($request) && ! (isset($data['t']) && KioskToken::isValid($data['t']))) {
             return back()->with('error', 'Kode QR sudah kedaluwarsa. Pindai lagi QR di layar kios, ya.');
         }
 

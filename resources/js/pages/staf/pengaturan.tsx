@@ -15,6 +15,10 @@ type Settings = {
     clearance_hardcopy: boolean;
     sivitas: number;
     procurement_budget: number;
+    ebook_loan_days: number;
+    ebook_max_loans: number;
+    reading_minutes: number;
+    onsite_networks: string;
 };
 
 type NumberField = { key: keyof Settings; label: string; unit: string; hint?: string };
@@ -29,6 +33,12 @@ const RULES: NumberField[] = [
     { key: 'max_loans', label: 'Maksimal buku dipinjam', unit: 'buku' },
     { key: 'max_extensions', label: 'Maksimal perpanjangan', unit: 'kali' },
     { key: 'fine_per_day', label: 'Denda keterlambatan', unit: 'Rp / hari', hint: 'Isi 0 kalau tidak memakai denda' },
+];
+
+const PORTAL: NumberField[] = [
+    { key: 'ebook_loan_days', label: 'Lama pinjam e-book', unit: 'hari' },
+    { key: 'ebook_max_loans', label: 'Maksimal e-book dipinjam', unit: 'judul' },
+    { key: 'reading_minutes', label: 'Durasi satu sesi baca di tempat', unit: 'menit' },
 ];
 
 const CLEARANCE: { key: keyof Settings; label: string }[] = [
@@ -52,6 +62,7 @@ export default function Pengaturan({ settings }: { settings: Settings }) {
                 {[
                     { title: 'Aturan sirkulasi', fields: RULES },
                     { title: 'Data perpustakaan', fields: PROFILE },
+                    { title: 'Portal pemustaka', fields: PORTAL },
                 ].map(({ title, fields }) => (
                     <Card key={title}>
                         <CardTitle>{title}</CardTitle>
@@ -80,6 +91,23 @@ export default function Pengaturan({ settings }: { settings: Settings }) {
                         </div>
                     </Card>
                 ))}
+
+                <Card>
+                    <CardTitle>Jaringan perpustakaan</CardTitle>
+                    <p className="text-fg-3 -mt-2 text-sm">
+                        Teks lengkap skripsi, tesis, dan disertasi hanya terbuka dari jaringan ini (Wi-Fi perpustakaan), setelah pemustaka presensi
+                        masuk. Tulis rentang IP dalam format CIDR, pisahkan dengan koma.
+                    </p>
+                    <input
+                        value={form.data.onsite_networks}
+                        onChange={(e) => form.setData('onsite_networks', e.target.value)}
+                        aria-label="Jaringan perpustakaan"
+                        aria-invalid={!!form.errors.onsite_networks}
+                        placeholder="192.168.10.0/24, 10.20.0.0/16"
+                        className={`${inputClass} font-mono`}
+                    />
+                    {form.errors.onsite_networks && <span className="text-danger text-xs">{form.errors.onsite_networks}</span>}
+                </Card>
 
                 <Card>
                     <CardTitle>Syarat bebas pustaka</CardTitle>

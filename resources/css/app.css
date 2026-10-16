@@ -288,3 +288,16 @@
         box-shadow: 0 0 18px 6px rgba(93, 195, 178, 0.55);
     }
 }
+
+/* Scan line of the member presensi scanner (from the prototype). */
+@keyframes scanline {
+    0% {
+        top: 8%;
+    }
+    50% {
+        top: 88%;
+    }
+    100% {
+        top: 8%;
+    }
+}

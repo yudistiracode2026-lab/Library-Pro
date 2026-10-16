@@ -39,6 +39,6 @@ class DatabaseSeeder extends Seeder
             'title' => 'Mahasiswa D4 Pertanahan',
         ]);
 
-        $this->call([MasterDataSeeder::class, ServiceDataSeeder::class, OperationsDataSeeder::class, AccreditationSeeder::class]);
+        $this->call([MasterDataSeeder::class, ServiceDataSeeder::class, OperationsDataSeeder::class, AccreditationSeeder::class, PortalDataSeeder::class]);
     }
 }

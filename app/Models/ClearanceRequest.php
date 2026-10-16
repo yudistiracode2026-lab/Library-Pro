@@ -23,7 +23,7 @@ class ClearanceRequest extends Model
     ];
 
     protected $fillable = [
-        'member_id', 'thesis_title', 'submitted_at', 'status', 'note',
+        'member_id', 'thesis_title', 'thesis_advisor', 'thesis_abstract', 'submitted_at', 'status', 'note',
         'thesis_file', 'thesis_checks', 'thesis_verified_at', 'thesis_verified_by',
         'donation_title', 'donation_author', 'donation_publisher', 'donation_year', 'donation_isbn',
         'donation_copies', 'donation_status', 'donation_book_id',

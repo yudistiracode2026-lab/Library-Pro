@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -77,6 +78,28 @@ class BookController extends Controller
         });
 
         return back()->with('success', 'Perubahan disimpan.');
+    }
+
+    /**
+     * Attaches the PDF of an e-book. EPUB titles are listed but only PDF can
+     * be read in the member portal for now.
+     */
+    public function uploadFile(Request $request, Book $book): RedirectResponse
+    {
+        abort_unless($book->type === Book::EBOOK, 404);
+        $file = $request->validate(['file' => ['required', 'file', 'mimes:pdf', 'max:51200']], [], ['file' => 'berkas e-book'])['file'];
+
+        if ($book->file_path) {
+            Storage::disk('local')->delete($book->file_path);
+        }
+
+        $book->update([
+            'file_path' => $file->storeAs('ebook', "ebook-{$book->id}-".now()->format('YmdHis').'.pdf', 'local'),
+            'format' => 'PDF',
+            'file_size_mb' => round($file->getSize() / 1048576, 1),
+        ]);
+
+        return back()->with('success', "Berkas {$book->title} terunggah.");
     }
 
     public function destroy(Book $record): RedirectResponse
@@ -149,6 +172,7 @@ class BookController extends Controller
             'available' => $b->available_count,
             'format' => $b->format,
             'file_size_mb' => $b->file_size_mb,
+            'has_file' => $b->file_path !== null,
             'license_count' => $b->license_count,
             'status' => $b->status,
         ];

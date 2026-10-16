@@ -24,6 +24,13 @@ class LibrarySettings
         'sivitas' => 3280,
         // Semester procurement budget in rupiah.
         'procurement_budget' => 25000000,
+        // E-book licences: loan length and how many a member may hold.
+        'ebook_loan_days' => 14,
+        'ebook_max_loans' => 2,
+        // Networks (CIDR, comma separated) counted as inside the library for
+        // reading full-text theses, and the length of one reading session.
+        'onsite_networks' => '127.0.0.1/32, ::1/128, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16',
+        'reading_minutes' => 60,
         // When the head of library approved the SiPAPI submission (null until then).
         'accreditation_approved_at' => null,
     ];

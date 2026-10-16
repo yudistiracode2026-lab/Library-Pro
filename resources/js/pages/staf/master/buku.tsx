@@ -3,6 +3,7 @@ import { MasterPage } from '@/components/staf/master/master-page';
 import { type FormValues } from '@/components/staf/master/record-form';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated, type SelectOption } from '@/types';
+import { router } from '@inertiajs/react';
 import { BookOpen, Tablet } from 'lucide-react';
 
 interface BookRow {
@@ -24,6 +25,7 @@ interface BookRow {
     available: number;
     format: string | null;
     file_size_mb: number | null;
+    has_file: boolean;
     license_count: number | null;
     status: string | null;
 }
@@ -102,7 +104,10 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         label: 'Lokasi',
                         render: (b) =>
                             b.type === 'ebook' ? (
-                                <Cell sub={`${b.format}${b.file_size_mb ? ` · ${b.file_size_mb} MB` : ''}`}>Daring</Cell>
+                                <>
+                                    <Cell sub={`${b.format}${b.file_size_mb ? ` · ${b.file_size_mb} MB` : ''}`}>Daring</Cell>
+                                    <EbookFile id={b.id} hasFile={b.has_file} />
+                                </>
                             ) : (
                                 <Cell sub={<span className="font-mono">{b.call_number}</span>}>Rak {b.rack}</Cell>
                             ),
@@ -201,5 +206,24 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 }}
             />
         </StafLayout>
+    );
+}
+
+/** Uploads the PDF members read in the portal (e-book loans). */
+function EbookFile({ id, hasFile }: { id: number; hasFile: boolean }) {
+    return (
+        <label className={`mt-0.5 cursor-pointer self-start text-xs font-semibold ${hasFile ? 'text-teal-600' : 'text-amber-800'}`}>
+            {hasFile ? 'Ganti berkas PDF' : 'Unggah berkas PDF'}
+            <input
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) router.post(route('staf.buku.file', id), { file }, { forceFormData: true, preserveScroll: true, preserveState: true });
+                    e.target.value = '';
+                }}
+            />
+        </label>
     );
 }

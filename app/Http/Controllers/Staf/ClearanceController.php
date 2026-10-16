@@ -9,6 +9,7 @@ use App\Models\ClearanceRequest;
 use App\Models\Employee;
 use App\Models\Publisher;
 use App\Models\Rack;
+use App\Models\Thesis;
 use App\Support\MasterOptions;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -238,6 +239,22 @@ class ClearanceController extends Controller
                 'approved_by' => $request->user()->id,
                 'letter_number' => sprintf('%03d/BP/PERPUS-STPN/%s/%d', $sequence, $this->romanMonth(now()->month), now()->year),
             ]);
+
+            // The approved thesis joins the repository read in "Baca di tempat".
+            if ($clearance->thesis_file) {
+                Thesis::updateOrCreate(['clearance_request_id' => $clearance->id], [
+                    'type' => 'Skripsi',
+                    'title' => $clearance->thesis_title,
+                    'author' => $clearance->member->name,
+                    'member_number' => $clearance->member->member_number,
+                    'study_program' => $clearance->member->study_program,
+                    'year' => now()->year,
+                    'advisor' => $clearance->thesis_advisor,
+                    'abstract' => $clearance->thesis_abstract,
+                    'call_number' => 'SK '.now()->year.'/'.$clearance->member->member_number,
+                    'file_path' => $clearance->thesis_file,
+                ]);
+            }
         });
 
         return back()->with('success', 'Bebas pustaka disetujui. Surat siap diunduh.');
