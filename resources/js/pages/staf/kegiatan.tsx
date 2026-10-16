@@ -1,5 +1,5 @@
-import { Badge, type Tone } from '@/components/staf/master/cells';
-import { Alert, Button, Card, CardTitle, duration, IconButton, initials, inputClass, Kpi, PillTabs } from '@/components/staf/ui';
+import { type Tone } from '@/components/staf/master/cells';
+import { Alert, Button, Card, duration, initials, inputClass, Kpi, PillTabs } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { type SelectOption } from '@/types';
 import { router, useForm } from '@inertiajs/react';
@@ -119,47 +119,62 @@ function Daily({
 
     return (
         <>
-            <Card className="flex-row flex-wrap items-center">
-                <IconButton label="Hari sebelumnya" onClick={() => go({ tanggal: shiftDate(date, -1) })}>
-                    <ChevronLeft className="size-4" />
-                </IconButton>
-                <span className="min-w-[200px] text-center font-semibold">{dateLabel}</span>
-                <IconButton label="Hari berikutnya" disabled={isToday} onClick={() => go({ tanggal: shiftDate(date, 1) })}>
-                    <ChevronRight className="size-4" />
-                </IconButton>
-                {!isToday && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.get(route('staf.kegiatan'), base.pegawai ? { pegawai: base.pegawai } : {}, { preserveScroll: true })}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <button type="button" aria-label="Hari sebelumnya" onClick={() => go({ tanggal: shiftDate(date, -1) })} className={dayButton}>
+                        <ChevronLeft className="size-4" />
+                    </button>
+                    <div className="flex min-w-[150px] flex-col px-2">
+                        <span className="font-display text-base font-bold">{dayTitle(date, isToday, dateLabel)}</span>
+                        <span className="text-fg-3 text-xs">{dateLabel}</span>
+                    </div>
+                    <button
+                        type="button"
+                        aria-label="Hari berikutnya"
+                        disabled={isToday}
+                        onClick={() => go({ tanggal: shiftDate(date, 1) })}
+                        className={`${dayButton} disabled:cursor-not-allowed disabled:opacity-40`}
                     >
-                        Hari ini
-                    </Button>
-                )}
+                        <ChevronRight className="size-4" />
+                    </button>
+                    {!isToday && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                router.get(route('staf.kegiatan'), base.pegawai ? { pegawai: base.pegawai } : {}, { preserveScroll: true })
+                            }
+                            className="h-9 cursor-pointer rounded-[10px] border border-slate-200 bg-white px-3 text-[13px] font-semibold text-teal-700 dark:bg-slate-800 dark:text-teal-200"
+                        >
+                            Hari ini
+                        </button>
+                    )}
+                </div>
                 {isAdmin && (
-                    <label className="ml-auto flex items-center gap-2 text-[13px] font-semibold">
+                    <label className="text-fg-2 flex items-center gap-2 text-[13px] font-semibold">
                         Petugas
                         <select
                             value={String(employee.id)}
                             onChange={(e) => go({ pegawai: e.target.value })}
-                            className={`${inputClass} w-auto max-w-[320px]`}
+                            className="text-fg-1 h-[38px] max-w-[320px] rounded-[10px] border-[1.5px] border-slate-200 bg-white px-2.5 text-sm font-normal dark:bg-slate-800"
                         >
-                            {staff.map((s) => (
-                                <option key={s.value} value={s.value}>
-                                    {s.label}
+                            {staff.map((st) => (
+                                <option key={st.value} value={st.value}>
+                                    {st.label}
                                 </option>
                             ))}
                         </select>
                     </label>
                 )}
-            </Card>
+            </div>
 
-            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
-                <Card>
-                    <CardTitle>Catat kegiatan</CardTitle>
-                    <p className="text-fg-3 -mt-2 text-[13px]">
-                        {employee.name} · {dateLabel}
-                    </p>
+            <div className="flex flex-wrap items-start gap-5">
+                <Card className="min-w-0 flex-[38_1_300px] gap-3.5 md:p-5">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="font-display text-[17px] font-bold">Catat kegiatan</span>
+                        <span className="text-fg-3 text-[13px]">
+                            {employee.name} · {dateLabel}
+                        </span>
+                    </div>
                     <form onSubmit={submit} className="flex flex-col gap-3">
                         <div className="grid grid-cols-2 gap-2">
                             <Field label="Mulai">
@@ -221,47 +236,47 @@ function Daily({
                     </form>
                 </Card>
 
-                <Card>
-                    <CardTitle
-                        aside={
-                            <span className="text-fg-3 text-[13px]">{`${logs.length} kegiatan · ${duration(logs.reduce((s, l) => s + l.minutes, 0))}`}</span>
-                        }
-                    >
-                        Daftar kegiatan
-                    </CardTitle>
-                    <div className="flex flex-col gap-2.5">
-                        {logs.map((l) => (
-                            <div key={l.id} className="flex gap-3 rounded-md border border-slate-200 p-3.5 dark:border-slate-700">
-                                <div className="flex w-[82px] flex-none flex-col">
-                                    <span className="font-mono text-[13px] font-semibold">
-                                        {l.start.replace(':', '.')}–{l.end.replace(':', '.')}
-                                    </span>
-                                    <span className="text-fg-3 text-xs">{duration(l.minutes)}</span>
-                                </div>
-                                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                                    <div className="flex flex-wrap gap-1.5">
-                                        <Badge tone={CATEGORY_TONE[l.category] ?? 'slate'}>{l.category}</Badge>
-                                        {l.status === 'Berlanjut' && <Badge tone="warning">Berlanjut</Badge>}
-                                    </div>
-                                    <span className="text-sm">{l.description}</span>
-                                    {l.output && (
-                                        <span className="text-fg-3 flex items-center gap-1 text-xs">
-                                            <Target className="size-3.5" />
-                                            {l.output}
-                                        </span>
-                                    )}
-                                </div>
-                                <IconButton
-                                    label="Hapus kegiatan"
-                                    danger
-                                    onClick={() => router.delete(route('staf.kegiatan.destroy', l.id), { preserveScroll: true })}
-                                >
-                                    <Trash2 className="size-3.5" />
-                                </IconButton>
-                            </div>
-                        ))}
-                        {logs.length === 0 && <p className="text-fg-3 py-8 text-center text-sm">Belum ada kegiatan tercatat di tanggal ini.</p>}
+                <Card className="min-w-0 flex-[62_1_380px] gap-1 md:p-5">
+                    <div className="flex items-center justify-between gap-2 pb-2.5">
+                        <span className="font-display text-[17px] font-bold">Daftar kegiatan</span>
+                        <span className="text-fg-3 text-[13px]">{`${logs.length} kegiatan · ${duration(logs.reduce((sum, l) => sum + l.minutes, 0))}`}</span>
                     </div>
+                    {logs.map((l) => (
+                        <div key={l.id} className="flex items-start gap-3.5 border-t border-slate-200 py-3 dark:border-slate-700">
+                            <div className="flex w-[86px] flex-none flex-col gap-0.5">
+                                <span className="font-mono text-[13px] font-semibold">
+                                    {l.start.replace(':', '.')}–{l.end.replace(':', '.')}
+                                </span>
+                                <span className="text-fg-3 text-xs">{duration(l.minutes)}</span>
+                            </div>
+                            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                    <Pill tone={TONES[CATEGORY_TONE[l.category] ?? 'slate']}>{l.category}</Pill>
+                                    <Pill tone={l.status === 'Selesai' ? TONES.success : TONES.warning}>{l.status}</Pill>
+                                </div>
+                                <span className="text-sm leading-normal">{l.description}</span>
+                                {l.output && (
+                                    <span className="text-fg-3 flex items-center gap-1.5 text-[13px]">
+                                        <Target className="size-3.5" />
+                                        {l.output}
+                                    </span>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                aria-label="Hapus kegiatan"
+                                onClick={() => router.delete(route('staf.kegiatan.destroy', l.id), { preserveScroll: true })}
+                                className="text-fg-3 hover:bg-danger-soft hover:text-danger grid size-8 flex-none cursor-pointer place-items-center rounded-[9px]"
+                            >
+                                <Trash2 className="size-4" />
+                            </button>
+                        </div>
+                    ))}
+                    {logs.length === 0 && (
+                        <div className="text-fg-3 border-t border-slate-200 py-7 text-center text-sm dark:border-slate-700">
+                            Belum ada kegiatan tercatat di tanggal ini.
+                        </div>
+                    )}
                 </Card>
             </div>
         </>
@@ -269,63 +284,86 @@ function Daily({
 }
 
 function Recap({ recap, monthLabel, isAdmin, base }: KegiatanProps & { base: Record<string, string> }) {
+    const cols = 'grid-cols-[minmax(0,1.6fr)_110px_110px_110px_minmax(0,1fr)_20px]';
+
     return (
-        <Card>
-            <CardTitle
-                aside={
-                    <a
-                        href={route('staf.kegiatan.export', { tanggal: base.tanggal })}
-                        className="text-fg-1 flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3.5 text-sm font-semibold hover:bg-slate-100 dark:bg-slate-800"
-                    >
-                        <Download className="size-4" />
-                        Unduh laporan
-                    </a>
-                }
-            >
-                Rekap kegiatan {monthLabel}
-            </CardTitle>
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                    <thead className="text-fg-3 border-b border-slate-200 text-left text-xs tracking-[.06em] uppercase dark:border-slate-700">
-                        <tr>
-                            {['Petugas', 'Hari terisi', 'Kegiatan', 'Total jam', 'Kegiatan terbanyak'].map((h) => (
-                                <th key={h} className="py-2.5 pr-4 font-semibold">
-                                    {h}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {recap.map((r) => (
-                            <tr
-                                key={r.id}
-                                onClick={() => isAdmin && router.get(route('staf.kegiatan'), { tanggal: base.tanggal, pegawai: String(r.id) })}
-                                className={`border-b border-slate-200 dark:border-slate-700 ${isAdmin ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900' : ''}`}
-                            >
-                                <td className="py-2.5 pr-4">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="grid size-8 flex-none place-items-center rounded-full bg-teal-100 text-xs font-bold text-teal-800">
-                                            {initials(r.name)}
-                                        </span>
-                                        <div>
-                                            <div className="font-semibold">{r.name}</div>
-                                            <div className="text-fg-3 text-xs">
-                                                {r.kind === 'pustakawan' ? 'Pustakawan' : 'Tendik'} · {r.position}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="py-2.5 pr-4">{r.days}</td>
-                                <td className="py-2.5 pr-4">{r.count}</td>
-                                <td className="py-2.5 pr-4 font-mono">{duration(r.minutes)}</td>
-                                <td className="text-fg-2 py-2.5 pr-4">{r.top ?? '—'}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        <>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-fg-3 text-sm">
+                    Rekap kegiatan {monthLabel}
+                    {isAdmin && ' · klik baris untuk melihat catatan harian.'}
+                </span>
+                <a
+                    href={route('staf.kegiatan.export', { tanggal: base.tanggal })}
+                    className="flex h-9 items-center gap-1.5 rounded-[10px] bg-teal-400 px-3.5 text-[13px] font-semibold whitespace-nowrap text-white hover:bg-teal-500"
+                >
+                    <Download className="size-4" />
+                    Unduh laporan
+                </a>
             </div>
-        </Card>
+            <section className="overflow-auto rounded-lg bg-white shadow-sm dark:bg-slate-800">
+                <div
+                    className={`text-fg-3 grid min-w-[760px] ${cols} gap-3.5 border-b border-slate-200 px-5 py-3 text-xs font-semibold tracking-[.04em] uppercase dark:border-slate-700`}
+                >
+                    <span>Petugas</span>
+                    <span>Hari terisi</span>
+                    <span>Kegiatan</span>
+                    <span>Total jam</span>
+                    <span>Kegiatan terbanyak</span>
+                    <span />
+                </div>
+                {recap.map((r) => (
+                    <button
+                        key={r.id}
+                        type="button"
+                        disabled={!isAdmin}
+                        onClick={() => router.get(route('staf.kegiatan'), { tanggal: base.tanggal, pegawai: String(r.id) })}
+                        className={`text-fg-1 grid w-full min-w-[760px] ${cols} items-center gap-3.5 border-b border-slate-200 bg-white px-5 py-3 text-left text-sm enabled:cursor-pointer enabled:hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:enabled:hover:bg-slate-900`}
+                    >
+                        <div className="flex min-w-0 items-center gap-2.5">
+                            <span className="grid size-[34px] flex-none place-items-center rounded-full bg-teal-100 text-xs font-bold text-teal-800">
+                                {initials(r.name)}
+                            </span>
+                            <div className="min-w-0">
+                                <div className="font-semibold">{r.name}</div>
+                                <div className="text-fg-3 text-xs">
+                                    {r.kind === 'pustakawan' ? 'Pustakawan' : 'Tendik'} · {r.position}
+                                </div>
+                            </div>
+                        </div>
+                        <span className="font-mono">{r.days}</span>
+                        <span className="font-mono">{r.count}</span>
+                        <span className="font-mono">{duration(r.minutes)}</span>
+                        <span className="text-fg-2 text-[13px]">{r.top ?? '—'}</span>
+                        {isAdmin ? <ChevronRight className="text-fg-3 size-4" /> : <span />}
+                    </button>
+                ))}
+            </section>
+        </>
     );
+}
+
+function Pill({ tone, children }: { tone: string; children: string }) {
+    return <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone}`}>{children}</span>;
+}
+
+const TONES: Record<Tone, string> = {
+    success: 'bg-success-soft text-success',
+    warning: 'bg-warning-soft text-amber-800',
+    teal: 'bg-teal-50 text-teal-700',
+    slate: 'text-fg-2 bg-slate-100 dark:bg-slate-700',
+    danger: 'bg-danger-soft text-berry',
+};
+
+const dayButton =
+    'grid size-9 cursor-pointer place-items-center rounded-[10px] border border-slate-200 bg-white hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-teal-900';
+
+/** "Hari ini", "Kemarin", or the weekday, as the heading above the full date. */
+function dayTitle(date: string, isToday: boolean, label: string): string {
+    if (isToday) return 'Hari ini';
+    if (shiftDate(date, 1) === new Date().toLocaleDateString('sv-SE')) return 'Kemarin';
+
+    return label.split(',')[0];
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

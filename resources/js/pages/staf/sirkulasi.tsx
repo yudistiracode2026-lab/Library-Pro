@@ -1,9 +1,9 @@
 import { Badge, type Tone } from '@/components/staf/master/cells';
-import { Alert, Button, Card, CardTitle, initials, inputClass, PillTabs, rupiah } from '@/components/staf/ui';
+import { Alert, Card, CardTitle, initials, PillTabs, rupiah } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowDownLeft, ArrowUpRight, BookOpen, ChevronLeft, ChevronRight, List, ScanBarcode, Search, X } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, ChevronRight, List, ScanBarcode, X } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 
 interface LoanRow {
@@ -44,10 +44,15 @@ function loanStatus(daysLeft: number): { label: string; tone: Tone } {
     return { label: `${daysLeft} hari lagi`, tone: 'slate' };
 }
 
+const scanInput =
+    'h-11 min-w-0 flex-1 rounded-md border-[1.5px] border-slate-300 bg-white px-3 font-mono text-sm text-fg-1 outline-none focus:border-teal-400 disabled:bg-slate-50 dark:bg-slate-800';
+const scanButton =
+    'h-11 flex-none cursor-pointer rounded-md border border-slate-200 bg-white px-4 font-semibold text-fg-1 hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-fg-4 dark:bg-slate-800';
+
 const visit = (params: Record<string, string>) => router.get(route('staf.sirkulasi'), params, { preserveScroll: true, preserveState: true });
 
 export default function Sirkulasi(props: SirkulasiProps) {
-    const { tab, counts } = props;
+    const { tab } = props;
 
     return (
         <StafLayout title="Sirkulasi" group="Layanan">
@@ -66,11 +71,9 @@ export default function Sirkulasi(props: SirkulasiProps) {
                             href: route('staf.sirkulasi', { tab: 'aktif' }),
                             active: tab === 'aktif',
                             icon: <List />,
-                            count: counts.open,
                         },
                     ]}
                 />
-                {counts.overdue > 0 && <Badge tone="danger">{counts.overdue} pinjaman terlambat</Badge>}
             </div>
 
             {tab === 'pinjam' && <Lend key={'id' in (props.borrower ?? {}) ? (props.borrower as { id: number }).id : 'none'} {...props} />}
@@ -125,44 +128,47 @@ function Lend({ borrower, rules, hints }: SirkulasiProps) {
     const serverError = errors.member ?? errors.codes;
 
     return (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-start gap-4">
             <Card>
                 <Step n={1}>Anggota</Step>
                 <form onSubmit={findMember} className="flex gap-2">
                     <input
                         value={memberQ}
                         onChange={(e) => setMemberQ(e.target.value)}
-                        placeholder="Scan kartu atau ketik NIM / NIP"
+                        placeholder="Scan kartu atau ketik NIM"
                         aria-label="NIM / NIP anggota"
-                        className={inputClass}
+                        className={scanInput}
                     />
-                    <Button type="submit" variant="secondary" className="h-[42px]">
-                        <Search />
+                    <button type="submit" className={scanButton}>
                         Cari
-                    </Button>
+                    </button>
                 </form>
                 <Hints label="Coba:" values={hints.members} onPick={(v) => findMember(undefined, v)} />
 
                 {borrower && 'error' in borrower && <Alert>{borrower.error}</Alert>}
                 {member && (
-                    <div className="flex items-center gap-3 rounded-md bg-teal-50 p-3.5 dark:bg-teal-900">
-                        <span className="grid size-11 flex-none place-items-center rounded-full bg-teal-100 text-sm font-bold text-teal-800">
+                    <div className="flex gap-3.5 rounded-[14px] bg-teal-50 p-4 dark:bg-teal-900">
+                        <span className="font-display grid size-12 flex-none place-items-center rounded-full bg-white font-extrabold text-teal-700 dark:bg-slate-800">
                             {initials(member.name)}
                         </span>
-                        <div className="flex min-w-0 flex-1 flex-col">
-                            <span className="truncate font-semibold">{member.name}</span>
-                            <span className="text-fg-3 text-xs">
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                            <span className="font-display text-base font-bold">{member.name}</span>
+                            <span className="text-fg-2 text-[13px]">
                                 {member.member_number} · {member.study_program}
                             </span>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                                <span className="rounded-full bg-white px-2.5 py-[3px] text-xs font-semibold dark:bg-slate-800">
+                                    Pinjaman {member.active + cart.length}/{rules.maxLoans}
+                                </span>
+                            </div>
                         </div>
-                        <Badge tone={member.active + cart.length >= rules.maxLoans ? 'warning' : 'teal'}>
-                            Pinjaman {member.active + cart.length}/{rules.maxLoans}
-                        </Badge>
                     </div>
                 )}
                 {member?.block && <Alert>{member.block}</Alert>}
 
-                <Step n={2}>Eksemplar</Step>
+                <span className="mt-2">
+                    <Step n={2}>Eksemplar</Step>
+                </span>
                 <form onSubmit={addCopy} className="flex gap-2">
                     <input
                         value={code}
@@ -170,25 +176,22 @@ function Lend({ borrower, rules, hints }: SirkulasiProps) {
                         placeholder="Scan barcode buku, mis. B0002-1"
                         aria-label="Barcode eksemplar"
                         disabled={!member || !!member.block}
-                        className={`${inputClass} font-mono`}
+                        className={scanInput}
                     />
-                    <Button type="submit" variant="secondary" className="h-[42px]" disabled={!member || !!member.block}>
-                        <ScanBarcode />
+                    <button type="submit" className={scanButton} disabled={!member || !!member.block}>
                         Tambah
-                    </Button>
+                    </button>
                 </form>
-                <Hints label="Coba:" values={hints.copies} onPick={setCode} mono />
+                <Hints label="Coba:" values={hints.copies} onPick={setCode} />
                 {error && <Alert>{error}</Alert>}
             </Card>
 
             <Card>
                 <CardTitle aside={<span className="text-fg-3 text-[13px]">Jatuh tempo {rules.dueDate}</span>}>Daftar pinjam</CardTitle>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3.5">
                     {cart.map((c) => (
                         <div key={c.code} className="flex items-center gap-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
-                            <span className="grid h-11 w-8 flex-none place-items-center rounded-xs bg-teal-600 text-white">
-                                <BookOpen className="size-3.5" />
-                            </span>
+                            <span className="h-[50px] w-9 flex-none rounded-xs bg-teal-600" />
                             <div className="flex min-w-0 flex-1 flex-col">
                                 <span className="truncate text-sm font-semibold">{c.title}</span>
                                 <span className="text-fg-3 font-mono text-xs">
@@ -205,13 +208,21 @@ function Lend({ borrower, rules, hints }: SirkulasiProps) {
                             </button>
                         </div>
                     ))}
-                    {cart.length === 0 && <p className="text-fg-3 py-8 text-center text-sm">Belum ada buku. Scan barcode di sebelah kiri.</p>}
+                    {cart.length === 0 && (
+                        <div className="text-fg-3 rounded-md border-[1.5px] border-dashed border-slate-300 p-8 text-center text-sm dark:border-slate-600">
+                            Belum ada buku. Scan barcode di sebelah kiri.
+                        </div>
+                    )}
                 </div>
                 {serverError && <Alert>{serverError}</Alert>}
-                <Button size="lg" onClick={lend} disabled={!member || cart.length === 0 || processing}>
-                    <ArrowUpRight />
+                <button
+                    type="button"
+                    onClick={lend}
+                    disabled={!member || cart.length === 0 || processing}
+                    className="h-[46px] cursor-pointer rounded-md bg-teal-400 text-[15px] font-semibold text-white hover:bg-teal-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
                     Proses peminjaman
-                </Button>
+                </button>
             </Card>
         </div>
     );
@@ -230,7 +241,7 @@ function Return({ returning, loans, rules }: SirkulasiProps) {
     };
 
     return (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-start gap-4">
             <Card>
                 <CardTitle>Scan buku yang dikembalikan</CardTitle>
                 <form onSubmit={find} className="flex gap-2">
@@ -239,15 +250,14 @@ function Return({ returning, loans, rules }: SirkulasiProps) {
                         onChange={(e) => setCode(e.target.value)}
                         placeholder="Barcode eksemplar"
                         aria-label="Barcode eksemplar"
-                        className={`${inputClass} font-mono`}
+                        className={scanInput}
                     />
-                    <Button type="submit" variant="secondary" className="h-[42px]">
-                        <ScanBarcode />
+                    <button type="submit" className={scanButton}>
                         Cek
-                    </Button>
+                    </button>
                 </form>
                 <span className="text-fg-3 text-[13px]">Atau pilih dari pinjaman aktif:</span>
-                <div className="flex max-h-[360px] flex-col gap-1.5 overflow-auto">
+                <div className="flex flex-col gap-3.5">
                     {loans.data.map((l) => {
                         const status = loanStatus(l.days_left);
 
@@ -256,10 +266,10 @@ function Return({ returning, loans, rules }: SirkulasiProps) {
                                 key={l.id}
                                 type="button"
                                 onClick={() => find(undefined, l.code)}
-                                className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left text-sm ${loan?.id === l.id ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 hover:bg-slate-50 dark:border-slate-700'}`}
+                                className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm ${loan?.id === l.id ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 hover:bg-slate-50 dark:border-slate-700'}`}
                             >
                                 <span className="text-fg-3 w-[72px] flex-none font-mono text-xs">{l.code}</span>
-                                <span className="min-w-0 flex-1 truncate">{l.title}</span>
+                                <span className="min-w-0 flex-1 font-semibold">{l.title}</span>
                                 <Badge tone={status.tone}>{status.label}</Badge>
                             </button>
                         );
@@ -271,8 +281,8 @@ function Return({ returning, loans, rules }: SirkulasiProps) {
                 {returning && 'error' in returning && <Alert>{returning.error}</Alert>}
                 {loan ? (
                     <>
-                        <h2 className="text-xl font-bold">{loan.title}</h2>
-                        <dl className="grid grid-cols-[140px_1fr] gap-x-3 gap-y-2 text-sm">
+                        <h2 className="font-display text-[17px] font-bold">{loan.title}</h2>
+                        <dl className="grid grid-cols-[140px_1fr] gap-2.5 text-sm">
                             <dt className="text-fg-3">Peminjam</dt>
                             <dd>
                                 {loan.member} ({loan.member_number})
@@ -301,15 +311,18 @@ function Return({ returning, loans, rules }: SirkulasiProps) {
                             />
                             Buku rusak / perlu perbaikan
                         </label>
-                        <Button size="lg" onClick={() => router.post(route('staf.sirkulasi.return', loan.id), { damaged }, { preserveScroll: true })}>
-                            <ArrowDownLeft />
+                        <button
+                            type="button"
+                            onClick={() => router.post(route('staf.sirkulasi.return', loan.id), { damaged }, { preserveScroll: true })}
+                            className="h-[46px] cursor-pointer rounded-md bg-teal-400 text-[15px] font-semibold text-white hover:bg-teal-500"
+                        >
                             Proses pengembalian
-                        </Button>
+                        </button>
                     </>
                 ) : (
                     !returning && (
-                        <div className="text-fg-3 flex flex-col items-center gap-2 py-14 text-center text-sm">
-                            <ScanBarcode className="size-8" />
+                        <div className="text-fg-3 flex flex-col items-center gap-1 px-4 py-12 text-center text-sm">
+                            <ScanBarcode className="size-7" />
                             Detail pinjaman tampil di sini setelah buku di-scan.
                         </div>
                     )
@@ -323,76 +336,63 @@ function ActiveLoans({ loans, filters }: SirkulasiProps) {
     const [q, setQ] = useState(filters.q);
 
     return (
-        <Card className="p-0 md:p-0">
+        <Card className="gap-0 p-0 md:p-0">
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
                     visit({ tab: 'aktif', q });
                 }}
-                className="flex gap-2 p-5 pb-0"
+                className="flex gap-2 px-5 pt-5"
             >
                 <input
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     placeholder="Cari eksemplar, judul, atau peminjam"
                     aria-label="Cari pinjaman"
-                    className={`${inputClass} max-w-md`}
+                    className={`${scanInput} max-w-md font-sans`}
                 />
-                <Button type="submit" variant="secondary" className="h-[42px]">
-                    <Search />
+                <button type="submit" className={scanButton}>
                     Cari
-                </Button>
+                </button>
             </form>
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px] text-sm">
-                    <thead className="text-fg-3 border-b border-slate-200 bg-slate-50 text-left text-xs tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900">
-                        <tr>
-                            {['Eksemplar', 'Judul', 'Peminjam', 'Dipinjam', 'Jatuh tempo', 'Status', ''].map((h) => (
-                                <th key={h} className="px-5 py-3 font-semibold">
-                                    {h}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loans.data.map((l) => {
-                            const status = loanStatus(l.days_left);
+            <div className="mt-4 overflow-x-auto border-t border-slate-200 dark:border-slate-700">
+                {loans.data.map((l) => {
+                    const status = loanStatus(l.days_left);
 
-                            return (
-                                <tr key={l.id} className="border-b border-slate-200 dark:border-slate-700">
-                                    <td className="px-5 py-3 font-mono text-[13px]">{l.code}</td>
-                                    <td className="max-w-[280px] truncate px-5 py-3 font-semibold">{l.title}</td>
-                                    <td className="px-5 py-3">
-                                        {l.member}
-                                        <div className="text-fg-3 text-xs">{l.member_number}</div>
-                                    </td>
-                                    <td className="px-5 py-3">{l.loaned_at}</td>
-                                    <td className="px-5 py-3">
-                                        {l.due_at}
-                                        {l.extensions > 0 && <div className="text-fg-3 text-xs">diperpanjang {l.extensions}×</div>}
-                                    </td>
-                                    <td className="px-5 py-3">
-                                        <Badge tone={status.tone}>{status.label}</Badge>
-                                    </td>
-                                    <td className="px-5 py-3 text-right">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            disabled={!!l.extend_problem}
-                                            title={l.extend_problem ?? 'Perpanjang pinjaman'}
-                                            onClick={() => router.post(route('staf.sirkulasi.extend', l.id), {}, { preserveScroll: true })}
-                                        >
-                                            Perpanjang
-                                        </Button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                    return (
+                        <div
+                            key={l.id}
+                            className="grid min-w-[860px] grid-cols-[90px_minmax(0,1.6fr)_minmax(0,1fr)_110px_110px_130px_120px] items-center gap-3 border-b border-slate-200 px-5 py-3.5 text-sm dark:border-slate-700"
+                        >
+                            <span className="text-fg-3 font-mono text-xs">{l.code}</span>
+                            <span className="font-semibold">{l.title}</span>
+                            <span>
+                                {l.member}
+                                <span className="text-fg-3 block text-xs">{l.member_number}</span>
+                            </span>
+                            <span className="text-fg-3 whitespace-nowrap">{l.loaned_at}</span>
+                            <span className="whitespace-nowrap">
+                                {l.due_at}
+                                {l.extensions > 0 && <span className="text-fg-3 block text-xs">diperpanjang {l.extensions}×</span>}
+                            </span>
+                            <span className="justify-self-start">
+                                <Badge tone={status.tone}>{status.label}</Badge>
+                            </span>
+                            <button
+                                type="button"
+                                disabled={!!l.extend_problem}
+                                title={l.extend_problem ?? 'Perpanjang pinjaman'}
+                                onClick={() => router.post(route('staf.sirkulasi.extend', l.id), {}, { preserveScroll: true })}
+                                className="text-fg-1 disabled:text-fg-4 h-[34px] cursor-pointer rounded-[10px] border border-slate-200 bg-white text-[13px] font-semibold hover:bg-slate-100 disabled:cursor-not-allowed disabled:hover:bg-white dark:bg-slate-800"
+                            >
+                                Perpanjang
+                            </button>
+                        </div>
+                    );
+                })}
                 {loans.data.length === 0 && <p className="text-fg-3 py-10 text-center text-sm">Tidak ada pinjaman aktif yang cocok.</p>}
             </div>
-            <div className="text-fg-3 flex items-center justify-between px-5 pb-4 text-[13px]">
+            <div className="text-fg-3 flex items-center justify-between px-5 py-3 text-[13px]">
                 <span>{loans.total} pinjaman aktif</span>
                 {loans.last_page > 1 && (
                     <div className="flex items-center gap-1">
@@ -434,18 +434,18 @@ function Step({ n, children }: { n: number; children: string }) {
     );
 }
 
-function Hints({ label, values, onPick, mono }: { label: string; values: string[]; onPick: (v: string) => void; mono?: boolean }) {
+function Hints({ label, values, onPick }: { label: string; values: string[]; onPick: (v: string) => void }) {
     if (values.length === 0) return null;
 
     return (
-        <div className="text-fg-3 -mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+        <div className="text-fg-3 -mt-1 flex flex-wrap items-center gap-1.5 text-xs">
             {label}
             {values.map((v) => (
                 <button
                     key={v}
                     type="button"
                     onClick={() => onPick(v)}
-                    className={`text-fg-2 cursor-pointer rounded-full border border-slate-200 bg-white px-2.5 py-0.5 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 dark:bg-slate-800 ${mono ? 'font-mono' : ''}`}
+                    className="text-fg-1 cursor-pointer rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-xs hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 dark:bg-slate-900"
                 >
                     {v}
                 </button>

@@ -1,8 +1,7 @@
-import { Badge } from '@/components/staf/master/cells';
-import { Button, Card, CardTitle, initials, inputClass, PillTabs } from '@/components/staf/ui';
+import { Button, Card, CardTitle, initials, inputClass } from '@/components/staf/ui';
 import { type KioskQr, useKioskQr } from '@/hooks/use-kiosk-qr';
 import StafLayout from '@/layouts/staf-layout';
-import { router, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import { LogOut, Monitor, UserPlus } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { type FormEvent } from 'react';
@@ -97,23 +96,25 @@ export default function Kunjungan({ stats, visits, filter, purposes, qr }: Kunju
                         </a>
                     </Card>
 
-                    <Card>
-                        <CardTitle>Catat manual</CardTitle>
+                    <Card className="gap-3 md:p-5">
                         <form onSubmit={submit} className="flex flex-col gap-3">
-                            <div className="flex gap-1 self-start rounded-md bg-slate-100 p-1 dark:bg-slate-700">
-                                {[
-                                    ['anggota', 'Anggota'],
-                                    ['tamu', 'Tamu umum'],
-                                ].map(([value, label]) => (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        onClick={() => form.setData('mode', value)}
-                                        className={`h-[34px] cursor-pointer rounded-[9px] px-4 text-[13px] font-semibold ${form.data.mode === value ? 'text-fg-1 bg-white shadow-sm dark:bg-slate-800' : 'text-fg-3'}`}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <span className="font-display text-[17px] font-bold">Catat manual</span>
+                                <div className="flex gap-1 rounded-[10px] bg-slate-100 p-1 dark:bg-slate-700">
+                                    {[
+                                        ['anggota', 'Anggota'],
+                                        ['tamu', 'Tamu umum'],
+                                    ].map(([value, label]) => (
+                                        <button
+                                            key={value}
+                                            type="button"
+                                            onClick={() => form.setData('mode', value)}
+                                            className={`h-[30px] cursor-pointer rounded-[8px] px-3 text-[13px] font-semibold ${form.data.mode === value ? 'text-fg-1 bg-white shadow-sm dark:bg-slate-800' : 'text-fg-3'}`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                             {form.data.mode === 'anggota' ? (
                                 <>
@@ -169,75 +170,74 @@ export default function Kunjungan({ stats, visits, filter, purposes, qr }: Kunju
                     </Card>
                 </div>
 
-                <Card className="min-w-0 flex-[55_1_420px]">
-                    <CardTitle
-                        aside={
-                            <PillTabs
-                                tabs={[
-                                    ['', 'Semua'],
-                                    ['dalam', 'Di dalam'],
-                                    ['keluar', 'Sudah keluar'],
-                                ].map(([value, label]) => ({
-                                    label,
-                                    href: route('staf.kunjungan', value ? { status: value } : {}),
-                                    active: filter === value,
-                                }))}
-                            />
-                        }
-                    >
-                        Log kunjungan hari ini
-                    </CardTitle>
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[560px] text-sm">
-                            <thead className="text-fg-3 border-b border-slate-200 text-left text-xs tracking-[.06em] uppercase dark:border-slate-700">
-                                <tr>
-                                    {['Pengunjung', 'Keperluan', 'Masuk', 'Keluar', 'Cara', ''].map((h) => (
-                                        <th key={h} className="py-2.5 pr-3 font-semibold">
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {visits.map((v) => (
-                                    <tr key={v.id} className="border-b border-slate-200 dark:border-slate-700">
-                                        <td className="py-2.5 pr-3">
-                                            <div className="flex items-center gap-2.5">
-                                                <span className="grid size-9 flex-none place-items-center rounded-full bg-teal-100 text-xs font-bold text-teal-800">
-                                                    {initials(v.name)}
-                                                </span>
-                                                <div className="min-w-0">
-                                                    <div className="truncate font-semibold">{v.name}</div>
-                                                    <div className="text-fg-3 truncate text-xs">{v.detail}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="text-fg-2 py-2.5 pr-3">{v.purpose}</td>
-                                        <td className="py-2.5 pr-3 font-mono">{v.in}</td>
-                                        <td className={`py-2.5 pr-3 font-mono ${v.out ? '' : 'text-fg-4'}`}>{v.out ?? '—'}</td>
-                                        <td className="py-2.5 pr-3">
-                                            <Badge tone={v.method === 'QR' ? 'teal' : v.method === 'Tamu' ? 'warning' : 'slate'}>{v.method}</Badge>
-                                        </td>
-                                        <td className="py-2.5 text-right">
-                                            {!v.out && (
-                                                <button
-                                                    type="button"
-                                                    title="Tandai keluar"
-                                                    aria-label={`Tandai ${v.name} keluar`}
-                                                    onClick={() => router.post(route('staf.kunjungan.checkout', v.id), {}, { preserveScroll: true })}
-                                                    className="text-fg-2 grid size-8 cursor-pointer place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
-                                                >
-                                                    <LogOut className="size-4" />
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {visits.length === 0 && <p className="text-fg-3 py-10 text-center text-sm">Belum ada kunjungan di kategori ini.</p>}
+                <section className="min-w-0 flex-[55_1_420px] overflow-hidden rounded-lg bg-white shadow-sm dark:bg-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-700">
+                        <span className="font-display text-[17px] font-bold">Log kunjungan hari ini</span>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {[
+                                ['', 'Semua'],
+                                ['dalam', 'Di dalam'],
+                                ['keluar', 'Sudah pulang'],
+                            ].map(([value, label]) => (
+                                <Link
+                                    key={value}
+                                    href={route('staf.kunjungan', value ? { status: value } : {})}
+                                    preserveScroll
+                                    className={`flex h-8 flex-none items-center rounded-full border px-3 text-xs font-semibold whitespace-nowrap ${filter === value ? 'border-teal-400 bg-teal-400 text-white' : 'text-fg-2 border-slate-200 bg-white dark:bg-slate-800'}`}
+                                >
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
-                </Card>
+                    <div className="overflow-x-auto">
+                        <div className="text-fg-3 grid min-w-[520px] grid-cols-[36px_minmax(0,1.6fr)_minmax(0,1.1fr)_44px_44px_64px_28px] gap-2.5 border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900">
+                            <span />
+                            <span>Pengunjung</span>
+                            <span>Keperluan</span>
+                            <span>Masuk</span>
+                            <span>Keluar</span>
+                            <span>Cara</span>
+                            <span />
+                        </div>
+                        {visits.map((v) => (
+                            <div
+                                key={v.id}
+                                className="grid min-w-[520px] grid-cols-[36px_minmax(0,1.6fr)_minmax(0,1.1fr)_44px_44px_64px_28px] items-center gap-2.5 border-b border-slate-200 px-4 py-2.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
+                            >
+                                <span className="font-display grid size-9 place-items-center rounded-full bg-teal-100 text-[13px] font-bold text-teal-800">
+                                    {initials(v.name)}
+                                </span>
+                                <div className="min-w-0">
+                                    <div className="text-[13px] font-semibold">{v.name}</div>
+                                    <div className="text-fg-3 text-[11px]">{v.detail}</div>
+                                </div>
+                                <span className="text-fg-2 text-[13px]">{v.purpose}</span>
+                                <span className="font-mono text-[13px]">{v.in}</span>
+                                <span className={`font-mono text-[13px] ${v.out ? '' : 'text-fg-4'}`}>{v.out ?? '—'}</span>
+                                <span
+                                    className={`justify-self-start rounded-full px-2 py-0.5 text-[11px] font-semibold ${v.method === 'QR' ? 'bg-teal-50 text-teal-700' : 'text-fg-2 bg-slate-100 dark:bg-slate-700'}`}
+                                >
+                                    {v.method}
+                                </span>
+                                {!v.out ? (
+                                    <button
+                                        type="button"
+                                        title="Tandai keluar"
+                                        aria-label={`Tandai ${v.name} keluar`}
+                                        onClick={() => router.post(route('staf.kunjungan.checkout', v.id), {}, { preserveScroll: true })}
+                                        className="text-fg-2 hover:text-fg-1 grid size-7 cursor-pointer place-items-center rounded-[8px] border border-slate-200 bg-white hover:bg-slate-100 dark:bg-slate-800"
+                                    >
+                                        <LogOut className="size-3.5" />
+                                    </button>
+                                ) : (
+                                    <span />
+                                )}
+                            </div>
+                        ))}
+                        {visits.length === 0 && <div className="text-fg-3 p-8 text-center text-sm">Belum ada kunjungan di kategori ini.</div>}
+                    </div>
+                </section>
             </div>
         </StafLayout>
     );

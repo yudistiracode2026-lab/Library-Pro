@@ -34,6 +34,7 @@ interface RackDetail {
 interface PencarianProps {
     filters: { q: string };
     results: Result[];
+    resultCount: number;
     selectedBookId: number | null;
     floor: number;
     floors: Floor[];
@@ -49,10 +50,11 @@ const FIXTURE_ICONS: Record<string, ComponentType<{ className?: string }>> = {
     'users-round': UsersRound,
 };
 
-export default function Pencarian({ filters, results, selectedBookId, floor, floors, rack }: PencarianProps) {
+export default function Pencarian({ filters, results, resultCount, selectedBookId, floor, floors, rack }: PencarianProps) {
     const [q, setQ] = useState(filters.q);
     const first = useRef(true);
     const plan = floors.find((f) => f.floor === floor) ?? floors[0];
+    const foundRack = selectedBookId ? rack?.books.some((b) => b.id === selectedBookId) && rack.code : null;
 
     const go = (params: Record<string, string | number>) =>
         router.get(route('staf.pencarian'), { ...(q ? { q } : {}), ...params }, { preserveState: true, preserveScroll: true, replace: true });
@@ -70,8 +72,8 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
 
     return (
         <StafLayout title="Pencarian buku & denah rak" group="Layanan">
-            <Card>
-                <label className="text-fg-3 flex h-11 items-center gap-2.5 rounded-md border-[1.5px] border-slate-300 px-3">
+            <Card className="gap-3 md:px-5 md:py-4">
+                <label className="text-fg-3 flex h-11 items-center gap-2 rounded-md border-[1.5px] border-slate-300 px-3">
                     <Search className="size-4 flex-none" />
                     <input
                         value={q}
@@ -80,7 +82,9 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
                         aria-label="Cari buku"
                         className="text-fg-1 min-w-0 flex-1 bg-transparent text-sm outline-none"
                     />
-                    {q && <span className="text-xs whitespace-nowrap">{results.length} hasil</span>}
+                    <span className="text-xs whitespace-nowrap">
+                        {resultCount > results.length ? `${results.length} dari ${resultCount} hasil` : `${resultCount} hasil`}
+                    </span>
                 </label>
                 {results.length > 0 && (
                     <div className="flex flex-col gap-1.5">
@@ -92,17 +96,17 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
                                     key={b.id}
                                     type="button"
                                     onClick={() => go({ buku: b.id })}
-                                    className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left ${on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 hover:bg-slate-50 dark:border-slate-700'}`}
+                                    className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left ${on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 bg-white hover:border-teal-300 dark:border-slate-700 dark:bg-slate-800'}`}
                                 >
                                     <span className={`h-[38px] w-7 flex-none rounded-xs ${DDC_COLORS[b.ddc_class]}`} />
                                     <span className="flex min-w-0 flex-1 flex-col">
-                                        <span className="truncate text-sm font-semibold">{b.title}</span>
+                                        <span className="text-sm font-semibold">{b.title}</span>
                                         <span className="text-fg-3 truncate text-xs">{b.author}</span>
                                     </span>
                                     <span className="flex-none text-right text-xs font-semibold text-teal-700 dark:text-teal-200">
                                         Lt. {b.floor} · Rak {b.rack}
-                                        <span className={`block font-medium ${b.available > 0 ? 'text-fg-3' : 'text-danger'}`}>
-                                            {b.available > 0 ? `${b.available} dari ${b.copies} tersedia` : 'Dipinjam semua'}
+                                        <span className="text-fg-3 block font-medium">
+                                            {b.available > 0 ? `${b.available} tersedia` : 'dipinjam'}
                                         </span>
                                     </span>
                                 </button>
@@ -110,11 +114,11 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
                         })}
                     </div>
                 )}
-                {q && results.length === 0 && <p className="text-fg-3 text-sm">Belum ada buku yang cocok. Coba kata kunci lain, ya.</p>}
+                {results.length === 0 && <p className="text-fg-3 text-sm">Belum ada buku yang cocok. Coba kata kunci lain, ya.</p>}
             </Card>
 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-stretch gap-4">
-                <Card className="min-w-0">
+                <Card className="min-w-0 gap-3 md:px-5 md:py-4">
                     <CardTitle
                         aside={
                             <div className="flex gap-1 rounded-[10px] bg-slate-100 p-1 dark:bg-slate-700">
@@ -150,6 +154,7 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
                                 );
                             })}
                             {plan.racks.map((r) => {
+                                const hit = r.code === foundRack;
                                 const on = r.code === rack?.code;
 
                                 return (
@@ -158,7 +163,7 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
                                         type="button"
                                         title={`${r.code} · ${r.name} · ${r.books} judul`}
                                         onClick={() => go({ rak: r.code })}
-                                        className={`font-display absolute flex cursor-pointer flex-col items-center justify-center rounded-[6px] border-2 text-[13px] font-extrabold ${on ? 'border-teal-500 bg-teal-400 text-white' : 'text-fg-1 border-slate-300 bg-white hover:border-teal-300 dark:bg-slate-800'}`}
+                                        className={`font-display absolute flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[6px] border-2 text-[13px] font-extrabold ${hit ? '[animation:pulsering_1.4s_ease-out_infinite] border-teal-600 bg-teal-400 text-white' : on ? 'text-fg-1 border-teal-300 bg-teal-50 dark:bg-teal-900' : 'text-fg-1 border-slate-300 bg-white hover:border-teal-300 dark:bg-slate-800'}`}
                                         style={{ left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%` }}
                                     >
                                         {r.code}
@@ -176,7 +181,7 @@ export default function Pencarian({ filters, results, selectedBookId, floor, flo
                 </Card>
 
                 {rack && (
-                    <Card className="min-w-0">
+                    <Card className="min-w-0 gap-3 md:px-5 md:py-4">
                         <CardTitle
                             aside={
                                 <span className="text-fg-3 text-xs">

@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Rack;
 use App\Support\FloorPlan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -29,7 +30,9 @@ class SearchMapController extends Controller
 
         return Inertia::render('staf/pencarian', [
             'filters' => ['q' => $q],
-            'results' => $q === '' ? [] : $this->search($q),
+            // Like the prototype, the list shows the first five titles even before typing.
+            'results' => $this->search($q)->take(5)->values(),
+            'resultCount' => $this->query($q)->count(),
             'selectedBookId' => $book?->id,
             'floor' => $rack?->floor ?? 1,
             'floors' => collect(FloorPlan::fixtures())->map(fn ($fixtures, $floor) => [
@@ -49,18 +52,26 @@ class SearchMapController extends Controller
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function search(string $q): Collection
+    /**
+     * @return Builder<Book>
+     */
+    private function query(string $q): Builder
     {
         return Book::query()
             ->where('type', Book::PRINTED)
-            ->with(['author', 'rack'])
-            ->withCount(['copies', 'copies as available_count' => fn ($c) => $c->where('status', BookCopy::AVAILABLE)])
-            ->where(fn ($w) => $w
+            ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('title', 'like', "%{$q}%")
                 ->orWhere('call_number', 'like', "%{$q}%")
-                ->orWhereRelation('author', 'name', 'like', "%{$q}%"))
+                ->orWhereRelation('author', 'name', 'like', "%{$q}%")));
+    }
+
+    private function search(string $q): Collection
+    {
+        return $this->query($q)
+            ->with(['author', 'rack'])
+            ->withCount(['copies', 'copies as available_count' => fn ($c) => $c->where('status', BookCopy::AVAILABLE)])
             ->orderBy('title')
-            ->limit(8)
+            ->limit(5)
             ->get()
             ->map(fn (Book $b) => [
                 'id' => $b->id,

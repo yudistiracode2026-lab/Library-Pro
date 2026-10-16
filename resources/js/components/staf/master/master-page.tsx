@@ -67,7 +67,7 @@ export function MasterPage<T extends { id: number }>({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [q]);
 
-    const gridTemplate = `${grid} 84px`;
+    const gridTemplate = `${grid} 80px`;
     const editing = editor?.row ?? null;
 
     return (
@@ -127,7 +127,7 @@ export function MasterPage<T extends { id: number }>({
 
             <div className="overflow-x-auto rounded-lg bg-white shadow-sm dark:bg-slate-800">
                 <div
-                    className="text-fg-3 grid min-w-[900px] gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900"
+                    className="text-fg-3 grid min-w-[900px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900"
                     style={{ gridTemplateColumns: gridTemplate }}
                 >
                     {columns.map((c) => (
@@ -139,11 +139,11 @@ export function MasterPage<T extends { id: number }>({
                 {records.data.map((row) => (
                     <div
                         key={row.id}
-                        className="grid min-w-[900px] items-center gap-3 border-b border-slate-200 px-5 py-3.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
+                        className="grid min-w-[900px] items-center gap-4 border-b border-slate-200 px-5 py-3.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
                         style={{ gridTemplateColumns: gridTemplate }}
                     >
                         {columns.map((c) => (
-                            <div key={c.label} className="flex min-w-0 flex-col">
+                            <div key={c.label} className="flex min-w-0 flex-col gap-0.5">
                                 {c.render(row)}
                             </div>
                         ))}

@@ -14,7 +14,7 @@ export function Badge({ tone, children }: { tone: Tone; children: ReactNode }) {
     return (
         <span
             title={typeof children === 'string' ? children : undefined}
-            className={`max-w-full self-start truncate rounded-full px-2.5 py-[3px] text-xs font-semibold whitespace-nowrap ${TONES[tone]}`}
+            className={`max-w-full self-start rounded-full px-2.5 py-[3px] text-xs leading-snug font-semibold ${TONES[tone]}`}
         >
             {children}
         </span>

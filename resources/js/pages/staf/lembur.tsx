@@ -1,9 +1,21 @@
-import { Badge, type Tone } from '@/components/staf/master/cells';
-import { Alert, Button, Card, CardTitle, duration, IconButton, initials, inputClass, Kpi, PillTabs } from '@/components/staf/ui';
+import { Alert, Button, duration, initials, inputClass, Kpi, PillTabs } from '@/components/staf/ui';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import StafLayout from '@/layouts/staf-layout';
 import { router, useForm } from '@inertiajs/react';
-import { CalendarDays, CalendarPlus, CircleCheck, ClipboardList, Download, Fingerprint, LogIn, LogOut, Pencil, Printer, Trash2 } from 'lucide-react';
+import {
+    CalendarDays,
+    CalendarPlus,
+    CircleCheck,
+    ClipboardList,
+    Clock,
+    Fingerprint,
+    LogIn,
+    LogOut,
+    Pencil,
+    Printer,
+    Sheet,
+    Trash2,
+} from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 
 interface Session {
@@ -43,8 +55,17 @@ interface LemburProps {
     staff: { id: number; name: string; kind: string }[];
 }
 
-const STATUS_TONE: Record<Session['status'], Tone> = { 'Hari ini': 'warning', 'Akan datang': 'teal', Selesai: 'slate' };
-const STATE_TONE: Record<string, Tone> = { 'Tepat waktu': 'success', Terlambat: 'warning', 'Tidak hadir': 'danger' };
+const STATUS_TONE: Record<Session['status'], string> = {
+    'Akan datang': 'text-fg-2 bg-slate-100 dark:bg-slate-700',
+    'Hari ini': 'bg-warning-soft text-amber-800',
+    Selesai: 'bg-success-soft text-success',
+};
+const STATE_TONE: Record<string, string> = {
+    'Tepat waktu': 'bg-success-soft text-success',
+    Terlambat: 'bg-warning-soft text-amber-800',
+    'Belum keluar': 'bg-warning-soft text-amber-800',
+    'Tidak hadir': 'bg-danger-soft text-danger',
+};
 
 export default function Lembur(props: LemburProps) {
     const { tab, kpis } = props;
@@ -98,59 +119,90 @@ function Schedule({ sessions, filter, canManage, staff }: LemburProps) {
                     ))}
                 </div>
                 {canManage && (
-                    <Button onClick={() => setEditing('new')}>
-                        <CalendarPlus />
+                    <button
+                        type="button"
+                        onClick={() => setEditing('new')}
+                        className="flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] bg-teal-400 px-3.5 text-[13px] font-semibold whitespace-nowrap text-white hover:bg-teal-500 active:scale-[.98]"
+                    >
+                        <CalendarPlus className="size-4" />
                         Jadwalkan lembur
-                    </Button>
+                    </button>
                 )}
             </div>
 
-            <div className="flex flex-col gap-2.5">
-                {sessions.map((s) => (
-                    <Card key={s.id} className="flex-row items-center gap-4 py-4 md:py-4">
-                        <div className="flex w-14 flex-none flex-col items-center rounded-md bg-teal-50 py-1.5 text-teal-800 dark:bg-teal-900 dark:text-teal-100">
-                            <span className="text-[11px] font-semibold uppercase">{s.dow}</span>
-                            <span className="font-display text-xl leading-none font-extrabold">{s.day}</span>
-                            <span className="text-[11px]">{s.mon}</span>
-                        </div>
-                        <div className="flex min-w-0 flex-1 flex-col gap-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-semibold">{s.activity}</span>
-                                <Badge tone={STATUS_TONE[s.status]}>{s.status}</Badge>
+            <div className="flex flex-col gap-3">
+                {sessions.map((s) => {
+                    const isToday = s.status === 'Hari ini';
+
+                    return (
+                        <section
+                            key={s.id}
+                            className={`flex flex-wrap items-center gap-5 rounded-lg bg-white px-5 py-4 shadow-sm dark:bg-slate-800 ${s.status === 'Selesai' ? 'opacity-75' : ''}`}
+                        >
+                            <div
+                                className={`flex w-16 flex-none flex-col items-center rounded-md py-2 ${isToday ? 'bg-teal-400 text-white' : 'text-fg-2 bg-slate-100 dark:bg-slate-700'}`}
+                            >
+                                <span className="text-[11px] font-semibold tracking-[.06em] uppercase">{s.dow}</span>
+                                <span className="font-display text-2xl leading-[1.1] font-extrabold">{s.day}</span>
+                                <span className="text-[11px]">{s.mon}</span>
                             </div>
-                            <span className="text-fg-3 font-mono text-[13px]">
-                                {s.start.replace(':', '.')}–{s.end.replace(':', '.')}
-                            </span>
-                        </div>
-                        <div className="hidden items-center sm:flex">
-                            {s.people.map((p, i) => (
-                                <span
-                                    key={p.id}
-                                    title={p.name}
-                                    className={`grid size-8 place-items-center rounded-full border-2 border-white bg-teal-100 text-[11px] font-bold text-teal-800 ${i ? '-ml-2' : ''}`}
-                                >
-                                    {initials(p.name)}
+                            <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-display text-base font-bold">{s.activity}</span>
+                                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_TONE[s.status]}`}>{s.status}</span>
+                                </div>
+                                <span className="text-fg-3 flex items-center gap-1.5 text-[13px]">
+                                    <Clock className="size-3.5" />
+                                    <span className="font-mono">
+                                        {s.start.replace(':', '.')} – {s.end.replace(':', '.')}
+                                    </span>
+                                    · {duration(minutesBetween(s.start, s.end))}
                                 </span>
-                            ))}
-                            <span className="text-fg-3 ml-2 text-xs">{s.people.length} petugas</span>
-                        </div>
-                        {canManage && (
-                            <div className="flex gap-1">
-                                <IconButton label="Ubah" onClick={() => setEditing(s)}>
-                                    <Pencil className="size-3.5" />
-                                </IconButton>
-                                <IconButton
-                                    label="Hapus"
-                                    danger
-                                    onClick={() => router.delete(route('staf.lembur.destroy', s.id), { preserveScroll: true })}
-                                >
-                                    <Trash2 className="size-3.5" />
-                                </IconButton>
                             </div>
-                        )}
-                    </Card>
-                ))}
-                {sessions.length === 0 && <p className="text-fg-3 py-8 text-center text-sm">Belum ada jadwal lembur di kategori ini.</p>}
+                            <div className="flex items-center gap-2.5">
+                                <div className="flex pl-1.5">
+                                    {s.people.map((p) => (
+                                        <span
+                                            key={p.id}
+                                            title={p.name}
+                                            className="font-display -ml-1.5 grid size-[34px] place-items-center rounded-full border-2 border-white bg-teal-100 text-xs font-bold text-teal-800 dark:border-slate-800"
+                                        >
+                                            {initials(p.name)}
+                                        </span>
+                                    ))}
+                                </div>
+                                <span className="text-fg-2 text-[13px]">
+                                    {s.people.length === 1 ? s.people[0].name.split(',')[0] : `${s.people.length} petugas`}
+                                </span>
+                            </div>
+                            {canManage && (
+                                <div className="flex gap-1">
+                                    <button
+                                        type="button"
+                                        title="Ubah"
+                                        onClick={() => setEditing(s)}
+                                        className="text-fg-2 grid size-[34px] cursor-pointer place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
+                                    >
+                                        <Pencil className="size-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        title="Hapus"
+                                        onClick={() => router.delete(route('staf.lembur.destroy', s.id), { preserveScroll: true })}
+                                        className="text-fg-2 hover:bg-danger-soft hover:text-danger grid size-[34px] cursor-pointer place-items-center rounded-[9px]"
+                                    >
+                                        <Trash2 className="size-4" />
+                                    </button>
+                                </div>
+                            )}
+                        </section>
+                    );
+                })}
+                {sessions.length === 0 && (
+                    <div className="text-fg-3 rounded-lg bg-white p-10 text-center text-sm shadow-sm dark:bg-slate-800">
+                        Belum ada jadwal lembur di kategori ini.
+                    </div>
+                )}
             </div>
 
             {editing && <SessionForm session={editing === 'new' ? null : editing} staff={staff} onClose={() => setEditing(null)} />}
@@ -263,164 +315,190 @@ function SessionForm({ session, staff, onClose }: { session: Session | null; sta
 
 function Presence({ today, history }: LemburProps) {
     const act = (name: string, id: number) => router.post(route(name, id), {}, { preserveScroll: true });
+    const small = 'flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] text-[13px] font-semibold whitespace-nowrap active:scale-[.98]';
 
     return (
         <>
-            <Card>
-                <CardTitle>Lembur hari ini</CardTitle>
-                <p className="text-fg-3 -mt-2 text-[13px]">
-                    Presensi masuk dibuka 30 menit sebelum jam mulai, dan dilakukan oleh petugas yang bersangkutan.
-                </p>
-                <div className="flex flex-col gap-2.5">
-                    {today.map((r) => (
-                        <div key={r.id} className="flex flex-wrap items-center gap-4 rounded-md border border-slate-200 p-3.5 dark:border-slate-700">
-                            <span className="grid size-10 flex-none place-items-center rounded-full bg-teal-100 text-xs font-bold text-teal-800">
-                                {initials(r.name)}
-                            </span>
-                            <div className="min-w-[180px] flex-1">
-                                <div className="font-semibold">{r.name}</div>
-                                <div className="text-fg-3 text-xs">
-                                    {r.activity} · {r.start.replace(':', '.')}–{r.end.replace(':', '.')}
-                                </div>
-                            </div>
-                            <dl className="grid grid-cols-3 gap-4 text-center text-xs">
-                                <div>
-                                    <dt className="text-fg-3">Masuk</dt>
-                                    <dd className={`font-mono text-sm font-semibold ${r.late ? 'text-amber-700' : ''}`}>{r.in ?? '—'}</dd>
-                                </div>
-                                <div>
-                                    <dt className="text-fg-3">Keluar</dt>
-                                    <dd className="font-mono text-sm font-semibold">{r.out ?? '—'}</dd>
-                                </div>
-                                <div>
-                                    <dt className="text-fg-3">Durasi</dt>
-                                    <dd className="font-mono text-sm font-semibold">{r.minutes ? duration(r.minutes) : '—'}</dd>
-                                </div>
-                            </dl>
-                            <div className="flex w-[170px] justify-end">
-                                {r.out ? (
-                                    <span className="text-success flex items-center gap-1.5 text-sm font-semibold">
-                                        <CircleCheck className="size-4" />
-                                        Selesai
-                                    </span>
-                                ) : !r.mine ? (
-                                    <span className="text-fg-3 text-xs">Presensi oleh petugas ybs.</span>
-                                ) : r.in ? (
-                                    <Button variant="secondary" onClick={() => act('staf.lembur.check-out', r.id)}>
-                                        <LogOut />
-                                        Presensi keluar
-                                    </Button>
-                                ) : (
-                                    <Button onClick={() => act('staf.lembur.check-in', r.id)}>
-                                        <LogIn />
-                                        Presensi masuk
-                                    </Button>
-                                )}
+            <section className="flex flex-col gap-3.5 rounded-lg bg-white p-5 shadow-sm dark:bg-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="font-display text-[17px] font-bold">Lembur hari ini</span>
+                    <span className="text-fg-3 text-[13px]">Presensi masuk dibuka 30 menit sebelum jam mulai, oleh petugas yang bersangkutan.</span>
+                </div>
+                {today.map((r) => (
+                    <div
+                        key={r.id}
+                        className="flex flex-wrap items-center gap-3.5 rounded-[14px] border border-slate-200 px-3.5 py-3 dark:border-slate-700"
+                    >
+                        <span className="font-display grid size-10 flex-none place-items-center rounded-full border-2 border-white bg-teal-100 text-xs font-bold text-teal-800 dark:border-slate-800">
+                            {initials(r.name)}
+                        </span>
+                        <div className="min-w-0 flex-[1_1_200px]">
+                            <div className="font-semibold">{r.name}</div>
+                            <div className="text-fg-3 text-xs">
+                                {r.activity} ·{' '}
+                                <span className="font-mono">
+                                    {r.start.replace(':', '.')} – {r.end.replace(':', '.')}
+                                </span>
                             </div>
                         </div>
-                    ))}
-                    {today.length === 0 && <p className="text-fg-3 py-6 text-center text-sm">Tidak ada lembur yang dijadwalkan hari ini.</p>}
-                </div>
-            </Card>
-
-            <Card>
-                <CardTitle>Riwayat presensi lembur (14 hari)</CardTitle>
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-[640px] text-sm">
-                        <thead className="text-fg-3 border-b border-slate-200 text-left text-xs tracking-[.06em] uppercase dark:border-slate-700">
-                            <tr>
-                                {['Tanggal', 'Petugas', 'Masuk–keluar', 'Durasi', 'Status'].map((h) => (
-                                    <th key={h} className="py-2.5 pr-4 font-semibold">
-                                        {h}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {history.map((r) => (
-                                <tr key={r.id} className="border-b border-slate-200 dark:border-slate-700">
-                                    <td className="text-fg-3 py-2.5 pr-4">{r.date}</td>
-                                    <td className="py-2.5 pr-4">
-                                        <div className="font-semibold">{r.name}</div>
-                                        <div className="text-fg-3 text-xs">{r.activity}</div>
-                                    </td>
-                                    <td className="py-2.5 pr-4 font-mono">
-                                        {r.in ?? '—'} – {r.out ?? '—'}
-                                    </td>
-                                    <td className="py-2.5 pr-4 font-mono">{r.minutes ? duration(r.minutes) : '—'}</td>
-                                    <td className="py-2.5 pr-4">
-                                        <Badge tone={STATE_TONE[r.state]}>{r.state}</Badge>
-                                    </td>
-                                </tr>
+                        <div className="flex gap-4 text-[13px]">
+                            {[
+                                ['Masuk', r.in ?? '—', r.late ? 'text-amber-800' : ''],
+                                ['Keluar', r.out ?? '—', ''],
+                            ].map(([label, value, tone]) => (
+                                <div key={label} className="flex flex-col">
+                                    <span className="text-fg-3 text-[11px]">{label}</span>
+                                    <span className={`font-mono font-semibold ${tone}`}>{value}</span>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                            <div className="flex flex-col">
+                                <span className="text-fg-3 text-[11px]">Durasi</span>
+                                <span className="font-semibold">{r.minutes ? duration(r.minutes) : '—'}</span>
+                            </div>
+                        </div>
+                        {r.out ? (
+                            <span className="text-success flex items-center gap-1.5 text-[13px] font-semibold">
+                                <CircleCheck className="size-4" />
+                                Selesai
+                            </span>
+                        ) : !r.mine ? (
+                            <span className="text-fg-4 text-xs">Presensi oleh petugas ybs.</span>
+                        ) : r.in ? (
+                            <button
+                                type="button"
+                                onClick={() => act('staf.lembur.check-out', r.id)}
+                                className={`${small} text-fg-1 border border-slate-200 bg-white px-3 hover:bg-slate-100 dark:bg-slate-800`}
+                            >
+                                <LogOut className="size-4" />
+                                Presensi keluar
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => act('staf.lembur.check-in', r.id)}
+                                className={`${small} bg-teal-400 px-3.5 text-white hover:bg-teal-500`}
+                            >
+                                <LogIn className="size-4" />
+                                Presensi masuk
+                            </button>
+                        )}
+                    </div>
+                ))}
+                {today.length === 0 && <div className="text-fg-3 p-6 text-center text-sm">Tidak ada lembur yang dijadwalkan hari ini.</div>}
+            </section>
+
+            <section className="overflow-hidden rounded-lg bg-white shadow-sm dark:bg-slate-800">
+                <div className="font-display border-b border-slate-200 px-5 py-4 text-[17px] font-bold dark:border-slate-700">
+                    Riwayat presensi lembur
                 </div>
-            </Card>
+                {history.map((r) => (
+                    <div key={r.id} className="flex flex-wrap items-center gap-3.5 border-b border-slate-200 px-5 py-3 text-sm dark:border-slate-700">
+                        <span className="text-fg-3 w-[84px] flex-none text-[13px]">{r.date}</span>
+                        <span className="font-display grid size-8 flex-none place-items-center rounded-full border-2 border-white bg-teal-100 text-xs font-bold text-teal-800 dark:border-slate-800">
+                            {initials(r.name)}
+                        </span>
+                        <div className="min-w-0 flex-[1_1_200px]">
+                            <div className="font-semibold">{r.name}</div>
+                            <div className="text-fg-3 text-xs">{r.activity}</div>
+                        </div>
+                        <span className="w-[110px] font-mono text-[13px]">
+                            {r.in ?? '—'} – {r.out ?? '—'}
+                        </span>
+                        <span className="w-[70px] text-[13px] font-semibold">{r.minutes ? duration(r.minutes) : '—'}</span>
+                        <span
+                            className={`rounded-full px-2.5 py-[3px] text-xs font-semibold whitespace-nowrap ${STATE_TONE[r.state] ?? STATE_TONE['Tidak hadir']}`}
+                        >
+                            {r.state}
+                        </span>
+                    </div>
+                ))}
+                {history.length === 0 && <div className="text-fg-3 p-6 text-center text-sm">Belum ada riwayat presensi lembur.</div>}
+            </section>
         </>
     );
 }
 
 function Report({ report, monthLabel }: LemburProps) {
-    const link =
-        'text-fg-1 flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3.5 text-sm font-semibold hover:bg-slate-100 dark:bg-slate-800';
+    const max = Math.max(1, ...report.map((r) => r.minutes));
+    const button = 'flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[13px] font-semibold whitespace-nowrap';
 
     return (
-        <Card>
-            <CardTitle
-                aside={
-                    <div className="flex flex-wrap gap-2">
-                        <a href={route('staf.lembur.export')} className={link}>
-                            <Download className="size-4" />
-                            Unduh Excel
-                        </a>
-                        <a href={route('staf.lembur.letter')} className={link}>
-                            <Printer className="size-4" />
-                            Surat perintah lembur
-                        </a>
-                    </div>
-                }
-            >
-                Rekap lembur per petugas · {monthLabel}
-            </CardTitle>
-            <p className="text-fg-3 -mt-2 text-[13px]">
-                Hanya sesi yang sudah lewat. Terlambat = presensi masuk lebih dari 10 menit setelah jam mulai.
-            </p>
-            <div className="grid gap-3 md:grid-cols-2">
+        <>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <label className="text-fg-3 flex items-center gap-2 text-sm">
+                    Periode
+                    <select className="text-fg-1 h-10 rounded-[10px] border-[1.5px] border-slate-300 bg-white px-3 dark:bg-slate-800">
+                        <option>{monthLabel}</option>
+                    </select>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                    <a
+                        href={route('staf.lembur.export')}
+                        className={`${button} text-fg-1 border border-slate-200 bg-white hover:bg-slate-100 dark:bg-slate-800`}
+                    >
+                        <Sheet className="size-4" />
+                        Unduh Excel
+                    </a>
+                    <a href={route('staf.lembur.letter')} className={`${button} bg-teal-400 px-3.5 text-white hover:bg-teal-500`}>
+                        <Printer className="size-4" />
+                        Cetak surat perintah lembur
+                    </a>
+                </div>
+            </div>
+            <section className="overflow-hidden rounded-lg bg-white shadow-sm dark:bg-slate-800">
+                <div className="flex flex-wrap justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-700">
+                    <span className="font-display text-[17px] font-bold">Rekap lembur per petugas</span>
+                    <span className="text-fg-3 text-[13px]">Hanya sesi yang sudah lewat · {monthLabel}</span>
+                </div>
                 {report.map((r) => (
-                    <div key={r.id} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4 dark:border-slate-700">
-                        <div className="flex items-center gap-3">
-                            <span className="grid size-10 flex-none place-items-center rounded-full bg-teal-100 text-xs font-bold text-teal-800">
-                                {initials(r.name)}
-                            </span>
-                            <div className="min-w-0">
-                                <div className="truncate font-semibold">{r.name}</div>
-                                <div className="text-fg-3 truncate text-xs">{r.position}</div>
+                    <div key={r.id} className="flex flex-wrap items-center gap-3.5 border-b border-slate-200 px-5 py-3.5 dark:border-slate-700">
+                        <span className="font-display grid size-[38px] flex-none place-items-center rounded-full border-2 border-white bg-teal-100 text-xs font-bold text-teal-800 dark:border-slate-800">
+                            {initials(r.name)}
+                        </span>
+                        <div className="min-w-0 flex-[1_1_200px]">
+                            <div className="font-semibold">{r.name}</div>
+                            <div className="text-fg-3 text-xs">{r.position}</div>
+                        </div>
+                        <div className="flex flex-wrap gap-5 text-[13px]">
+                            <Stat label="Dijadwalkan" value={`${r.scheduled} sesi`} />
+                            <Stat label="Hadir" value={`${r.present} sesi`} />
+                            <Stat label="Terlambat" value={String(r.late)} tone={r.late ? 'text-amber-800' : ''} />
+                            <div className="flex min-w-[150px] flex-col gap-1">
+                                <span className="text-fg-3 text-[11px]">Total jam</span>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                                        <div className="h-full bg-teal-400" style={{ width: `${Math.round((r.minutes / max) * 100)}%` }} />
+                                    </div>
+                                    <span className="font-mono font-bold">{duration(r.minutes)}</span>
+                                </div>
                             </div>
                         </div>
-                        <dl className="grid grid-cols-4 gap-2 text-center text-xs">
-                            {[
-                                ['Dijadwalkan', `${r.scheduled} sesi`],
-                                ['Hadir', `${r.present} sesi`],
-                                ['Terlambat', String(r.late)],
-                                ['Total jam', duration(r.minutes)],
-                            ].map(([label, value]) => (
-                                <div key={label} className="rounded-sm bg-slate-50 py-2 dark:bg-slate-900">
-                                    <dt className="text-fg-3">{label}</dt>
-                                    <dd className="mt-0.5 text-sm font-semibold">{value}</dd>
-                                </div>
-                            ))}
-                        </dl>
                     </div>
                 ))}
-            </div>
-            {report.length === 0 && <p className="text-fg-3 py-6 text-center text-sm">Belum ada sesi lembur yang selesai bulan ini.</p>}
-            <div className="text-fg-3 flex justify-between border-t border-slate-200 pt-3 text-sm dark:border-slate-700">
-                <span>Total</span>
-                <span className="font-semibold">
-                    {report.reduce((sum, r) => sum + r.scheduled, 0)} penugasan · {duration(report.reduce((sum, r) => sum + r.minutes, 0))}
-                </span>
-            </div>
-        </Card>
+                {report.length === 0 && <div className="text-fg-3 p-6 text-center text-sm">Belum ada sesi lembur yang selesai bulan ini.</div>}
+                <div className="flex flex-wrap justify-between gap-3 bg-slate-50 px-5 py-3.5 text-sm font-bold dark:bg-slate-900">
+                    <span>Total</span>
+                    <span>
+                        {report.reduce((sum, r) => sum + r.scheduled, 0)} penugasan · {duration(report.reduce((sum, r) => sum + r.minutes, 0))}
+                    </span>
+                </div>
+            </section>
+        </>
     );
+}
+
+function Stat({ label, value, tone = '' }: { label: string; value: string; tone?: string }) {
+    return (
+        <div className="flex min-w-[60px] flex-col">
+            <span className="text-fg-3 text-[11px]">{label}</span>
+            <span className={`font-bold ${tone}`}>{value}</span>
+        </div>
+    );
+}
+
+function minutesBetween(start: string, end: string): number {
+    const [h1, m1] = start.split(':').map(Number);
+    const [h2, m2] = end.split(':').map(Number);
+
+    return h2 * 60 + m2 - (h1 * 60 + m1);
 }

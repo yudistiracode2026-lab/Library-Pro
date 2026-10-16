@@ -3,7 +3,9 @@
 namespace App\Support;
 
 use App\Http\Controllers\Staf\Master;
+use App\Models\Camera;
 use App\Models\ClearanceRequest;
+use App\Models\CollectionSuggestion;
 use App\Models\Loan;
 use App\Models\User;
 
@@ -117,7 +119,8 @@ class StafMenu
     }
 
     /**
-     * Counters shown next to menu items: late loans and pending requests.
+     * Counters shown next to menu items, as in the prototype: late loans,
+     * offline cameras, suggestions awaiting review, and pending clearances.
      *
      * @return array<string, int|null>
      */
@@ -125,6 +128,8 @@ class StafMenu
     {
         return [
             'sirkulasi' => Loan::overdue()->count() ?: null,
+            'cctv' => Camera::where('online', false)->count() ?: null,
+            'pengadaan' => CollectionSuggestion::where('status', CollectionSuggestion::PROPOSED)->count() ?: null,
             'bebas-pustaka' => ClearanceRequest::where('status', ClearanceRequest::PENDING)->count() ?: null,
         ];
     }

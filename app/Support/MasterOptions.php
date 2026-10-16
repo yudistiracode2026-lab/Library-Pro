@@ -35,7 +35,7 @@ class MasterOptions
         'Terbitan STPN Press',
     ];
 
-    public const ACQUISITIONS = ['Pengadaan', 'Sumbangan mahasiswa'];
+    public const ACQUISITIONS = ['Pengadaan', 'Penyerahan dosen/tendik tugas belajar', 'Sumbangan mahasiswa'];
 
     public const EBOOK_FORMATS = ['PDF', 'EPUB'];
 

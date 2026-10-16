@@ -1,8 +1,7 @@
-import { Badge } from '@/components/staf/master/cells';
 import { Alert, Button, Card, CardTitle, IconButton, inputClass } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { router, useForm } from '@inertiajs/react';
-import { ExternalLink, Plus, Trash2, Upload } from 'lucide-react';
+import { ExternalLink, Plus, Search, Trash2, Upload } from 'lucide-react';
 import { type FormEvent } from 'react';
 
 type ScheduleRow = {
@@ -23,6 +22,9 @@ interface CmsProps {
 }
 
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+const field =
+    'h-10 rounded-[10px] border-[1.5px] border-slate-300 bg-white px-3 text-sm text-fg-1 outline-none focus:border-teal-400 dark:bg-slate-800';
 
 function minutesBetween(open: string | null, close: string | null): number {
     if (!open || !close) return 0;
@@ -56,9 +58,9 @@ export default function Cms({ content, weeklyHours, news, tags, websiteUrl }: Cm
 
     return (
         <StafLayout title="CMS website" group="Sistem">
-            <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-                <div className="flex flex-col gap-4">
-                    <form onSubmit={publish} className="flex flex-col gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-start gap-4">
+                <div className="flex min-w-0 flex-col gap-4">
+                    <form id="cms-content" onSubmit={publish} className="flex flex-col gap-4">
                         <Card>
                             <CardTitle>Hero beranda</CardTitle>
                             <label className="flex flex-col gap-1.5 text-[13px] font-semibold">
@@ -97,7 +99,7 @@ export default function Cms({ content, weeklyHours, news, tags, websiteUrl }: Cm
                                             value={row.label}
                                             onChange={(e) => setRow(i, { label: e.target.value })}
                                             aria-label="Nama hari"
-                                            className={`${inputClass} h-9 w-auto min-w-[120px] flex-1 font-semibold`}
+                                            className={`${inputClass} h-9 w-auto min-w-[180px] flex-1 font-semibold`}
                                         />
                                         <div className="flex gap-1">
                                             {DAYS.map((d, day) => {
@@ -199,16 +201,11 @@ export default function Cms({ content, weeklyHours, news, tags, websiteUrl }: Cm
                             </Button>
                             {Object.values(form.errors)[0] && <Alert>{Object.values(form.errors)[0]}</Alert>}
                         </Card>
-
-                        <Button type="submit" size="lg" className="self-start" disabled={form.processing}>
-                            <Upload />
-                            Terbitkan perubahan
-                        </Button>
                     </form>
 
-                    <Card>
-                        <CardTitle>Berita & pengumuman</CardTitle>
-                        <form onSubmit={addNews} className="flex flex-col gap-2 rounded-md bg-slate-50 p-3 dark:bg-slate-900">
+                    <Card className="gap-3">
+                        <CardTitle>Berita &amp; pengumuman</CardTitle>
+                        <form onSubmit={addNews} className="flex flex-col gap-2">
                             <div className="flex gap-2">
                                 <input
                                     value={post.data.title}
@@ -216,38 +213,38 @@ export default function Cms({ content, weeklyHours, news, tags, websiteUrl }: Cm
                                     placeholder="Judul berita baru"
                                     aria-label="Judul berita"
                                     required
-                                    className={inputClass}
+                                    className={`${field} min-w-0 flex-1`}
                                 />
                                 <select
                                     value={post.data.tag}
                                     onChange={(e) => post.setData('tag', e.target.value)}
                                     aria-label="Label"
-                                    className={`${inputClass} w-auto`}
+                                    className={`${field} w-auto`}
                                 >
                                     {tags.map((t) => (
                                         <option key={t}>{t}</option>
                                     ))}
                                 </select>
+                                <button
+                                    type="submit"
+                                    disabled={post.processing}
+                                    className="h-10 flex-none cursor-pointer rounded-[10px] bg-teal-400 px-3.5 text-sm font-semibold text-white hover:bg-teal-500"
+                                >
+                                    Tambah
+                                </button>
                             </div>
                             <input
                                 value={post.data.excerpt}
                                 onChange={(e) => post.setData('excerpt', e.target.value)}
-                                placeholder="Ringkasan singkat"
+                                placeholder="Ringkasan singkat (opsional)"
                                 aria-label="Ringkasan"
-                                className={inputClass}
+                                className={field}
                             />
-                            <Button type="submit" size="sm" className="self-end" disabled={post.processing}>
-                                <Plus />
-                                Tambah sebagai draf
-                            </Button>
                         </form>
                         {news.map((n) => (
-                            <div
-                                key={n.id}
-                                className="flex items-center gap-3 border-b border-slate-200 pb-2.5 text-sm last:border-0 dark:border-slate-700"
-                            >
+                            <div key={n.id} className="flex items-center gap-3 border-b border-slate-200 py-2.5 dark:border-slate-700">
                                 <div className="min-w-0 flex-1">
-                                    <div className="truncate font-semibold">{n.title}</div>
+                                    <div className="text-sm font-semibold">{n.title}</div>
                                     <div className="text-fg-3 text-xs">
                                         {n.tag} · {n.date ?? 'Draf'}
                                     </div>
@@ -257,69 +254,82 @@ export default function Cms({ content, weeklyHours, news, tags, websiteUrl }: Cm
                                     onClick={() =>
                                         router.patch(route('staf.cms.news.update', n.id), { published: !n.published }, { preserveScroll: true })
                                     }
-                                    className="cursor-pointer"
                                     title={n.published ? 'Tarik ke draf' : 'Terbitkan'}
+                                    className={`h-[30px] cursor-pointer rounded-full px-3 text-xs font-semibold ${n.published ? 'bg-success-soft text-success' : 'text-fg-3 bg-slate-100 dark:bg-slate-700'}`}
                                 >
-                                    <Badge tone={n.published ? 'success' : 'slate'}>{n.published ? 'Terbit' : 'Draf'}</Badge>
+                                    {n.published ? 'Terbit' : 'Draf'}
                                 </button>
-                                <IconButton
-                                    label={`Hapus ${n.title}`}
-                                    danger
+                                <button
+                                    type="button"
+                                    aria-label={`Hapus ${n.title}`}
                                     onClick={() => router.delete(route('staf.cms.news.destroy', n.id), { preserveScroll: true })}
+                                    className="text-fg-3 hover:bg-danger-soft hover:text-danger grid size-[30px] cursor-pointer place-items-center rounded-[8px]"
                                 >
-                                    <Trash2 className="size-3.5" />
-                                </IconButton>
+                                    <Trash2 className="size-4" />
+                                </button>
                             </div>
                         ))}
                     </Card>
                 </div>
 
-                <Card className="xl:sticky xl:top-20">
-                    <CardTitle
-                        aside={
-                            <a
-                                href={websiteUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-1 text-xs font-semibold text-teal-600"
-                            >
-                                Buka website
-                                <ExternalLink className="size-3.5" />
-                            </a>
-                        }
-                    >
-                        Pratinjau langsung
-                    </CardTitle>
-                    <div className="overflow-hidden rounded-md border border-slate-200 dark:border-slate-700">
-                        <div className="text-fg-3 bg-slate-100 px-3 py-1.5 font-mono text-[11px] dark:bg-slate-900">perpustakaan.stpn.ac.id</div>
-                        <div className="flex flex-col gap-3 p-5">
-                            <h2 className="text-xl leading-tight font-extrabold">{form.data.hero_title}</h2>
-                            <p className="text-fg-2 text-sm">{form.data.hero_subtitle}</p>
-                            <div className="rounded-md bg-teal-50 p-3 dark:bg-teal-900">
-                                <div className="mb-1.5 text-xs font-semibold text-teal-700 dark:text-teal-100">Jam buka</div>
-                                {form.data.schedule.map((r, i) => (
-                                    <div key={i} className="flex justify-between text-xs">
-                                        <span>{r.label}</span>
-                                        <span className="font-mono">
-                                            {r.open ? `${r.open.replace(':', '.')} – ${r.close?.replace(':', '.')}` : 'Tutup'}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div>
-                                <div className="mb-1 text-xs font-semibold">Berita terbit</div>
-                                {news
-                                    .filter((n) => n.published)
-                                    .map((n) => (
-                                        <div key={n.id} className="text-fg-2 truncate text-xs">
-                                            · {n.title}
-                                        </div>
-                                    ))}
+                <div className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-[88px]">
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="text-fg-3 text-[13px] font-semibold">Pratinjau langsung</span>
+                        <button
+                            type="submit"
+                            form="cms-content"
+                            disabled={form.processing}
+                            className="flex h-[38px] cursor-pointer items-center gap-2 rounded-[10px] bg-teal-400 px-3.5 text-sm font-semibold text-white hover:bg-teal-500 disabled:opacity-60"
+                        >
+                            <Upload className="size-4" />
+                            Terbitkan
+                        </button>
+                    </div>
+                    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
+                        <div className="flex h-7 items-center gap-1.5 bg-slate-100 px-3 dark:bg-slate-900">
+                            {[0, 1, 2].map((d) => (
+                                <span key={d} className="size-2 rounded-full bg-slate-300 dark:bg-slate-600" />
+                            ))}
+                            <span className="text-fg-3 ml-2 text-[11px]">perpustakaan.stpn.ac.id</span>
+                        </div>
+                        <div className="flex flex-col gap-3 bg-slate-50 p-7 dark:bg-slate-900">
+                            <h2 className="font-display text-[26px] leading-[1.15] font-extrabold">{form.data.hero_title}</h2>
+                            <p className="text-fg-2 text-sm leading-relaxed">{form.data.hero_subtitle}</p>
+                            <div className="text-fg-4 flex h-10 items-center gap-2 rounded-md bg-white px-3 text-[13px] shadow-sm dark:bg-slate-800">
+                                <Search className="size-4" />
+                                Judul, pengarang, subjek…
                             </div>
                         </div>
+                        <div className="flex flex-col gap-2 px-7 py-5">
+                            <span className="text-xs font-semibold tracking-[.08em] text-teal-600 uppercase">Jam buka</span>
+                            {form.data.schedule.map((r, i) => (
+                                <div key={i} className="flex justify-between text-[13px]">
+                                    <span>{r.label}</span>
+                                    <span className="font-mono">
+                                        {r.open ? `${r.open.replace(':', '.')} – ${r.close?.replace(':', '.')}` : 'Tutup'}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex flex-col gap-2 px-7 pb-6">
+                            <span className="text-xs font-semibold tracking-[.08em] text-teal-600 uppercase">Berita terbit</span>
+                            {news
+                                .filter((n) => n.published)
+                                .map((n) => (
+                                    <div key={n.id} className="rounded-[8px] bg-slate-50 px-3 py-2 text-[13px] dark:bg-slate-900">
+                                        {n.title}
+                                    </div>
+                                ))}
+                        </div>
                     </div>
-                    <p className="text-fg-3 text-xs">Jam layanan yang sudah terbit: {weeklyHours.toLocaleString('id-ID')} jam/minggu.</p>
-                </Card>
+                    <div className="text-fg-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span>Jam layanan yang sudah terbit: {weeklyHours.toLocaleString('id-ID')} jam/minggu.</span>
+                        <a href={websiteUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-semibold text-teal-600">
+                            Buka website
+                            <ExternalLink className="size-3.5" />
+                        </a>
+                    </div>
+                </div>
             </div>
         </StafLayout>
     );

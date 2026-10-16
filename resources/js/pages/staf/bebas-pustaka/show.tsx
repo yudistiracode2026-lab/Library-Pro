@@ -1,10 +1,9 @@
-import { Badge, StatusBadge } from '@/components/staf/master/cells';
-import { Alert, Button, Card, initials, inputClass } from '@/components/staf/ui';
+import { Alert, Button, initials, inputClass } from '@/components/staf/ui';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import StafLayout from '@/layouts/staf-layout';
 import { type SelectOption } from '@/types';
 import { Link, router, useForm } from '@inertiajs/react';
-import { Check, ChevronLeft, Download, FileText, Lock, Undo2 } from 'lucide-react';
+import { Book as BookIcon, Check, ChevronLeft, CircleCheck, Download, ExternalLink, Eye, FileText, Lock, X } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
 
 interface ShowProps {
@@ -44,244 +43,267 @@ export default function BebasPustakaShow({ request: r, options }: ShowProps) {
     const req = r.requirements;
     const enabled = Object.values(req).filter(Boolean) as { ok: boolean }[];
     const [dialog, setDialog] = useState<'accept' | 'reject' | 'sendBack' | null>(null);
-    const checksDone = r.thesis.checks.every((c) => c.on);
+    const [viewer, setViewer] = useState(false);
+    const accepted = !!r.thesis.verified_at;
+    const steps = [req.loans, req.thesis, req.donation, req.hardcopy];
+    const number = (step: (typeof steps)[number]) => steps.filter(Boolean).indexOf(step) + 1;
 
     return (
         <StafLayout title="Verifikasi bebas pustaka" group="Akademik">
-            <Link
-                href={route('staf.bebas-pustaka')}
-                className="text-fg-2 flex items-center gap-1 self-start text-sm font-semibold hover:text-teal-700"
-            >
-                <ChevronLeft className="size-4" />
-                Semua pengajuan
-            </Link>
-
-            <Card className="flex-row flex-wrap items-center">
-                <span className="grid size-12 flex-none place-items-center rounded-full bg-teal-100 font-bold text-teal-800">
-                    {initials(r.member.name)}
-                </span>
-                <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-lg font-bold">{r.member.name}</span>
-                    <span className="text-fg-3 text-[13px]">
-                        {r.member.member_number} · {r.member.study_program} · diajukan {r.submitted_at}
-                    </span>
-                    <span className="text-fg-2 mt-1 text-sm">{r.title}</span>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                    <StatusBadge status={r.status} />
-                    <span className="text-fg-3 text-xs">
-                        {enabled.filter((x) => x.ok).length} dari {enabled.length} syarat terpenuhi
-                    </span>
-                </div>
-            </Card>
-
-            {r.note && <Alert tone="warning">Catatan: {r.note}</Alert>}
-
-            {r.letter && (
-                <Card className="flex-row flex-wrap items-center bg-teal-50 dark:bg-teal-900">
-                    <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="font-bold">Surat keterangan bebas pustaka</span>
-                        <span className="text-fg-3 font-mono text-[13px]">
-                            {r.letter.number} · {r.letter.approved_at}
-                        </span>
-                    </div>
-                    <a
-                        href={r.letter.url}
-                        className="shadow-teal inline-flex h-10 items-center gap-2 rounded-md bg-teal-400 px-4 text-sm font-semibold text-white hover:bg-teal-500"
-                    >
-                        <Download className="size-4" />
-                        Unduh surat (PDF)
-                    </a>
-                </Card>
+            {viewer && r.thesis.file && (
+                <ThesisViewer request={r} pending={pending} onClose={() => setViewer(false)} onRevise={() => setDialog('sendBack')} />
             )}
 
-            <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-                <div className="flex flex-col gap-4">
+            <div className="flex w-full max-w-[820px] flex-col gap-4">
+                <Link
+                    href={route('staf.bebas-pustaka')}
+                    className="flex h-[34px] items-center gap-1.5 self-start rounded-[10px] pr-3 pl-2 text-sm font-semibold text-teal-700 hover:bg-teal-50 dark:text-teal-200 dark:hover:bg-teal-900"
+                >
+                    <ChevronLeft className="size-4" />
+                    Semua pengajuan
+                </Link>
+
+                <section className="flex flex-wrap items-center gap-4 rounded-lg bg-white px-6 py-5 shadow-sm dark:bg-slate-800">
+                    <span className="grid size-12 flex-none place-items-center rounded-full bg-teal-100 font-bold text-teal-800">
+                        {initials(r.member.name)}
+                    </span>
+                    <div className="min-w-[200px] flex-1">
+                        <div className="font-display text-[19px] font-bold">{r.member.name}</div>
+                        <div className="text-fg-3 text-sm">
+                            <span className="font-mono">{r.member.member_number}</span> · {r.member.study_program} · diajukan {r.submitted_at}
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5">
+                        <span className={`rounded-full px-2.5 py-[3px] text-xs font-semibold ${STATUS_TONE[r.status] ?? STATUS_TONE.Menunggu}`}>
+                            {r.status}
+                        </span>
+                        <span className="text-fg-3 text-[13px]">
+                            {enabled.filter((x) => x.ok).length}/{enabled.length} syarat terpenuhi
+                        </span>
+                    </div>
+                </section>
+
+                {r.note && <Alert tone="warning">Catatan: {r.note}</Alert>}
+
+                <section className="flex flex-col gap-3 rounded-lg bg-white px-6 py-5 shadow-sm dark:bg-slate-800">
                     {req.loans && (
-                        <Step n={1} title="Tidak ada buku yang belum dikembalikan" ok={req.loans.ok}>
-                            {r.openLoans.length === 0 ? (
-                                <p className="text-fg-3 text-sm">Tidak ada pinjaman aktif.</p>
-                            ) : (
-                                <div className="flex flex-col gap-1.5">
-                                    {r.openLoans.map((l) => (
-                                        <div key={l.code} className="flex justify-between gap-3 text-sm">
-                                            <span className="truncate">
-                                                <span className="text-fg-3 font-mono text-xs">{l.code}</span> {l.title}
-                                            </span>
-                                            <span className="text-fg-3 text-xs whitespace-nowrap">jatuh tempo {l.due_at}</span>
-                                        </div>
-                                    ))}
-                                    <p className="text-fg-3 text-xs">Selesaikan pengembaliannya di menu Sirkulasi.</p>
-                                </div>
-                            )}
+                        <Step
+                            n={number(req.loans)}
+                            title="Tidak ada buku yang belum dikembalikan"
+                            ok={req.loans.ok}
+                            pill={req.loans.ok ? 'Otomatis · lolos' : 'Ada pinjaman'}
+                        >
+                            <span className="text-fg-2 text-[13px]">
+                                {r.openLoans.length === 0
+                                    ? 'Dicek otomatis dari data sirkulasi. Tidak ada pinjaman aktif.'
+                                    : `${r.openLoans.length} buku belum dikembalikan: ${r.openLoans.map((l) => l.title).join(', ')}`}
+                            </span>
                         </Step>
                     )}
 
                     {req.thesis && (
-                        <Step n={2} title="Skripsi digital" ok={req.thesis.ok}>
+                        <Step
+                            n={number(req.thesis)}
+                            title="Pratinjau skripsi digital"
+                            ok={req.thesis.ok}
+                            pill={!r.thesis.file ? 'Belum unggah' : accepted ? 'Di-ACC' : 'Perlu diperiksa'}
+                        >
                             {r.thesis.file ? (
-                                <p className="text-fg-3 text-sm">
-                                    {r.thesis.verified_at
-                                        ? `Di-ACC ${r.thesis.verified_at}.`
-                                        : 'Periksa berkas di panel pratinjau, centang setiap bagian, lalu ACC.'}
-                                </p>
+                                <div className="flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-3 rounded-md bg-slate-50 px-3.5 py-3 dark:bg-slate-900">
+                                        <span className="bg-danger-soft text-danger grid size-10 flex-none place-items-center rounded-[10px]">
+                                            <FileText className="size-[18px]" />
+                                        </span>
+                                        <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+                                            <div className="text-sm font-semibold">{r.thesis.filename}</div>
+                                            <div className="text-fg-3 text-xs">{r.title}</div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setViewer(true)}
+                                            className="text-fg-1 flex h-[34px] flex-none cursor-pointer items-center gap-1.5 rounded-[10px] border border-slate-200 bg-white px-3 text-[13px] font-semibold whitespace-nowrap hover:bg-slate-100 dark:bg-slate-800"
+                                        >
+                                            <Eye className="size-4" />
+                                            Pratinjau
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        role="checkbox"
+                                        aria-checked={accepted}
+                                        disabled={!pending || (!accepted && !r.thesis.checks.every((c) => c.on))}
+                                        title={
+                                            !accepted && !r.thesis.checks.every((c) => c.on) ? 'Centang semua bagian di pratinjau dulu' : undefined
+                                        }
+                                        onClick={() => post('staf.bebas-pustaka.thesis', r.id)}
+                                        className={`text-fg-1 flex cursor-pointer items-center gap-2.5 rounded-md border px-3.5 py-3 text-left text-sm disabled:cursor-not-allowed ${accepted ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 bg-white disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800'}`}
+                                    >
+                                        <CheckBox on={accepted} />
+                                        ACC skripsi: format, lembar pengesahan, dan abstrak sudah sesuai
+                                    </button>
+                                </div>
                             ) : (
-                                <p className="text-fg-3 text-sm">Mahasiswa belum mengunggah file skripsi di Portal Pemustaka.</p>
+                                <span className="text-fg-3 text-[13px]">Mahasiswa belum mengunggah file skripsi di Portal Pemustaka.</span>
                             )}
                         </Step>
                     )}
 
                     {req.donation && (
-                        <Step n={3} title="Verval buku sumbangan" ok={req.donation.ok}>
+                        <Step
+                            n={number(req.donation)}
+                            title="Verval buku sumbangan"
+                            ok={req.donation.ok}
+                            pill={r.donation?.status ?? 'Belum diisi'}
+                            locked={!r.donation}
+                        >
                             {r.donation ? (
                                 <div className="flex flex-col gap-2.5">
-                                    <div className="flex flex-col gap-0.5 text-sm">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <span className="font-semibold">{r.donation.title}</span>
-                                            <Badge
-                                                tone={
-                                                    r.donation.status === 'Diterima'
-                                                        ? 'success'
-                                                        : r.donation.status === 'Ditolak'
-                                                          ? 'danger'
-                                                          : 'warning'
-                                                }
-                                            >
-                                                {r.donation.status}
-                                            </Badge>
-                                        </div>
-                                        <span className="text-fg-3 text-xs">
-                                            {r.donation.author} · {r.donation.publisher}, {r.donation.year} · ISBN {r.donation.isbn ?? '—'} ·{' '}
-                                            {r.donation.copies} eks
+                                    <div className="flex items-center gap-3 rounded-md bg-slate-50 px-3.5 py-3 dark:bg-slate-900">
+                                        <span className="grid h-[54px] w-10 flex-none place-items-center rounded-[5px] bg-teal-600 text-white">
+                                            <BookIcon className="size-4" />
                                         </span>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-sm font-semibold">{r.donation.title}</div>
+                                            <div className="text-fg-3 text-xs">
+                                                {r.donation.author} · {r.donation.publisher}, {r.donation.year} ·{' '}
+                                                <span className="font-mono">{r.donation.isbn ?? '—'}</span> · {r.donation.copies} eks
+                                            </div>
+                                            {r.donation.status === 'Menunggu' && (r.donation.tooOld || r.donation.alreadyInCollection) && (
+                                                <div className="text-xs text-amber-800">
+                                                    {[
+                                                        r.donation.alreadyInCollection && 'Judul sudah ada di koleksi',
+                                                        r.donation.tooOld && 'Terbitan lebih dari 5 tahun',
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' · ')}
+                                                </div>
+                                            )}
+                                            {r.donation.book && (
+                                                <div className="text-fg-3 text-xs">
+                                                    Masuk koleksi: Rak {r.donation.book.rack} ·{' '}
+                                                    <span className="font-mono">{r.donation.book.call_number}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    {r.donation.tooOld && <Alert tone="warning">Terbitan lebih dari 5 tahun yang lalu.</Alert>}
-                                    {r.donation.alreadyInCollection && <Alert tone="warning">Judul atau ISBN ini sudah ada di koleksi.</Alert>}
-                                    {r.donation.book && (
-                                        <p className="text-fg-3 text-xs">
-                                            Masuk koleksi: Rak {r.donation.book.rack} ·{' '}
-                                            <span className="font-mono">{r.donation.book.call_number}</span>
-                                        </p>
-                                    )}
                                     {pending && r.donation.status !== 'Diterima' && (
-                                        <div className="flex gap-2">
-                                            <Button variant="secondary" size="sm" onClick={() => setDialog('reject')}>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            <button
+                                                type="button"
+                                                onClick={() => setDialog('reject')}
+                                                className={`${small} text-danger border border-slate-200 bg-white px-3 dark:bg-slate-800`}
+                                            >
                                                 Tolak
-                                            </Button>
-                                            <Button size="sm" onClick={() => setDialog('accept')}>
-                                                Terima & masukkan koleksi
-                                            </Button>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDialog('accept')}
+                                                className={`${small} bg-teal-400 px-3 text-white hover:bg-teal-500`}
+                                            >
+                                                Terima &amp; masukkan koleksi
+                                            </button>
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <p className="text-fg-3 text-sm">Mahasiswa belum mengisi data buku sumbangan.</p>
+                                <span className="text-fg-3 text-[13px]">Mahasiswa belum mengisi data buku sumbangan.</span>
                             )}
                         </Step>
                     )}
 
                     {req.hardcopy && (
-                        <Step n={4} title="Hardcopy skripsi" ok={req.hardcopy.ok}>
-                            {!r.thesis.verified_at && !r.hardcopy.received_at ? (
-                                <p className="text-fg-3 flex items-center gap-2 text-sm">
+                        <Step
+                            n={number(req.hardcopy)}
+                            title="Hardcopy skripsi"
+                            ok={req.hardcopy.ok}
+                            pill={
+                                !accepted && !r.hardcopy.received_at
+                                    ? 'Terkunci'
+                                    : r.hardcopy.received_at
+                                      ? 'Diterima'
+                                      : r.hardcopy.scheduled_at
+                                        ? 'Dijadwalkan'
+                                        : 'Belum dijadwalkan'
+                            }
+                            locked={!accepted && !r.hardcopy.received_at}
+                        >
+                            {!accepted && !r.hardcopy.received_at ? (
+                                <span className="text-fg-3 flex items-center gap-1.5 text-[13px]">
                                     <Lock className="size-4" />
-                                    Terbuka setelah file skripsi di-ACC pada langkah 2.
-                                </p>
+                                    Terbuka setelah file skripsi di-ACC pada langkah {req.thesis ? number(req.thesis) : 2}.
+                                </span>
                             ) : (
-                                <div className="flex flex-col gap-2.5 text-sm">
-                                    <p className="text-fg-2">
-                                        Jadwal penyerahan: {r.hardcopy.scheduled_at ?? 'belum dijadwalkan'}. Periksa jilid hardcover dan lembar
-                                        pengesahan bertanda tangan.
-                                    </p>
-                                    {r.hardcopy.received_at ? (
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Badge tone="success">Diterima {r.hardcopy.received_at} · simpan di rak R1</Badge>
-                                            {pending && (
-                                                <Button variant="ghost" size="sm" onClick={() => post('staf.bebas-pustaka.hardcopy', r.id)}>
-                                                    <Undo2 />
-                                                    Batalkan
-                                                </Button>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        pending && (
-                                            <Button size="sm" className="self-start" onClick={() => post('staf.bebas-pustaka.hardcopy', r.id)}>
-                                                Tandai hardcopy diterima
-                                            </Button>
-                                        )
-                                    )}
+                                <div className="flex flex-col gap-2.5">
+                                    <span className="text-fg-2 text-[13px]">
+                                        Jadwal penyerahan: {r.hardcopy.scheduled_at ?? 'belum dipilih'}. Periksa jilid hardcover dan lembar pengesahan
+                                        bertanda tangan.
+                                    </span>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        {r.hardcopy.received_at ? (
+                                            <>
+                                                <span className="text-success flex items-center gap-1.5 text-[13px] font-semibold">
+                                                    <CircleCheck className="size-4" />
+                                                    Disimpan di rak R1 · {r.hardcopy.received_at}
+                                                </span>
+                                                {pending && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => post('staf.bebas-pustaka.hardcopy', r.id)}
+                                                        className={`${small} text-fg-1 border border-slate-200 bg-white px-3 dark:bg-slate-800`}
+                                                    >
+                                                        Batalkan
+                                                    </button>
+                                                )}
+                                            </>
+                                        ) : (
+                                            pending && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => post('staf.bebas-pustaka.hardcopy', r.id)}
+                                                    className={`${small} bg-teal-400 px-3 text-white hover:bg-teal-500`}
+                                                >
+                                                    Tandai hardcopy diterima
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </Step>
                     )}
 
-                    {pending && (
-                        <div className="flex flex-wrap gap-2">
-                            <Button size="lg" disabled={!r.complete} onClick={() => post('staf.bebas-pustaka.approve', r.id)}>
-                                <Check />
-                                {r.complete ? 'Setujui & terbitkan surat' : 'Lengkapi syarat dulu'}
-                            </Button>
-                            <Button variant="secondary" size="lg" onClick={() => setDialog('sendBack')}>
-                                Kembalikan ke mahasiswa
-                            </Button>
-                        </div>
-                    )}
-                </div>
-
-                {r.thesis.file && (
-                    <Card className="gap-3 p-4 md:p-4">
-                        <div className="flex items-center gap-2 text-sm">
-                            <FileText className="size-4 text-teal-600" />
-                            <span className="min-w-0 flex-1 truncate font-mono text-xs">{r.thesis.filename}</span>
+                    <div className="mt-1 flex gap-2">
+                        {r.letter ? (
                             <a
-                                href={r.thesis.file}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-xs font-semibold text-teal-600 hover:text-teal-500"
+                                href={r.letter.url}
+                                className="flex h-[46px] flex-1 items-center justify-center gap-2 rounded-md bg-teal-400 text-[15px] font-semibold text-white hover:bg-teal-500"
                             >
-                                Buka di tab baru
+                                <Download className="size-4" />
+                                Lihat surat · {r.letter.number}
                             </a>
-                        </div>
-                        <iframe
-                            src={`${r.thesis.file}#view=FitH`}
-                            title="Pratinjau skripsi"
-                            className="h-[560px] w-full rounded-md border border-slate-200 bg-slate-100"
-                        />
-                        <span className="text-sm font-bold">Pemeriksaan berkas</span>
-                        <div className="flex flex-col gap-1.5">
-                            {r.thesis.checks.map((c) => (
-                                <button
-                                    key={c.key}
-                                    type="button"
-                                    role="checkbox"
-                                    aria-checked={c.on}
-                                    disabled={!pending || !!r.thesis.verified_at}
-                                    onClick={() => post('staf.bebas-pustaka.check', r.id, { key: c.key })}
-                                    className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left text-sm disabled:cursor-default ${c.on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 dark:border-slate-700'}`}
-                                >
-                                    <span
-                                        className={`grid size-5 flex-none place-items-center rounded-[5px] border-[1.5px] ${c.on ? 'border-teal-500 bg-teal-500 text-white' : 'border-slate-300 bg-white'}`}
-                                    >
-                                        {c.on && <Check className="size-3.5" strokeWidth={3} />}
-                                    </span>
-                                    {c.label}
-                                </button>
-                            ))}
-                        </div>
-                        {pending &&
-                            (r.thesis.verified_at ? (
-                                <Button variant="secondary" onClick={() => post('staf.bebas-pustaka.thesis', r.id)}>
-                                    <Undo2 />
-                                    Batalkan ACC skripsi
-                                </Button>
-                            ) : (
-                                <Button disabled={!checksDone} onClick={() => post('staf.bebas-pustaka.thesis', r.id)}>
-                                    <Check />
-                                    ACC skripsi
-                                </Button>
-                            ))}
-                    </Card>
-                )}
+                        ) : (
+                            <button
+                                type="button"
+                                disabled={!pending || !r.complete}
+                                onClick={() => post('staf.bebas-pustaka.approve', r.id)}
+                                className="h-[46px] flex-1 cursor-pointer rounded-md bg-teal-400 text-[15px] font-semibold text-white hover:bg-teal-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                            >
+                                {r.complete
+                                    ? 'Setujui & terbitkan surat'
+                                    : `Lengkapi syarat dulu (${enabled.filter((x) => x.ok).length}/${enabled.length})`}
+                            </button>
+                        )}
+                        {pending && (
+                            <button
+                                type="button"
+                                onClick={() => setDialog('sendBack')}
+                                className="text-danger h-[46px] cursor-pointer rounded-md border border-slate-200 bg-white px-[18px] font-semibold hover:bg-slate-50 dark:bg-slate-800"
+                            >
+                                Kembalikan
+                            </button>
+                        )}
+                    </div>
+                </section>
             </div>
 
             {dialog === 'accept' && <AcceptDonation id={r.id} options={options} onClose={() => setDialog(null)} />}
@@ -297,20 +319,149 @@ export default function BebasPustakaShow({ request: r, options }: ShowProps) {
     );
 }
 
-function Step({ n, title, ok, children }: { n: number; title: string; ok: boolean; children: ReactNode }) {
+const STATUS_TONE: Record<string, string> = {
+    Menunggu: 'bg-warning-soft text-amber-800',
+    Disetujui: 'bg-success-soft text-success',
+    Dikembalikan: 'bg-danger-soft text-danger',
+};
+
+const small = 'h-[34px] cursor-pointer rounded-[10px] text-[13px] font-semibold whitespace-nowrap';
+
+function CheckBox({ on }: { on: boolean }) {
     return (
-        <Card className="gap-3">
+        <span
+            className={`grid size-5 flex-none place-items-center rounded-[5px] border-[1.5px] text-white ${on ? 'border-teal-500 bg-teal-500' : 'border-slate-300 bg-white dark:bg-slate-800'}`}
+        >
+            <Check className={`size-3.5 ${on ? 'opacity-100' : 'opacity-0'}`} strokeWidth={3} />
+        </span>
+    );
+}
+
+function Step({
+    n,
+    title,
+    ok,
+    pill,
+    locked,
+    children,
+}: {
+    n: number;
+    title: string;
+    ok: boolean;
+    pill: string;
+    locked?: boolean;
+    children: ReactNode;
+}) {
+    const tone = ok ? 'bg-success-soft text-success' : locked ? 'text-fg-3 bg-slate-100 dark:bg-slate-700' : 'bg-warning-soft text-amber-800';
+
+    return (
+        <div
+            className={`flex flex-col gap-3 rounded-[14px] border-[1.5px] bg-white p-4 dark:bg-slate-800 ${ok ? 'border-teal-300' : 'border-slate-200 dark:border-slate-700'}`}
+        >
             <div className="flex items-center gap-3">
                 <span
-                    className={`grid size-7 flex-none place-items-center rounded-full text-[13px] font-bold ${ok ? 'bg-success text-white' : 'text-fg-2 bg-slate-100 dark:bg-slate-700'}`}
+                    className={`grid size-[30px] flex-none place-items-center rounded-full text-[13px] font-bold ${ok ? 'bg-teal-400 text-white' : 'text-fg-2 bg-slate-100 dark:bg-slate-700'}`}
                 >
                     {ok ? <Check className="size-4" strokeWidth={3} /> : n}
                 </span>
-                <span className="flex-1 font-semibold">{title}</span>
-                <Badge tone={ok ? 'success' : 'warning'}>{ok ? 'Terpenuhi' : 'Belum'}</Badge>
+                <span className="min-w-0 flex-1 text-[15px] font-bold">{title}</span>
+                <span className={`flex-none rounded-full px-2.5 py-[3px] text-xs font-semibold whitespace-nowrap ${tone}`}>{pill}</span>
             </div>
-            <div className="pl-10">{children}</div>
-        </Card>
+            <div className="pl-[42px]">{children}</div>
+        </div>
+    );
+}
+
+/** Full-screen thesis preview with the per-section checklist, as in the prototype. */
+function ThesisViewer({
+    request: r,
+    pending,
+    onClose,
+    onRevise,
+}: {
+    request: ShowProps['request'];
+    pending: boolean;
+    onClose: () => void;
+    onRevise: () => void;
+}) {
+    const done = r.thesis.checks.filter((c) => c.on).length;
+    const all = done === r.thesis.checks.length;
+    const accepted = !!r.thesis.verified_at;
+
+    return (
+        <div className="fixed inset-0 z-[80] flex bg-[rgba(15,14,10,0.55)] p-6" role="dialog" aria-modal aria-label="Pratinjau skripsi">
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[20px] bg-slate-100 shadow-xl dark:bg-slate-900">
+                <div className="flex h-[60px] flex-none items-center gap-3 border-b border-slate-200 bg-white pr-4 pl-5 dark:border-slate-700 dark:bg-slate-800">
+                    <span className="bg-danger-soft text-danger grid size-[34px] flex-none place-items-center rounded-[9px]">
+                        <FileText className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold">{r.thesis.filename}</div>
+                        <div className="text-fg-3 text-xs">{r.member.name} · PDF</div>
+                    </div>
+                    <a
+                        href={r.thesis.file ?? '#'}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-fg-2 hidden h-[34px] items-center gap-1.5 rounded-[10px] px-3 text-[13px] font-semibold hover:bg-slate-100 sm:flex dark:hover:bg-slate-700"
+                    >
+                        <ExternalLink className="size-4" />
+                        Tab baru
+                    </a>
+                    <button
+                        type="button"
+                        aria-label="Tutup"
+                        onClick={onClose}
+                        className="grid size-[38px] cursor-pointer place-items-center rounded-[10px] hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                        <X className="size-[18px]" />
+                    </button>
+                </div>
+                <div className="flex min-h-0 flex-1">
+                    <iframe src={`${r.thesis.file}#view=FitH`} title="Pratinjau skripsi" className="min-w-0 flex-1 bg-slate-100" />
+                    <div className="flex w-[300px] flex-none flex-col gap-3.5 overflow-auto border-l border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+                        <div className="font-display text-base font-bold">Pemeriksaan berkas</div>
+                        <span className="text-fg-3 text-[13px] leading-normal">Centang setiap bagian setelah dicek.</span>
+                        {r.thesis.checks.map((c) => (
+                            <button
+                                key={c.key}
+                                type="button"
+                                role="checkbox"
+                                aria-checked={c.on}
+                                disabled={!pending || accepted}
+                                onClick={() => post('staf.bebas-pustaka.check', r.id, { key: c.key })}
+                                className={`text-fg-1 flex cursor-pointer items-start gap-2.5 rounded-md border p-3 text-left text-sm font-semibold disabled:cursor-default ${c.on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800'}`}
+                            >
+                                <CheckBox on={c.on} />
+                                {c.label}
+                            </button>
+                        ))}
+                        <div className="mt-auto flex flex-col gap-2">
+                            <button
+                                type="button"
+                                disabled={!pending || (!all && !accepted)}
+                                onClick={() => (accepted ? onClose() : post('staf.bebas-pustaka.thesis', r.id))}
+                                className="h-11 cursor-pointer rounded-md bg-teal-400 text-sm font-semibold text-white hover:bg-teal-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                            >
+                                {accepted ? 'Sudah di-ACC · tutup' : all ? 'ACC skripsi' : `Periksa semua bagian (${done}/${r.thesis.checks.length})`}
+                            </button>
+                            {pending && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onClose();
+                                        onRevise();
+                                    }}
+                                    className="text-danger h-10 cursor-pointer rounded-md border border-slate-200 bg-white text-sm font-semibold dark:bg-slate-800"
+                                >
+                                    Minta revisi berkas
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 

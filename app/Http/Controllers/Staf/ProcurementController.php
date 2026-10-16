@@ -49,8 +49,9 @@ class ProcurementController extends Controller
             ],
             'newPublications' => NewPublication::orderByDesc('year')->orderBy('title')->get()->map(fn (NewPublication $p) => [
                 ...$p->only(['id', 'title', 'author', 'publisher', 'year', 'price', 'reason']),
+                'ddc_class' => $p->ddc_class,
                 'ddc' => MasterOptions::DDC_CLASSES[$p->ddc_class] ?? $p->ddc_class,
-                'inList' => $list->contains('new_publication_id', $p->id),
+                'listed' => $list->firstWhere('new_publication_id', $p->id)?->quantity,
             ]),
             'favorites' => $favorites,
             'suggestions' => CollectionSuggestion::with('member')->orderByDesc('votes')->get()
@@ -59,11 +60,12 @@ class ProcurementController extends Controller
                 ->map(fn (CollectionSuggestion $s) => [
                     ...$s->only(['id', 'title', 'author', 'votes', 'status', 'note']),
                     'by' => $s->member?->name ?? 'Pemustaka',
+                    'listed' => $list->firstWhere('suggestion_id', $s->id)?->quantity,
                 ]),
             'list' => [
                 'submitted_at' => $list->first()?->submitted_at?->translatedFormat('j M Y'),
                 'items' => $list->map(fn (ProcurementItem $i) => [
-                    ...$i->only(['id', 'title', 'author', 'publisher', 'price', 'quantity', 'source']),
+                    ...$i->only(['id', 'title', 'author', 'publisher', 'ddc_class', 'price', 'quantity', 'source']),
                     'subtotal' => $i->subtotal(),
                 ])->values(),
                 'bySource' => collect(ProcurementItem::SOURCES)->map(fn ($s) => ['label' => $s, 'copies' => $list->where('source', $s)->sum('quantity')]),
@@ -257,12 +259,13 @@ class ProcurementController extends Controller
                     'title' => $b->title,
                     'author' => $b->author->name,
                     'call_number' => $b->call_number,
+                    'ddc_class' => $b->ddc_class,
                     'copies' => $b->copies_count,
                     'available' => $b->available_count,
                     'loans' => $total,
                     'ratio' => round($ratio, 1),
                     'add' => max(0, (int) ceil($total / self::TARGET_RATIO) - $b->copies_count),
-                    'inList' => $list->contains('book_id', $b->id),
+                    'listed' => $list->firstWhere('book_id', $b->id)?->quantity,
                 ];
             })
             ->filter(fn (array $f) => $f['ratio'] > self::TARGET_RATIO)

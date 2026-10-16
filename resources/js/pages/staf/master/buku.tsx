@@ -59,7 +59,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 records={records}
                 filters={filters}
                 tabs={[{ value: '', label: 'Semua' }, ...options.types]}
-                grid="44px minmax(0,2.4fr) 140px minmax(0,1.2fr) 120px 100px 120px"
+                grid="52px minmax(0,2.2fr) 100px 150px minmax(0,1.2fr) 120px 110px 130px"
                 describeRow={(b) => b.title}
                 columns={[
                     {
@@ -80,6 +80,10 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                                 {b.title}
                             </Cell>
                         ),
+                    },
+                    {
+                        label: 'Jenis',
+                        render: (b) => <Badge tone={b.type === 'ebook' ? 'teal' : 'slate'}>{b.type === 'ebook' ? 'E-book' : 'Buku fisik'}</Badge>,
                     },
                     {
                         label: 'Asal perolehan',
@@ -107,9 +111,11 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         label: 'Ketersediaan',
                         render: (b) =>
                             b.type === 'ebook' ? (
-                                <Cell sub="lisensi">{b.license_count}</Cell>
+                                <Cell sub="lisensi tersedia">
+                                    {b.license_count}/{b.license_count}
+                                </Cell>
                             ) : (
-                                <Cell sub="tersedia">
+                                <Cell sub="eksemplar tersedia">
                                     {b.available}/{b.copies}
                                 </Cell>
                             ),

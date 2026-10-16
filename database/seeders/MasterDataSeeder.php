@@ -113,7 +113,8 @@ class MasterDataSeeder extends Seeder
                 'isbn' => sprintf('978-602-%d-%d-%d', 1000 + $id * 37, 10 + $id, $id % 9),
                 'ddc_class' => $ddc,
                 'collection_type' => self::BOOK_COLLECTION[$id] ?? 'Buku teks',
-                'acquisition' => 'Pengadaan',
+                // Titles handed over by lecturers/staff returning from study leave.
+                'acquisition' => in_array($id, [11, 12, 17, 20, 25], true) ? 'Penyerahan dosen/tendik tugas belajar' : 'Pengadaan',
                 'call_number' => $call,
                 'rack_id' => $racks[$rack],
             ]);

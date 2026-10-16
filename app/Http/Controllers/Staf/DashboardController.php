@@ -33,26 +33,29 @@ class DashboardController extends Controller
                 'inside' => Visit::today()->inside()->count(),
                 'openLoans' => (clone $openLoans)->count(),
                 'overdue' => Loan::overdue()->count(),
-                'dueToday' => (clone $openLoans)->whereDate('due_at', today())->count(),
-                'loansToday' => Loan::whereDate('loaned_at', today())->count(),
                 'clearancePending' => ClearanceRequest::where('status', ClearanceRequest::PENDING)->count(),
+                'titles' => Book::count(),
+                'copies' => BookCopy::count(),
             ],
-            'collection' => collect(MasterOptions::COLLECTION_TYPES)->map(fn ($type) => [
-                'label' => $type,
-                'titles' => Book::where('collection_type', $type)->count(),
-                'copies' => BookCopy::whereRelation('book', 'collection_type', $type)->count(),
-            ])->filter(fn ($row) => $row['titles'] > 0)->sortByDesc('titles')->values(),
+            'collection' => $this->collection(),
+            'growth' => $this->growth(),
             'visits' => collect(range(13, 0))->map(function ($ago) {
                 $day = today()->subDays($ago);
 
-                return ['label' => $day->translatedFormat('D j'), 'date' => $day->toDateString(), 'total' => Visit::whereDate('checked_in_at', $day)->count()];
+                return [
+                    'day' => $day->day,
+                    'label' => $day->translatedFormat('l, j M'),
+                    'total' => Visit::whereDate('checked_in_at', $day)->count(),
+                    'weekend' => $day->isWeekend(),
+                    'today' => $ago === 0,
+                ];
             }),
             'loansByClass' => collect(MasterOptions::DDC_CLASSES)->map(fn ($name, $class) => [
                 'class' => (string) $class,
                 'name' => $name,
                 'total' => Loan::where('loaned_at', '>=', now()->startOfMonth())->whereRelation('copy.book', 'ddc_class', (string) $class)->count(),
-            ])->values(),
-            'due' => Loan::open()->with(['copy.book', 'member'])->whereDate('due_at', '<=', today()->addDays(2))->orderBy('due_at')->limit(8)->get()->map(fn (Loan $l) => [
+            ])->sortByDesc('total')->take(8)->values(),
+            'due' => Loan::open()->with(['copy.book', 'member'])->whereDate('due_at', '<=', today())->orderBy('due_at')->limit(5)->get()->map(fn (Loan $l) => [
                 'id' => $l->id,
                 'title' => $l->copy->book->title,
                 'member' => $l->member->name,
@@ -61,6 +64,54 @@ class DashboardController extends Controller
             ]),
             'activity' => $this->activity(),
         ]);
+    }
+
+    /**
+     * Titles and copies per collection type. E-books are their own slice
+     * (their "copies" are licences); printed books use collection_type.
+     *
+     * @return list<array{label: string, titles: int, copies: int}>
+     */
+    private function collection(): array
+    {
+        $printed = fn (string $type) => Book::where('type', Book::PRINTED)->where('collection_type', $type);
+        $rows = collect(MasterOptions::COLLECTION_TYPES)->map(fn ($type) => [
+            'label' => $type,
+            'titles' => $printed($type)->count(),
+            'copies' => BookCopy::whereHas('book', fn ($q) => $q->where('type', Book::PRINTED)->where('collection_type', $type))->count(),
+        ]);
+        $ebooks = ['label' => 'E-book', 'titles' => Book::where('type', Book::EBOOK)->count(), 'copies' => (int) Book::where('type', Book::EBOOK)->sum('license_count')];
+
+        return $rows->splice(0, 1)->push($ebooks)->concat($rows)->values()->all();
+    }
+
+    /**
+     * New titles per year (the last seven) by acquisition source, for every
+     * collection type, so the page can switch types without a reload.
+     *
+     * @return array{years: list<int>, sources: list<string>, types: array<string, list<list<int>>>}
+     */
+    private function growth(): array
+    {
+        $years = range(now()->year - 6, now()->year);
+        $types = array_merge(['Semua jenis', 'Buku teks', 'E-book'], array_slice(MasterOptions::COLLECTION_TYPES, 1));
+        $counts = Book::query()
+            ->where('created_at', '>=', now()->setDate($years[0], 1, 1)->startOfDay())
+            ->get(['type', 'collection_type', 'acquisition', 'created_at'])
+            ->groupBy(fn (Book $b) => $b->type === Book::EBOOK ? 'E-book' : $b->collection_type);
+
+        $matrix = fn ($books) => array_map(fn ($year) => array_map(
+            fn ($source) => $books->filter(fn (Book $b) => $b->created_at->year === $year && $b->acquisition === $source)->count(),
+            MasterOptions::ACQUISITIONS,
+        ), $years);
+
+        return [
+            'years' => $years,
+            'sources' => MasterOptions::ACQUISITIONS,
+            'types' => collect($types)->mapWithKeys(fn ($type) => [
+                $type => $matrix($type === 'Semua jenis' ? $counts->flatten(1) : ($counts[$type] ?? collect())),
+            ])->all(),
+        ];
     }
 
     /**
