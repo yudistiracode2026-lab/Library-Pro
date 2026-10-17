@@ -53,9 +53,9 @@ class AuthorName
      */
     public static function clean(string $name, bool $organisation = false): ?string
     {
-        $name = preg_replace('/\s+/u', ' ', $name);
+        $name = preg_replace('/\s+/u', ' ', self::unspace(self::unquote($name)));
         // "dkk", "dkk.", "dkk 6 orang", ", et al." at the end.
-        $name = preg_replace('/[\s,;]*\b(dkk|et\.? ?al\b).*$/iu', '', $name);
+        $name = preg_replace('/[\s,;]*\b(dkk|et\.? ?al\b|(and|&) (the )?others\b|dan kawan).*$/iu', '', $name);
         // Leading punctuation (". Wantjik Saleh") and stray trailing separators.
         $name = trim(ltrim($name, " \t.,;:-/"));
         $name = rtrim($name, " \t,;:-/");
@@ -74,16 +74,90 @@ class AuthorName
             return null;
         }
 
-        $name = NameCase::title($name, $organisation);
+        [$prefixes, $core, $degrees] = self::parts(NameCase::title($name, $organisation));
+
+        if (! $organisation) {
+            // Two names typed together: "KarlMay" -> "Karl May" ("McNicoll" stays).
+            $core = preg_replace_callback('/\S+/u', fn ($m) => preg_match('/^Ma?c\p{Lu}/u', $m[0])
+                ? $m[0]
+                : preg_replace('/(?<=\p{Ll}{2})(?=\p{Lu}\p{Ll}{2})/u', ' ', $m[0]), $core);
+        }
+        $core = self::titleCase($core, $organisation);
 
         if (! $organisation) {
             // "M.Yahya" -> "M. Yahya", "C.S.T.Kansil" -> "C.S.T. Kansil" (in the name, not the degrees).
-            [$prefixes, $core, $degrees] = self::parts($name);
             $core = preg_replace('/\.(?=\p{Lu}\p{Ll})/u', '. ', $core);
-            $name = self::join($prefixes, $core, $degrees);
         }
 
-        return $name;
+        return self::join($prefixes, $core, $degrees);
+    }
+
+    /** Quotes and apostrophes go: "Mun'im" -> "Munim", '"Charles Seignobos' -> "Charles Seignobos". */
+    public static function unquote(string $name): string
+    {
+        // Including quotes stored with a broken encoding ("Rifâ€™ati").
+        return str_replace(['â€™', 'â€˜', 'â€œ', "â€\u{9d}", 'â€', "'", '"', '’', '‘', '“', '”', '`', '´', '‛', '„'], '', $name);
+    }
+
+    /** A name typed letter by letter: "A R M I N" -> "ARMIN", "J U N A Idi" -> "JUNAIdi". */
+    public static function unspace(string $name): string
+    {
+        return preg_replace_callback(
+            '/(?<![\p{L}.])(?:\p{L} ){3,}\p{L}{1,3}(?![\p{L}.])/u',
+            fn ($m) => str_replace(' ', '', $m[0]),
+            $name,
+        );
+    }
+
+    /**
+     * Strict Title Case for the name itself (not titles or degrees). Kept as
+     * they are: initials ("S.W.", "TH."), Roman numerals, "Mc" names,
+     * acronyms of organisations ("BPN", "UGM") and consonant-only
+     * initialisms of people ("NP", "BQ"). Particles ("bin", "van", "da")
+     * and the small words of organisation names ("dan", "untuk", "of")
+     * stay lowercase.
+     */
+    public static function titleCase(string $core, bool $organisation = false): string
+    {
+        $small = $organisation
+            ? ['dan', 'untuk', 'dari', 'di', 'ke', 'pada', 'dalam', 'atau', 'serta', 'yang', 'of', 'and', 'the', 'for', 'in', 'on', 'at', 'to', 'de', 'van']
+            : ['bin', 'binti', 'van', 'der', 'den', 'de', 'von', 'da', 'di', 'du', 'le', 'la'];
+        $words = explode(' ', $core);
+
+        foreach ($words as $i => $word) {
+            // After a comma the rest is degrees the list did not recognise ("CES", "MAPPI").
+            $afterComma = $i > 0 && str_ends_with($words[$i - 1], ',');
+            $words[$i] = $i > 0 && in_array(mb_strtolower($word), $small, true)
+                ? mb_strtolower($word)
+                // "Tata Ruang/BPN", "McGraw-Hill": each part on its own.
+                : implode('', array_map(
+                    fn ($part) => preg_match('/^[\/\-.]$/', $part) ? $part : self::titleWord($part, $organisation, $afterComma),
+                    // Initials ("S.W.") stay whole; otherwise dots separate parts too ("Prop.DIY").
+                    preg_match('/^(\p{L}\.)+$/u', $word) ? [$word] : preg_split('/([\/\-]|\.(?=\p{L}))/u', $word, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY),
+                ));
+        }
+
+        return implode(' ', $words);
+    }
+
+    private static function titleWord(string $word, bool $organisation, bool $afterComma): string
+    {
+        $letters = preg_replace('/\P{L}/u', '', $word);
+        $caps = $word === mb_strtoupper($word);
+
+        return match (true) {
+            $letters === '' => $word,
+            (bool) preg_match('/^(\p{L}\.)+$/u', $word) => mb_strtoupper($word),
+            (bool) preg_match('/^(?=[IVXLC]+$)M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$/', $word) => $word,
+            $caps && ($afterComma || preg_match('/[.,]$/u', $word)) && mb_strlen($letters) <= 6 => $word,
+            $organisation && $caps && mb_strlen($letters) <= 6 => $word,
+            ! $organisation && $caps && mb_strlen($letters) <= 4 && ! preg_match('/[AIUEO]/u', $letters) => $word,
+            default => preg_replace_callback(
+                '/^Mc(\p{Ll})/u',
+                fn ($m) => 'Mc'.mb_strtoupper($m[1]),
+                preg_replace_callback('/(^|[.(])(\p{Ll})/u', fn ($m) => $m[1].mb_strtoupper($m[2]), mb_strtolower($word)),
+            ),
+        };
     }
 
     /**
@@ -101,11 +175,19 @@ class AuthorName
         }
 
         // "X, dkk" means "X and others": drop the marker before splitting.
-        $name = preg_replace('/[\s,;]*\b(dkk|et\.? ?al\b).*$/iu', '', $name);
+        $name = preg_replace('/[\s,;]*\b(dkk|et\.? ?al\b|(and|&) (the )?others\b|dan kawan).*$/iu', '', $name);
         // A semicolon typed for an apostrophe ("Syafi;ie") and "Prof, Dr." for "Prof. Dr.".
-        $name = preg_replace('/(\p{L});(\p{Ll})/u', "$1'$2", $name);
+        $name = preg_replace('/(\p{L});(\p{Ll})/u', '$1$2', $name);
         $name = preg_replace('/\b(Prof|Dr|Drs|Dra|Ir)\s*,\s*(?=(Prof|Dr|Drs|Dra|Ir|H)\b)/iu', '$1. ', $name);
         $parts = self::attachTitles(preg_split('/\s*;\s*|,?\s+(?:dan0?|and|&)\s+/iu', $name));
+
+        // "Arthur H. Robinson-Joel L. Morrison-Phillip C. Muehrcke": a list joined by hyphens
+        // (two or more, so "Karo-Karo" and "Al-Ulwan" stay one name).
+        $parts = array_merge(...array_map(function ($part) {
+            $pieces = array_map('trim', explode('-', $part));
+
+            return count($pieces) >= 3 && collect($pieces)->every(fn ($p) => preg_match('/^\p{Lu}\p{L}+/u', $p)) ? $pieces : [$part];
+        }, $parts));
 
         // "A, B and C" or "A, B": commas separate people too. Degree pieces
         // ("S.H.", "M.A.P.") go back to the name before them.
