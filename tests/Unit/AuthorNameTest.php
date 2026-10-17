@@ -29,7 +29,7 @@ class AuthorNameTest extends TestCase
             'list with semicolons' => ['Pamela Allen; Tineke Wellwig; Anne Booth', ['Pamela Allen', 'Tineke Wellwig', 'Anne Booth']],
             'one-word name in a list' => ['Aristiono Nugroho, Suharno, Tullus Subroto', ['Aristiono Nugroho', 'Suharno', 'Tullus Subroto']],
             'two people by a comma' => ['Prof. DR. Soerjono Soekanto, Sri Mamuji', ['Prof. Dr. Soerjono Soekanto', 'Sri Mamuji']],
-            'degree then another person' => ['Prof. R. Subekti, S.H. , R Tjitrosudibio', ['Prof. R. Subekti, S.H.', 'R Tjitrosudibio']],
+            'degree then another person' => ['Prof. R. Subekti, S.H. , R Tjitrosudibio', ['Prof. R. Subekti, S.H.', 'R. Tjitrosudibio']],
             'title split by a semicolon' => ['Prof. Dr; Husaini Usman, M.Pd., M.T.', ['Prof. Dr. Husaini Usman, M.Pd., M.T.']],
             'apostrophe typed as semicolon' => ['Anang Sujana dan Syafi;ie El Bantanie', ['Anang Sujana', 'Syafiie El Bantanie']],
             'organisation with "dan" is one' => ['Pusat Pembinaan Dan Pengembangan Bahasa', ['Pusat Pembinaan dan Pengembangan Bahasa']],
@@ -69,6 +69,19 @@ class AuthorNameTest extends TestCase
         foreach ($expected as $name) {
             $this->assertSame([$name], AuthorName::people($name), "stable: {$name}");
         }
+    }
+
+    public function test_member_names_get_dotted_initials_titles_and_degrees(): void
+    {
+        $this->assertSame('Badri Husen, S.H.', AuthorName::person('BADRI HUSEN, S.H'));
+        $this->assertSame('Drs. Agus Abdul Cholil, M.M.', AuthorName::person('Drs Agus Abdul Cholil, M.M'));
+        $this->assertSame('Dwi S. Yuniarti', AuthorName::person('DWI S YUNIARTI'));
+        $this->assertSame('I Made Dwi Gunarta', AuthorName::person('I MADE DWI GUNARTA'));
+    }
+
+    public function test_an_initial_alone_is_not_a_person(): void
+    {
+        $this->assertSame(['D., Juanda JS'], AuthorName::people('D., Juanda JS'));
     }
 
     public function test_spellings_of_one_person_share_a_key(): void

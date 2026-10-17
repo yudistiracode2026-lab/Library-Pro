@@ -25,6 +25,10 @@ class NameCase
     /** Titles before a name, in their usual spelling. */
     private const PREFIXES = ['dr.' => 'Dr.', 'drs.' => 'Drs.', 'dra.' => 'Dra.', 'ir.' => 'Ir.', 'prof.' => 'Prof.', 'h.' => 'H.', 'hj.' => 'Hj.'];
 
+    /** Names after the Balinese "I": "I Made", "Drs. I Ketut". */
+    private const BALINESE = ['made', 'md', 'wayan', 'wyn', 'ketut', 'kt', 'nyoman', 'nym', 'putu', 'pt', 'gede', 'gde', 'gd', 'gusti', 'gst',
+        'dewa', 'dw', 'komang', 'kadek', 'nengah', 'kade', 'ngurah', 'nyoman', 'nyomam', 'luh', 'nengah', 'kompiang', 'agung', 'wy', 'k'];
+
     private const PARTICLES = ['bin', 'binti', 'van', 'der', 'den', 'de', 'von', 'da', 'di'];
 
     /**
@@ -63,7 +67,43 @@ class NameCase
             };
         }
 
+        if (! $organisation) {
+            $words = self::initials($words);
+        }
+
         return implode(' ', [...$words, ...$tail]).($degrees !== null ? ','.$degrees : '');
+    }
+
+    /**
+     * Initials end with a dot and are followed by a space, as in PUEBI:
+     * "A Abuzar" -> "A. Abuzar", "M.Yahya" -> "M. Yahya", "A.W Widjaja"
+     * -> "A.W. Widjaja". The Balinese "I" (I Wayan, I Gusti) is not an
+     * initial and stays as it is.
+     *
+     * @param  list<string>  $words
+     * @return list<string>
+     */
+    public static function initials(array $words): array
+    {
+        $out = [];
+        foreach (array_values($words) as $i => $word) {
+            // The Balinese "I": before a Balinese name, or first in the name (after any titles).
+            $first = collect(array_slice($words, 0, $i))->every(fn ($w) => isset(self::PREFIXES[mb_strtolower($w)]));
+            if ($word === 'I' && isset($words[$i + 1]) && ($first || in_array(mb_strtolower(rtrim($words[$i + 1], '.')), self::BALINESE, true))) {
+                $out[] = $word;
+
+                continue;
+            }
+
+            // An abbreviation glued to the next name: "M.Yahya", "Muh.Bilal".
+            $word = preg_replace('/\.(?=\p{Lu}\p{Ll})/u', '. ', $word);
+
+            foreach (explode(' ', $word) as $piece) {
+                $out[] = preg_match('/^(\p{Lu}\.)*\p{Lu}$/u', $piece) ? $piece.'.' : $piece;
+            }
+        }
+
+        return $out;
     }
 
     /** "SSi", "M.Si.", "SH.MH": a degree, or degrees joined by dots. */

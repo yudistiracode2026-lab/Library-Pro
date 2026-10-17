@@ -32,7 +32,7 @@ class AuthorName
         'sh' => 'S.H.', 'se' => 'S.E.', 'st' => 'S.T.', 'ssi' => 'S.Si.', 'spd' => 'S.Pd.', 'skom' => 'S.Kom.', 'ssos' => 'S.Sos.',
         'sip' => 'S.IP.', 'ss' => 'S.S.', 'sst' => 'S.ST.', 'ssit' => 'S.SiT.', 'sag' => 'S.Ag.', 'sp' => 'S.P.', 'shi' => 'S.H.I.',
         'stp' => 'S.TP.', 'skm' => 'S.K.M.', 'mm' => 'M.M.', 'msi' => 'M.Si.', 'mt' => 'M.T.', 'mpd' => 'M.Pd.', 'mh' => 'M.H.',
-        'mhum' => 'M.Hum.', 'mkn' => 'M.Kn.', 'meng' => 'M.Eng.', 'msc' => 'M.Sc.', 'ma' => 'M.A.', 'ms' => 'M.S.', 'mpa' => 'M.P.A.',
+        'mhum' => 'M.Hum.', 'mkom' => 'M.Kom.', 'mak' => 'M.Ak.', 'msos' => 'M.Sos.', 'mip' => 'M.IP.', 'mpsi' => 'M.Psi.', 'mkn' => 'M.Kn.', 'meng' => 'M.Eng.', 'msc' => 'M.Sc.', 'ma' => 'M.A.', 'ms' => 'M.S.', 'mpa' => 'M.P.A.',
         'mba' => 'M.B.A.', 'mag' => 'M.Ag.', 'mkes' => 'M.Kes.', 'mp' => 'M.P.', 'mhi' => 'M.H.I.', 'mec' => 'M.Ec.', 'mcrp' => 'M.C.R.P.',
         'phd' => 'Ph.D.', 'aptnh' => 'A.Ptnh.', 'amd' => 'A.Md.', 'ap' => 'A.P.', 'llm' => 'LL.M.', 'su' => 'S.U.', 'murp' => 'M.U.R.P.',
     ];
@@ -325,7 +325,10 @@ class AuthorName
             array_push($tokens, ...(count($pieces) > 1 && $all ? $pieces : [$d]));
         }
         $degrees = implode(', ', array_map(
-            fn ($d) => self::STANDARD[self::flat($d)] ?? (preg_match('/^(\p{L}{1,4}\.)+\p{L}{1,5}$/u', $d) ? $d.'.' : $d),
+            fn ($d) => self::STANDARD[self::flat($d)]
+                // A part after a dot starts with a capital ("M.kom" -> "M.Kom").
+                ?? preg_replace_callback('/(?<=\.)(\p{Ll})/u', fn ($m) => mb_strtoupper($m[1]),
+                    preg_match('/^(\p{L}{1,4}\.)+\p{L}{1,5}$/u', $d) ? $d.'.' : $d),
             $tokens,
         ));
 
@@ -382,10 +385,26 @@ class AuthorName
         return $parts !== [];
     }
 
-    /** Two or more words, or an initial: "Henry M. Kendall", "R. Weibel" — not "George". */
+    /**
+     * A member's name as written in the catalogue: Title Case, initials
+     * with a dot, titles with a dot, standard degrees ("S.H", "SH" -> "S.H.").
+     */
+    public static function person(string $name): string
+    {
+        $name = preg_replace('/\b(Prof|Dr|Drs|Dra|Ir|Hj|KH)(?=\s+\p{L})/iu', '$1.', NameCase::title($name));
+        [$prefixes, $core, $degrees] = self::parts($name);
+
+        return self::join($prefixes, $core, $degrees);
+    }
+
+    /** Two or more words, or an initial: "Henry M. Kendall", "R. Weibel" — not "George" or "D.". */
     private static function looksLikePerson(string $text): bool
     {
         $text = trim($text);
+
+        if (! preg_match('/\p{L}{2,}/u', $text)) {
+            return false;
+        }
 
         return $text !== '' && ! preg_match(self::ORGANISATION, $text)
             && ! preg_match('/\b(the|of|for|volume|vol|process|setting)\b/iu', $text)

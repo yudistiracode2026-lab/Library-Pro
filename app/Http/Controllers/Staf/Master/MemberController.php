@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Support\AuthorName;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
-use App\Support\NameCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -96,6 +96,6 @@ class MemberController extends Controller
             'status' => ['required', Rule::in(MasterOptions::MEMBER_STATUSES)],
         ], [], ['name' => 'nama lengkap', 'member_number' => 'NIM / NIP', 'study_program' => 'program studi', 'type' => 'jenis']);
 
-        return ['name' => NameCase::title($data['name'])] + $data;
+        return ['name' => AuthorName::person($data['name'])] + $data;
     }
 }

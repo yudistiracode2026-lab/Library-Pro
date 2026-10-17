@@ -3,11 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\Member;
-use App\Support\NameCase;
+use App\Support\AuthorName;
 use Illuminate\Console\Command;
 
 /**
- * Rewrites every member name in Title Case (see NameCase). New and edited
+ * Rewrites every member name in Title Case with dotted initials and
+ * standard degrees (see AuthorName::person). New and edited
  * members are normalised on save; this fixes the existing rows, e.g. after
  * importing the SLiMS data.
  */
@@ -22,7 +23,7 @@ class TitleCaseMemberNames extends Command
         $changes = [];
 
         Member::query()->select(['id', 'name'])->orderBy('id')->each(function (Member $m) use (&$changes) {
-            $name = NameCase::title($m->name);
+            $name = AuthorName::person($m->name);
 
             if ($name !== $m->name) {
                 $changes[$m->id] = [$m->name, $name];
