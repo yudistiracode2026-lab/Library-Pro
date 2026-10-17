@@ -65,6 +65,9 @@ const hasClassNumber = (v: FormValues) => /(^|[^0-9])[0-9][0-9xX]{2}([^0-9]|$)/.
 const suggest = (jenis: string) => route('staf.buku.suggest', { jenis });
 
 export default function Buku({ records, filters, summary, options }: BukuProps) {
+    // Row numbers continue across pages (page 2 starts at 26).
+    const numbers = new Map(records.data.map((b, i) => [b.id, (records.from ?? 1) + i]));
+
     return (
         <StafLayout title="Master buku & e-book" group="Master data">
             <MasterPage<BookRow>
@@ -75,9 +78,13 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 records={records}
                 filters={filters}
                 tabs={[{ value: '', label: 'Semua' }, ...options.types]}
-                grid="52px minmax(0,2.2fr) 100px 150px minmax(0,1.2fr) 120px 110px 130px"
+                grid="44px 52px minmax(0,2.2fr) 100px 150px minmax(0,1.2fr) 120px 110px 130px"
                 describeRow={(b) => b.title}
                 columns={[
+                    {
+                        label: 'No',
+                        render: (b) => <span className="text-fg-3 font-mono text-[13px] tabular-nums">{numbers.get(b.id)}</span>,
+                    },
                     {
                         label: 'Cover',
                         render: (b) => (
