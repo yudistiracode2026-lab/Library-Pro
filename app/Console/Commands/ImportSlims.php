@@ -6,6 +6,7 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Member;
 use App\Models\Visit;
+use App\Support\NameCase;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Collection;
@@ -449,7 +450,7 @@ class ImportSlims extends Command
             $rows[] = [
                 'id' => $map[$key],
                 'member_number' => $number,
-                'name' => $this->clean($m->member_name, 255) ?: $number,
+                'name' => NameCase::title($this->clean($m->member_name, 255)) ?: $number,
                 'type' => $type,
                 'study_program' => $programme,
                 'email' => $email,

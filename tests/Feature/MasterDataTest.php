@@ -6,6 +6,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Employee;
+use App\Models\Member;
 use App\Models\Publisher;
 use App\Models\Rack;
 use App\Models\User;
@@ -262,6 +263,15 @@ class MasterDataTest extends TestCase
 
         $this->post('/staf/pemustaka', $member)->assertSessionHasNoErrors();
         $this->post('/staf/pemustaka', $member)->assertSessionHasErrors('member_number');
+    }
+
+    public function test_member_names_are_saved_in_title_case()
+    {
+        $this->asPustakawan()->post('/staf/pemustaka', [
+            'name' => 'RIZKY MAULANA', 'member_number' => '20220145', 'study_program' => 'D4 Pertanahan', 'type' => 'Mahasiswa', 'status' => 'Aktif',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('Rizky Maulana', Member::sole()->name);
     }
 
     public function test_export_is_an_excel_friendly_csv()

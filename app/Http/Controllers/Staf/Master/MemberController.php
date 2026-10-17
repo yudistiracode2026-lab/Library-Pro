@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
+use App\Support\NameCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -86,7 +87,7 @@ class MemberController extends Controller
      */
     private function validated(Request $request, ?Member $member = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'member_number' => ['required', 'string', 'max:30', Rule::unique('members')->ignore($member)],
             'study_program' => ['required', Rule::in(MasterOptions::STUDY_PROGRAMS)],
@@ -94,5 +95,7 @@ class MemberController extends Controller
             'email' => ['nullable', 'email', 'max:255', Rule::unique('members')->ignore($member)],
             'status' => ['required', Rule::in(MasterOptions::MEMBER_STATUSES)],
         ], [], ['name' => 'nama lengkap', 'member_number' => 'NIM / NIP', 'study_program' => 'program studi', 'type' => 'jenis']);
+
+        return ['name' => NameCase::title($data['name'])] + $data;
     }
 }
