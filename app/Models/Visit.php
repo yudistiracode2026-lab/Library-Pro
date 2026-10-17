@@ -28,7 +28,8 @@ class Visit extends Model
      */
     public function scopeToday(Builder $query): void
     {
-        $query->whereDate('checked_in_at', today());
+        // A range, not whereDate(), so the checked_in_at index is used.
+        $query->whereBetween('checked_in_at', [today(), today()->endOfDay()]);
     }
 
     /**

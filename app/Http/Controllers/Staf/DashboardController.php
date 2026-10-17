@@ -19,6 +19,12 @@ class DashboardController extends Controller
     {
         $hour = now()->hour;
         $openLoans = Loan::open();
+        $visitsPerDay = Visit::where('checked_in_at', '>=', today()->subDays(13))
+            ->selectRaw('DATE(checked_in_at) AS day, COUNT(*) AS total')->groupBy('day')->pluck('total', 'day');
+        $loansPerClass = Loan::where('loaned_at', '>=', now()->startOfMonth())
+            ->join('book_copies', 'book_copies.id', '=', 'loans.book_copy_id')
+            ->join('books', 'books.id', '=', 'book_copies.book_id')
+            ->selectRaw('books.ddc_class, COUNT(*) AS total')->groupBy('books.ddc_class')->pluck('total', 'ddc_class');
 
         return Inertia::render('staf/dashboard', [
             'greeting' => match (true) {
@@ -39,13 +45,13 @@ class DashboardController extends Controller
             ],
             'collection' => $this->collection(),
             'growth' => $this->growth(),
-            'visits' => collect(range(13, 0))->map(function ($ago) {
+            'visits' => collect(range(13, 0))->map(function ($ago) use ($visitsPerDay) {
                 $day = today()->subDays($ago);
 
                 return [
                     'day' => $day->day,
                     'label' => $day->translatedFormat('l, j M'),
-                    'total' => Visit::whereDate('checked_in_at', $day)->count(),
+                    'total' => (int) ($visitsPerDay[$day->toDateString()] ?? 0),
                     'weekend' => $day->isWeekend(),
                     'today' => $ago === 0,
                 ];
@@ -53,7 +59,7 @@ class DashboardController extends Controller
             'loansByClass' => collect(MasterOptions::DDC_CLASSES)->map(fn ($name, $class) => [
                 'class' => (string) $class,
                 'name' => $name,
-                'total' => Loan::where('loaned_at', '>=', now()->startOfMonth())->whereRelation('copy.book', 'ddc_class', (string) $class)->count(),
+                'total' => (int) ($loansPerClass[$class] ?? 0),
             ])->sortByDesc('total')->take(8)->values(),
             'due' => Loan::open()->with(['copy.book', 'member'])->whereDate('due_at', '<=', today())->orderBy('due_at')->limit(5)->get()->map(fn (Loan $l) => [
                 'id' => $l->id,
@@ -74,11 +80,13 @@ class DashboardController extends Controller
      */
     private function collection(): array
     {
-        $printed = fn (string $type) => Book::where('type', Book::PRINTED)->where('collection_type', $type);
+        $titles = Book::where('type', Book::PRINTED)->selectRaw('collection_type, COUNT(*) AS total')->groupBy('collection_type')->pluck('total', 'collection_type');
+        $copies = BookCopy::join('books', 'books.id', '=', 'book_copies.book_id')->where('books.type', Book::PRINTED)
+            ->selectRaw('books.collection_type, COUNT(*) AS total')->groupBy('books.collection_type')->pluck('total', 'collection_type');
         $rows = collect(MasterOptions::COLLECTION_TYPES)->map(fn ($type) => [
             'label' => $type,
-            'titles' => $printed($type)->count(),
-            'copies' => BookCopy::whereHas('book', fn ($q) => $q->where('type', Book::PRINTED)->where('collection_type', $type))->count(),
+            'titles' => (int) ($titles[$type] ?? 0),
+            'copies' => (int) ($copies[$type] ?? 0),
         ]);
         $ebooks = ['label' => 'E-book', 'titles' => Book::where('type', Book::EBOOK)->count(), 'copies' => (int) Book::where('type', Book::EBOOK)->sum('license_count')];
 
@@ -95,13 +103,21 @@ class DashboardController extends Controller
     {
         $years = range(now()->year - 6, now()->year);
         $types = array_merge(['Semua jenis', 'Buku teks', 'E-book'], array_slice(MasterOptions::COLLECTION_TYPES, 1));
-        $counts = Book::query()
-            ->where('created_at', '>=', now()->setDate($years[0], 1, 1)->startOfDay())
-            ->get(['type', 'collection_type', 'acquisition', 'created_at'])
-            ->groupBy(fn (Book $b) => $b->type === Book::EBOOK ? 'E-book' : $b->collection_type);
+        // One pass over plain rows; filtering models per cell was slow on
+        // a real catalogue.
+        $counts = [];
+        $rows = Book::query()->where('created_at', '>=', now()->setDate($years[0], 1, 1)->startOfDay())
+            ->toBase()->get(['type', 'collection_type', 'acquisition', 'created_at']);
 
-        $matrix = fn ($books) => array_map(fn ($year) => array_map(
-            fn ($source) => $books->filter(fn (Book $b) => $b->created_at->year === $year && $b->acquisition === $source)->count(),
+        foreach ($rows as $b) {
+            $year = (int) substr((string) $b->created_at, 0, 4);
+            $kind = $b->type === Book::EBOOK ? 'E-book' : $b->collection_type;
+            $counts[$kind][$year][$b->acquisition] = ($counts[$kind][$year][$b->acquisition] ?? 0) + 1;
+            $counts['Semua jenis'][$year][$b->acquisition] = ($counts['Semua jenis'][$year][$b->acquisition] ?? 0) + 1;
+        }
+
+        $matrix = fn (string $kind) => array_map(fn ($year) => array_map(
+            fn ($source) => $counts[$kind][$year][$source] ?? 0,
             MasterOptions::ACQUISITIONS,
         ), $years);
 
@@ -109,7 +125,7 @@ class DashboardController extends Controller
             'years' => $years,
             'sources' => MasterOptions::ACQUISITIONS,
             'types' => collect($types)->mapWithKeys(fn ($type) => [
-                $type => $matrix($type === 'Semua jenis' ? $counts->flatten(1) : ($counts[$type] ?? collect())),
+                $type => $matrix($type),
             ])->all(),
         ];
     }

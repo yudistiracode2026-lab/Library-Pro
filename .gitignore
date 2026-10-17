@@ -26,3 +26,7 @@ yarn-error.log
 
 # Dokumen sumber desain (PRD, presentasi, foto) — tidak dipublikasikan
 /design/uploads/
+/dist
+
+# Backup sistem lama (SLiMS) — berisi data pribadi, jangan diupload
+/backup server soni/

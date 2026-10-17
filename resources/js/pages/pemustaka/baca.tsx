@@ -25,7 +25,7 @@ interface BacaProps {
     filters: { q: string; tahun: string };
     gate: { network: boolean; presence: boolean; since: string | null; open: boolean };
     counts: Record<string, number>;
-    works: Work[];
+    works: { data: Work[]; total: number; current_page: number; last_page: number } | null;
     years: number[];
     selected: Work | null;
     history: { id: number; thesisId: number; title: string; type: string; when: string; pages: string; minutes: number }[];
@@ -39,7 +39,8 @@ const TYPE: Record<string, [ComponentType<{ className?: string }>, string]> = {
     Disertasi: [LibraryBig, 'bg-berry'],
 };
 
-export default function Baca({ tab, filters, gate, counts, works, years, selected, history, reader, minutes }: BacaProps) {
+export default function Baca({ tab, filters, gate, counts, works: page, years, selected, history, reader, minutes }: BacaProps) {
+    const works = page?.data ?? [];
     const [q, setQ] = useState(filters.q);
     const first = useRef(true);
     const go = (params: Record<string, string | number | undefined>) =>
@@ -174,7 +175,7 @@ export default function Baca({ tab, filters, gate, counts, works, years, selecte
                         </select>
                     </div>
                     <span className="text-fg-3 text-[13px]">
-                        {works.length} {tab.toLowerCase()} ditemukan
+                        {(page?.total ?? 0).toLocaleString('id-ID')} {tab.toLowerCase()} ditemukan
                     </span>
                     <div className="flex flex-col gap-3">
                         {works.map((w) => {
@@ -184,7 +185,7 @@ export default function Baca({ tab, filters, gate, counts, works, years, selecte
                                 <button
                                     key={w.id}
                                     type="button"
-                                    onClick={() => go({ karya: w.id })}
+                                    onClick={() => go({ karya: w.id, page: page?.current_page })}
                                     className="grid cursor-pointer grid-cols-[52px_minmax(0,1fr)_auto] items-start gap-4 rounded-lg bg-white p-[18px] text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-800"
                                 >
                                     <span className={`grid h-[68px] w-[52px] place-items-center rounded-[6px] text-white ${color}`}>
@@ -195,9 +196,7 @@ export default function Baca({ tab, filters, gate, counts, works, years, selecte
                                             <span className="text-fg-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold dark:bg-slate-700">
                                                 {w.type}
                                             </span>
-                                            <span className="text-fg-3 text-xs">
-                                                {w.study_program} · {w.year}
-                                            </span>
+                                            <span className="text-fg-3 text-xs">{[w.study_program, w.year].filter(Boolean).join(' · ')}</span>
                                         </div>
                                         <span className="font-display text-base leading-tight font-bold">{w.title}</span>
                                         <span className="text-fg-3 text-[13px]">
@@ -217,10 +216,35 @@ export default function Baca({ tab, filters, gate, counts, works, years, selecte
                             <div className="text-fg-3 p-10 text-center">Belum ada karya yang cocok. Coba kata kunci lain, ya.</div>
                         )}
                     </div>
+                    {page && page.last_page > 1 && (
+                        <div className="flex items-center justify-center gap-3 text-[13px]">
+                            <button
+                                type="button"
+                                disabled={page.current_page <= 1}
+                                onClick={() => go({ page: page.current_page - 1 })}
+                                className="h-9 cursor-pointer rounded-[10px] border border-slate-200 bg-white px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-800"
+                            >
+                                Sebelumnya
+                            </button>
+                            <span className="text-fg-3">
+                                Halaman {page.current_page} dari {page.last_page}
+                            </span>
+                            <button
+                                type="button"
+                                disabled={page.current_page >= page.last_page}
+                                onClick={() => go({ page: page.current_page + 1 })}
+                                className="h-9 cursor-pointer rounded-[10px] border border-slate-200 bg-white px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-800"
+                            >
+                                Berikutnya
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 
-            {selected && <Detail work={selected} open={gate.open} minutes={minutes} onClose={() => go({ karya: undefined })} />}
+            {selected && (
+                <Detail work={selected} open={gate.open} minutes={minutes} onClose={() => go({ karya: undefined, page: page?.current_page })} />
+            )}
 
             {reader && (
                 <PdfReader

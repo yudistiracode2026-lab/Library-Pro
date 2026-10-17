@@ -47,11 +47,11 @@ class MasterOptions
 
     public const SUPPLIER_TYPES = ['Distributor', 'Toko buku', 'Penerbit langsung'];
 
-    public const MEMBER_TYPES = ['Mahasiswa', 'Dosen', 'Umum'];
+    public const MEMBER_TYPES = ['Mahasiswa', 'Dosen', 'Tendik', 'Umum'];
 
-    public const MEMBER_STATUSES = ['Aktif', 'Diblokir'];
+    public const MEMBER_STATUSES = ['Aktif', 'Nonaktif', 'Diblokir'];
 
-    public const STUDY_PROGRAMS = ['D4 Pertanahan', 'D1 Pengukuran dan Pemetaan Kadastral', 'Dosen', 'Umum'];
+    public const STUDY_PROGRAMS = ['D4 Pertanahan', 'D1 Pengukuran dan Pemetaan Kadastral', 'Dosen', 'Tendik', 'Umum'];
 
     public const EMPLOYEE_STATUSES = ['Aktif', 'Cuti'];
 

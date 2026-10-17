@@ -82,6 +82,20 @@ return [
             ]) : [],
         ],
 
+        // The old SLiMS database, read once by `php artisan import:slims`.
+        'slims' => [
+            'driver' => 'mariadb',
+            'host' => env('SLIMS_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('SLIMS_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('SLIMS_DB_DATABASE', 'slims_lama'),
+            'username' => env('SLIMS_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('SLIMS_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),

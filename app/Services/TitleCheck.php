@@ -36,7 +36,7 @@ class TitleCheck
             return ['keywords' => [], 'results' => collect(), 'themes' => []];
         }
 
-        $results = Thesis::query()->orderByDesc('year')->get()->map(function (Thesis $t) use ($keywords) {
+        $results = Thesis::query()->orderByDesc('year')->get(['id', 'type', 'title', 'author', 'study_program', 'year', 'keywords'])->map(function (Thesis $t) use ($keywords) {
             $titleWords = $this->words($t->title);
             $tags = array_values(array_filter(array_map('trim', explode(';', (string) $t->keywords))));
             $tagWords = $this->words(implode(' ', $tags));

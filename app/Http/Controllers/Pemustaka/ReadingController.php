@@ -39,14 +39,16 @@ class ReadingController extends Controller
             'gate' => $gate,
             'counts' => collect(Thesis::TYPES)->mapWithKeys(fn ($t) => [$t => Thesis::where('type', $t)->count()])
                 ->put('riwayat', $member->readingSessions()->count()),
-            'works' => $tab === 'riwayat' ? [] : Thesis::where('type', $tab)
+            'works' => $tab === 'riwayat' ? null : Thesis::where('type', $tab)
                 ->when($q !== '', fn ($w) => $w->where(fn ($s) => $s
                     ->where('title', 'like', "%{$q}%")->orWhere('author', 'like', "%{$q}%")
                     ->orWhere('advisor', 'like', "%{$q}%")->orWhere('keywords', 'like', "%{$q}%")))
                 ->when($year === 'lama', fn ($w) => $w->where('year', '<=', now()->year - 3))
                 ->when(ctype_digit($year), fn ($w) => $w->where('year', (int) $year))
-                ->orderByDesc('year')->orderBy('title')->get()
-                ->map(fn (Thesis $t) => $this->work($t)),
+                ->orderByDesc('year')->orderBy('title')
+                ->paginate(20, ['id', 'type', 'title', 'author', 'member_number', 'study_program', 'year', 'advisor', 'abstract'])
+                ->withQueryString()
+                ->through(fn (Thesis $t) => $this->work($t)),
             'years' => collect(range(now()->year, now()->year - 2))->all(),
             'selected' => $request->integer('karya') ? $this->work(Thesis::findOrFail($request->integer('karya')), true) : null,
             'history' => $tab === 'riwayat' ? $member->readingSessions()->with('thesis')->latest('started_at')->limit(30)->get()->map(fn (ReadingSession $s) => [

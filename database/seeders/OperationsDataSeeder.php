@@ -30,7 +30,7 @@ use Illuminate\Database\Seeder;
 class OperationsDataSeeder extends Seeder
 {
     /** code, floor, name, type, area m², x, y, w, h */
-    private const ROOMS = [
+    public const ROOMS = [
         ['f1', 1, 'Ruang Dosen', 'kerja', 24, 0, 0, 17, 26], ['f2', 1, 'Ruang Dosen', 'kerja', 22, 17, 0, 25, 16],
         ['f3', 1, 'P4MI', 'kerja', 42, 42, 0, 21, 36], ['f4', 1, 'Ruang PPPM', 'kerja', 32, 63, 0, 37, 16],
         ['f5', 1, 'Klinik', 'fasum', 32, 0, 26, 17, 34], ['f6', 1, 'Humas', 'kerja', 38, 0, 60, 17, 40],

@@ -36,7 +36,9 @@ export function StatusBadge({ status }: { status: string }) {
         ? 'success'
         : ['Diblokir', 'Ditolak', 'Dikembalikan'].includes(status)
           ? 'danger'
-          : 'warning';
+          : status === 'Nonaktif'
+            ? 'slate'
+            : 'warning';
 
     return <Badge tone={tone}>{status}</Badge>;
 }

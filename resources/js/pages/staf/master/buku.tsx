@@ -132,6 +132,8 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                                 <StatusBadge status={b.status ?? 'Draf'} />
                             ) : b.available > 0 ? (
                                 <Badge tone="success">Tersedia</Badge>
+                            ) : b.copies === 0 ? (
+                                <Badge tone="slate">Tanpa eksemplar</Badge>
                             ) : (
                                 <Badge tone="warning">Dipinjam semua</Badge>
                             ),

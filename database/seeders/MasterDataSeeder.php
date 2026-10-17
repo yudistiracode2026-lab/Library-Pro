@@ -18,7 +18,7 @@ use Illuminate\Database\Seeder;
 class MasterDataSeeder extends Seeder
 {
     /** floor => code => [name, x, y, w, h] (position on the floor plan, in percent) */
-    private const RACKS = [
+    public const RACKS = [
         1 => [
             'A1' => ['Karya umum', 8, 8, 6, 36], 'A2' => ['Komputer & informatika', 20, 8, 6, 36],
             'A3' => ['Filsafat & etika', 32, 8, 6, 36], 'A4' => ['Agama', 44, 8, 6, 36],
