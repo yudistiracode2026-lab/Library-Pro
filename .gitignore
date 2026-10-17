@@ -30,3 +30,6 @@ yarn-error.log
 
 # Backup sistem lama (SLiMS) — berisi data pribadi, jangan diupload
 /backup server soni/
+
+# Backup database lokal — berisi data pribadi
+/backups/
