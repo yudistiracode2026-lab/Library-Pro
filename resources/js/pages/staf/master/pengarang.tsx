@@ -27,6 +27,7 @@ export default function Pengarang({ records, filters, options }: PengarangProps)
                 addLabel="Tambah pengarang"
                 records={records}
                 filters={filters}
+                numbered
                 grid="minmax(0,1.4fr) 120px 130px minmax(0,1.8fr)"
                 describeRow={(a) => a.name}
                 columns={[

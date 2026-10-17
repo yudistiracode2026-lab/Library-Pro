@@ -23,6 +23,8 @@ interface MasterPageProps<T extends { id: number }> {
     grid: string;
     /** Optional filter chips bound to the "jenis" query parameter; "" means all. */
     tabs?: SelectOption[];
+    /** A "No" column first, numbered across pages (page 2 starts at 26). */
+    numbered?: boolean;
     form: {
         title: (row: T | null) => string;
         fields: FieldDef[];
@@ -44,6 +46,7 @@ export function MasterPage<T extends { id: number }>({
     columns,
     grid,
     tabs,
+    numbered,
     form,
     describeRow,
 }: MasterPageProps<T>) {
@@ -68,7 +71,11 @@ export function MasterPage<T extends { id: number }>({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [q]);
 
-    const gridTemplate = `${grid} 80px`;
+    const numbers = new Map(records.data.map((row, i) => [row.id, (records.from ?? 1) + i]));
+    const allColumns: Column<T>[] = numbered
+        ? [{ label: 'No', render: (row) => <span className="text-fg-3 font-mono text-[13px] tabular-nums">{numbers.get(row.id)}</span> }, ...columns]
+        : columns;
+    const gridTemplate = `${numbered ? '44px ' : ''}${grid} 80px`;
     const editing = editor?.row ?? null;
 
     return (
@@ -131,7 +138,7 @@ export function MasterPage<T extends { id: number }>({
                     className="text-fg-3 grid min-w-[900px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900"
                     style={{ gridTemplateColumns: gridTemplate }}
                 >
-                    {columns.map((c) => (
+                    {allColumns.map((c) => (
                         <span key={c.label}>{c.label}</span>
                     ))}
                     <span />
@@ -143,7 +150,7 @@ export function MasterPage<T extends { id: number }>({
                         className="grid min-w-[900px] items-center gap-4 border-b border-slate-200 px-5 py-3.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
                         style={{ gridTemplateColumns: gridTemplate }}
                     >
-                        {columns.map((c) => (
+                        {allColumns.map((c) => (
                             <div key={c.label} className="flex min-w-0 flex-col gap-0.5">
                                 {c.render(row)}
                             </div>
