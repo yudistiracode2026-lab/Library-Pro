@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\CoverController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', WebsiteController::class)->name('home');
+Route::get('sampul/{book}', CoverController::class)->name('cover');
 
 Route::middleware(['auth'])->group(function () {
     // Landing page after login: staff go to their portal, members get theirs.

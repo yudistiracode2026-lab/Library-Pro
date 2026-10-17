@@ -1,4 +1,4 @@
-import { DDC_COLORS } from '@/components/staf/master/cells';
+import { BookCover } from '@/components/book-cover';
 import PemustakaLayout from '@/layouts/pemustaka-layout';
 import { router } from '@inertiajs/react';
 import { BookOpen, Download, Search, X } from 'lucide-react';
@@ -11,6 +11,7 @@ interface Result {
     author: string;
     year: number | null;
     ddc_class: string;
+    cover: string | null;
     rack: string | null;
     available: number;
     mine: boolean;
@@ -22,6 +23,7 @@ interface Location {
     author: string;
     call_number: string | null;
     ddc_class: string;
+    cover: string | null;
     available: number;
     floor: number;
     fixtures: { label: string; x: number; y: number; w: number; h: number }[];
@@ -41,6 +43,7 @@ interface Ebook {
     publisher: string | null;
     year: number | null;
     ddc_class: string;
+    cover: string | null;
     collection_type: string;
     format: string | null;
     size: number | null;
@@ -122,7 +125,7 @@ export default function Cari({ filters, results, selected, ebook }: CariProps) {
                                 onClick={() => go(b.type === 'ebook' ? { ebook: b.id, buku: selected?.id } : { buku: b.id })}
                                 className={`flex cursor-pointer gap-3.5 rounded-[14px] border p-3 text-left ${on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 bg-white hover:border-teal-300 dark:border-slate-700 dark:bg-slate-800'}`}
                             >
-                                <div className={`h-[58px] w-[42px] flex-none rounded-[5px] ${DDC_COLORS[b.ddc_class] ?? 'bg-teal-600'}`} />
+                                <BookCover cover={b.cover} ddc={b.ddc_class} className="h-[58px] w-[42px] rounded-[5px]" />
                                 <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                                     <span
                                         className={`self-start rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.type === 'ebook' ? 'bg-teal-50 text-teal-700' : 'text-fg-2 bg-slate-100 dark:bg-slate-700'}`}
@@ -168,7 +171,7 @@ function LocationPanel({ book }: { book: Location }) {
     return (
         <section className="flex flex-col gap-4 rounded-lg bg-white p-5 shadow-sm lg:sticky lg:top-[84px] dark:bg-slate-800">
             <div className="flex gap-4">
-                <div className={`h-[110px] w-20 flex-none rounded-[6px] ${DDC_COLORS[book.ddc_class] ?? 'bg-teal-600'}`} />
+                <BookCover cover={book.cover} ddc={book.ddc_class} className="h-[110px] w-20 rounded-[6px]" />
                 <div className="flex flex-col gap-1">
                     <span className="font-display text-[19px] leading-tight font-bold">{book.title}</span>
                     <span className="text-fg-3 text-sm">{book.author}</span>
@@ -271,13 +274,15 @@ function EbookModal({ ebook, onClose }: { ebook: Ebook; onClose: () => void }) {
                 onClick={(e) => e.stopPropagation()}
                 className="grid max-h-[90vh] w-[min(640px,100%)] grid-cols-[repeat(auto-fit,minmax(min(100%,160px),1fr))] gap-6 overflow-auto rounded-xl bg-white p-7 shadow-xl dark:bg-slate-800"
             >
-                <div
-                    className={`flex aspect-[2/3] max-w-[200px] flex-col justify-between rounded-[8px] p-3.5 text-white shadow-md ${DDC_COLORS[ebook.ddc_class] ?? 'bg-teal-600'}`}
+                <BookCover
+                    cover={ebook.cover}
+                    ddc={ebook.ddc_class}
+                    className="flex aspect-[2/3] w-full max-w-[200px] flex-col justify-between rounded-[8px] p-3.5 text-white shadow-md"
                 >
                     <span className="self-start rounded-[4px] bg-white/25 px-1.5 py-0.5 font-mono text-[10px] font-semibold">{ebook.format}</span>
                     <span className="font-display text-base leading-tight font-extrabold">{ebook.title}</span>
                     <span className="text-xs">{ebook.author}</span>
-                </div>
+                </BookCover>
                 <div className="col-span-2 flex min-w-0 flex-col gap-3.5">
                     <div className="flex justify-between gap-3">
                         <h3 className="font-display text-[21px] leading-tight font-bold">{ebook.title}</h3>

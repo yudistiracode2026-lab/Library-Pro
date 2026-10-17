@@ -49,7 +49,7 @@ class AuthorController extends Controller
 
     public function destroy(Author $record): RedirectResponse
     {
-        if ($record->books()->exists()) {
+        if ($record->books()->exists() || $record->credits()->exists()) {
             return back()->with('error', 'Pengarang ini masih dipakai di data koleksi.');
         }
 

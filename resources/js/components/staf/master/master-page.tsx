@@ -29,6 +29,7 @@ interface MasterPageProps<T extends { id: number }> {
         empty: FormValues;
         fromRow: (row: T) => FormValues;
         switcher?: { name: string; options: SelectOption[] };
+        wide?: boolean;
     };
     describeRow: (row: T) => string;
 }
@@ -202,6 +203,7 @@ export function MasterPage<T extends { id: number }>({
                     method={editing ? 'put' : 'post'}
                     url={editing ? route(`staf.${routeKey}.update`, { record: editing.id }) : route(`staf.${routeKey}.store`)}
                     switcher={editing ? undefined : form.switcher}
+                    wide={form.wide}
                 />
             )}
 

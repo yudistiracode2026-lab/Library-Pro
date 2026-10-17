@@ -10,20 +10,26 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
  * One-off migration from the old SLiMS database (connection "slims") into an
- * empty Library-Pro database: authors, publishers, titles, copies, members,
- * loan history, visits, and the thesis repository (metadata only — the PDFs
- * were not in the backup). Fines and staff accounts are not carried over.
+ * empty Library-Pro database: authors (all of them, in order), publishers,
+ * subjects, titles with their bibliographic fields and covers, copies,
+ * members, loan history, visits, and the thesis repository (metadata only —
+ * the PDFs were not in the backup). Fines and staff accounts are not
+ * carried over.
  *
  * Book and copy ids keep SLiMS biblio_id / item_id so records can be traced
  * back to the old system.
  */
 class ImportSlims extends Command
 {
-    protected $signature = 'import:slims {--force : Jalankan tanpa konfirmasi}';
+    protected $signature = 'import:slims
+        {--sampul= : Folder gambar sampul SLiMS (images/docs), mis. "backup server soni/Server/data/doc"}
+        {--force : Jalankan tanpa konfirmasi}';
 
     protected $description = 'Impor katalog, anggota, sirkulasi, dan kunjungan dari database SLiMS lama';
 
@@ -42,6 +48,12 @@ class ImportSlims extends Command
 
     /** SLiMS GMD name (lowercase) => thesis repository type. */
     private const THESES = ['skripsi' => 'Skripsi', 'tesis' => 'Tesis', 'disertasi' => 'Disertasi'];
+
+    /** SLiMS language_id => Library-Pro language. */
+    private const LANGUAGES = [
+        'id' => 'Indonesia', 'en' => 'Inggris', 'ie' => 'Indonesia / Inggris', 'ia' => 'Indonesia / Arab',
+        'nd' => 'Belanda', 'jm' => 'Jerman', 'ar' => 'Arab',
+    ];
 
     /** SLiMS member_type_id => [type, study programme]. */
     private const MEMBER_TYPES = [
@@ -75,6 +87,14 @@ class ImportSlims extends Command
             return self::FAILURE;
         }
 
+        $covers = $this->option('sampul');
+
+        if ($covers !== null && ! File::isDirectory($covers)) {
+            $this->error("Folder sampul tidak ditemukan: {$covers}");
+
+            return self::FAILURE;
+        }
+
         if (! $this->option('force') && ! $this->confirm('Impor data dari database "'.$this->slims->getDatabaseName().'"?', true)) {
             return self::FAILURE;
         }
@@ -82,13 +102,15 @@ class ImportSlims extends Command
         DB::connection()->disableQueryLog();
         $this->slims->disableQueryLog();
 
-        DB::transaction(function () {
+        DB::transaction(function () use ($covers) {
             [$authors, $bookAuthor] = $this->authors();
             $publishers = $this->publishers();
             $gmd = $this->slims->table('mst_gmd')->pluck('gmd_name', 'gmd_id')->map(fn ($n) => Str::lower(trim($n)));
             $loanedCodes = $this->slims->table('loan')->where('is_lent', 1)->where('is_return', 0)->pluck('item_code')->map(fn ($c) => Str::lower(trim((string) $c)))->flip();
 
-            $this->books($gmd, $authors, $bookAuthor, $publishers);
+            $this->books($gmd, $authors, $bookAuthor, $publishers, $covers);
+            $this->bookAuthors($authors);
+            $this->subjects();
             $copies = $this->copies($loanedCodes);
             $this->theses($gmd, $authors, $bookAuthor);
             $members = $this->members();
@@ -186,35 +208,139 @@ class ImportSlims extends Command
      * @param  Collection<int, int>  $bookAuthor
      * @param  Collection<int, int>  $publishers
      */
-    private function books(Collection $gmd, Collection $authors, Collection $bookAuthor, Collection $publishers): void
+    private function books(Collection $gmd, Collection $authors, Collection $bookAuthor, Collection $publishers, ?string $covers): void
     {
         // Titles whose copies are mostly in the reference collection.
         $reference = $this->slims->table('item')
             ->selectRaw('biblio_id, SUM(coll_type_id = 1) * 2 > COUNT(*) AS ref')
             ->groupBy('biblio_id')->pluck('ref', 'biblio_id');
+        $places = $this->slims->table('mst_place')->pluck('place_name', 'place_id');
+        $featured = $this->slims->table('buku_unggulan')->where('status', 1)->pluck('biblio_id')->flip();
 
         $rows = [];
+        $copied = 0;
 
         foreach ($this->slims->table('biblio')->orderBy('biblio_id')->cursor() as $b) {
             $collection = self::COLLECTIONS[$gmd[$b->gmd_id] ?? ''] ?? (($reference[$b->biblio_id] ?? 0) ? 'Referensi' : 'Buku teks');
+            $cover = $covers ? $this->copyCover($covers, (string) $b->image, $b->biblio_id) : null;
+            $copied += $cover ? 1 : 0;
 
             $rows[] = [
                 'id' => $b->biblio_id,
                 'type' => Book::PRINTED,
                 'title' => $this->clean($b->title, 255) ?: '(tanpa judul)',
+                'series_title' => $this->clean($b->series_title, 255) ?: null,
                 'author_id' => $authors[$bookAuthor[$b->biblio_id] ?? 0],
                 'publisher_id' => $publishers[$b->publisher_id] ?? $publishers[0],
+                'publish_place' => $this->clean($places[$b->publish_place_id] ?? '', 100) ?: null,
                 'year' => $this->year($b->publish_year),
+                'edition' => $this->clean($b->edition, 50) ?: null,
+                'collation' => $this->clean($b->collation, 100) ?: null,
+                'language' => self::LANGUAGES[Str::lower(trim((string) $b->language_id))] ?? 'Indonesia',
                 'isbn' => $this->clean($b->isbn_issn, 20) ?: null,
-                'ddc_class' => $this->ddc($b->classification, $b->call_number, $collection),
+                'classification' => $this->clean($b->classification, 40) ?: null,
+                'ddc_class' => Book::ddcClassOf($b->classification, $b->call_number) ?? $this->fallbackDdc($collection),
                 'collection_type' => $collection,
                 'call_number' => $this->clean($b->call_number, 40) ?: null,
+                'abstract' => $this->text($b->notes),
+                'cover_path' => $cover,
+                'featured' => isset($featured[$b->biblio_id]),
                 'created_at' => $this->date($b->input_date) ?? $this->now,
                 'updated_at' => $this->date($b->last_update) ?? $this->now,
             ];
         }
 
-        $this->insert('books', $rows, 'Judul');
+        // Abstracts are long; small batches stay under max_allowed_packet (1 MB on XAMPP).
+        $this->insert('books', $rows, 'Judul', $covers ? "{$copied} dengan sampul" : null, chunk: 100);
+    }
+
+    /**
+     * Every author of every title, in SLiMS order (level, then id).
+     *
+     * @param  Collection<int, int>  $authors
+     */
+    private function bookAuthors(Collection $authors): void
+    {
+        $rows = [];
+        $position = [];
+
+        foreach ($this->slims->table('biblio_author')->whereIn('biblio_id', $this->slims->table('biblio')->select('biblio_id'))
+            ->orderBy('biblio_id')->orderByRaw('level = 0, level')->orderBy('author_id')->cursor() as $r) {
+            $author = $authors[$r->author_id] ?? null;
+
+            if ($author === null || isset($rows["{$r->biblio_id}-{$author}"])) {
+                continue;
+            }
+
+            $position[$r->biblio_id] = ($position[$r->biblio_id] ?? -1) + 1;
+            $rows["{$r->biblio_id}-{$author}"] = ['book_id' => $r->biblio_id, 'author_id' => $author, 'position' => min(255, $position[$r->biblio_id])];
+        }
+
+        // Titles without any author in SLiMS keep "Anonim" as their single author.
+        foreach (DB::table('books')->whereNotIn('id', array_keys($position))->pluck('author_id', 'id') as $book => $author) {
+            $rows["{$book}-{$author}"] = ['book_id' => $book, 'author_id' => $author, 'position' => 0];
+        }
+
+        $this->insert('book_author', array_values($rows), 'Pengarang per judul');
+    }
+
+    private function subjects(): void
+    {
+        $map = [];
+        $byKey = [];
+        $subjects = [];
+
+        foreach ($this->slims->table('mst_topic')->orderBy('topic_id')->get() as $t) {
+            $name = $this->clean($t->topic, 255);
+
+            if ($name === '') {
+                continue;
+            }
+
+            $key = $this->key($name);
+
+            if (! isset($byKey[$key])) {
+                $byKey[$key] = count($subjects) + 1;
+                $subjects[] = ['id' => $byKey[$key], 'name' => $name, 'created_at' => $this->now, 'updated_at' => $this->now];
+            }
+
+            $map[$t->topic_id] = $byKey[$key];
+        }
+
+        $this->insert('subjects', $subjects, 'Subjek');
+
+        $rows = [];
+        $position = [];
+
+        foreach ($this->slims->table('biblio_topic')->whereIn('biblio_id', $this->slims->table('biblio')->select('biblio_id'))
+            ->orderBy('biblio_id')->orderBy('level')->orderBy('topic_id')->cursor() as $r) {
+            $subject = $map[$r->topic_id] ?? null;
+
+            if ($subject === null || isset($rows["{$r->biblio_id}-{$subject}"])) {
+                continue;
+            }
+
+            $position[$r->biblio_id] = ($position[$r->biblio_id] ?? -1) + 1;
+            $rows["{$r->biblio_id}-{$subject}"] = ['book_id' => $r->biblio_id, 'subject_id' => $subject, 'position' => min(255, $position[$r->biblio_id])];
+        }
+
+        $this->insert('book_subject', array_values($rows), 'Subjek per judul');
+    }
+
+    /** Copies a SLiMS cover into storage; returns its path or null when missing. */
+    private function copyCover(string $folder, string $image, int $id): ?string
+    {
+        $image = trim($image);
+        $source = rtrim($folder, '/\\').DIRECTORY_SEPARATOR.$image;
+
+        if ($image === '' || ! is_file($source) || ! in_array(Str::lower(pathinfo($image, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            return null;
+        }
+
+        $path = "sampul/slims-{$id}.".Str::lower(pathinfo($image, PATHINFO_EXTENSION));
+        Storage::disk('local')->put($path, file_get_contents($source));
+
+        return $path;
     }
 
     /**
@@ -449,22 +575,21 @@ class ImportSlims extends Command
         return $year >= 1800 && $year <= (int) date('Y') ? $year : null;
     }
 
-    /**
-     * Main DDC class from the classification, else from the call number
-     * ("2X4" is the Indonesian extension for Islam, i.e. class 200).
-     */
-    private function ddc(?string $classification, ?string $callNumber, string $collection): string
+    /** DDC class for titles without any class number. */
+    private function fallbackDdc(string $collection): string
     {
-        foreach ([$classification, $callNumber] as $value) {
-            if (preg_match('/(?<![0-9])([0-9])[0-9xX]{2}(?![0-9])/', (string) $value, $m)) {
-                return $m[1].'00';
-            }
-        }
-
         return match ($collection) {
             'Skripsi', 'Tugas akhir & laporan PKL' => '300',
             'Peta & atlas' => '900',
             default => '000',
         };
+    }
+
+    /** Free text keeps its line breaks; empty becomes null. */
+    private function text(?string $value): ?string
+    {
+        $value = trim(str_replace("\r\n", "\n", (string) $value));
+
+        return $value === '' ? null : mb_substr($value, 0, 10000);
     }
 }

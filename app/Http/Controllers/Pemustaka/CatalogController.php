@@ -34,13 +34,15 @@ class CatalogController extends Controller
         $mine = $member->ebookLoans()->active()->pluck('book_id');
 
         $books = Book::query()
-            ->with(['author', 'rack'])
+            ->with(['author', 'authors', 'rack'])
             ->where(fn ($b) => $b->where('type', Book::PRINTED)->orWhere(fn ($e) => $e->where('type', Book::EBOOK)->where('status', 'Terbit')))
             ->when($kind, fn ($b) => $b->where('type', $kind))
             ->when($q !== '', fn ($b) => $b->where(fn ($w) => $w
                 ->where('title', 'like', "%{$q}%")
                 ->orWhere('call_number', 'like', "%{$q}%")
-                ->orWhereRelation('author', 'name', 'like', "%{$q}%")))
+                ->orWhereRelation('authors', 'name', 'like', "%{$q}%")
+                ->orWhereRelation('author', 'name', 'like', "%{$q}%")
+                ->orWhereRelation('subjects', 'name', 'like', "%{$q}%")))
             ->withCount([
                 'copies as available_count' => fn ($c) => $c->where('status', BookCopy::AVAILABLE),
                 'ebookLoans as licences_used' => fn ($l) => $l->active(),
@@ -62,9 +64,10 @@ class CatalogController extends Controller
                 'id' => $b->id,
                 'type' => $b->type,
                 'title' => $b->title,
-                'author' => $b->author->name,
+                'author' => implode('; ', $b->authorNames()),
                 'year' => $b->year,
                 'ddc_class' => $b->ddc_class,
+                'cover' => $b->coverUrl(),
                 'rack' => $b->rack?->code,
                 'available' => $b->type === Book::PRINTED ? $b->available_count : max(0, (int) $b->license_count - $b->licences_used),
                 'mine' => $mine->contains($b->id),
@@ -144,6 +147,7 @@ class CatalogController extends Controller
             'author' => $book->author->name,
             'call_number' => $book->call_number,
             'ddc_class' => $book->ddc_class,
+            'cover' => $book->coverUrl(),
             'available' => $book->copies()->where('status', BookCopy::AVAILABLE)->count(),
             'floor' => $floor,
             'fixtures' => FloorPlan::fixtures()[$floor] ?? [],
@@ -170,6 +174,7 @@ class CatalogController extends Controller
             'publisher' => $book->publisher?->name,
             'year' => $book->year,
             'ddc_class' => $book->ddc_class,
+            'cover' => $book->coverUrl(),
             'collection_type' => $book->collection_type,
             'format' => $book->format,
             'size' => $book->file_size_mb,

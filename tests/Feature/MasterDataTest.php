@@ -10,6 +10,8 @@ use App\Models\Publisher;
 use App\Models\Rack;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -31,9 +33,10 @@ class MasterDataTest extends TestCase
         return [
             'type' => 'fisik',
             'title' => 'Hukum Agraria Indonesia',
-            'author' => 'Boedi Harsono',
+            'authors' => ['Boedi Harsono'],
             'publisher' => 'Djambatan',
             'year' => 2008,
+            'language' => 'Indonesia',
             'ddc_class' => '300',
             'collection_type' => 'Buku teks',
             'acquisition' => 'Pengadaan',
@@ -69,11 +72,81 @@ class MasterDataTest extends TestCase
         $this->assertSame(["B{$this->pad($book->id)}-1", "B{$this->pad($book->id)}-2", "B{$this->pad($book->id)}-3"], $book->copies()->orderBy('id')->pluck('code')->all());
     }
 
+    public function test_a_title_keeps_its_authors_subjects_and_catalogue_fields()
+    {
+        $this->asPustakawan()->post('/staf/buku', $this->printedPayload([
+            'authors' => ['Boedi Harsono', 'Arie Sukanti Hutagalung'],
+            'subjects' => ['Hukum agraria', 'Pendaftaran tanah'],
+            'classification' => '346.043',
+            'ddc_class' => '',
+            'collation' => 'xv, 320 hlm.: 24 cm',
+            'publish_place' => 'Jakarta',
+            'edition' => 'Ed. revisi',
+            'language' => 'Indonesia / Inggris',
+            'abstract' => 'Sejarah pembentukan UUPA.',
+            'featured' => true,
+        ]))->assertSessionHasNoErrors();
+
+        $book = Book::sole();
+        $this->assertSame(['Boedi Harsono', 'Arie Sukanti Hutagalung'], $book->authorNames());
+        $this->assertSame('Boedi Harsono', $book->author->name);
+        $this->assertSame(['Hukum agraria', 'Pendaftaran tanah'], $book->subjects->pluck('name')->all());
+        $this->assertSame('300', $book->ddc_class, 'the DDC class follows the classification number');
+        $this->assertTrue($book->featured);
+
+        // Reordering makes the other author the main one.
+        $this->put("/staf/buku/{$book->id}", $this->printedPayload(['authors' => ['Arie Sukanti Hutagalung', 'Boedi Harsono'], 'subjects' => []]))
+            ->assertSessionHasNoErrors();
+        $this->assertSame('Arie Sukanti Hutagalung', $book->fresh()->author->name);
+        $this->assertSame(0, $book->subjects()->count());
+
+        // The second author is still credited, so it cannot be deleted.
+        $this->delete('/staf/pengarang/'.Author::where('name', 'Boedi Harsono')->value('id'))->assertSessionHas('error');
+        $this->get('/staf/buku?q=boedi')->assertInertia(fn (Assert $page) => $page->has('records.data', 1));
+    }
+
+    public function test_a_title_needs_a_class_number_or_ddc_class_and_an_author()
+    {
+        $this->asPustakawan()->post('/staf/buku', $this->printedPayload(['authors' => [], 'ddc_class' => '', 'classification' => '']))
+            ->assertSessionHasErrors(['authors']);
+        $this->post('/staf/buku', $this->printedPayload(['ddc_class' => '', 'classification' => 'SK']))
+            ->assertSessionHasErrors(['ddc_class']);
+    }
+
+    public function test_cover_images_are_stored_and_served()
+    {
+        Storage::fake('local');
+        $this->asPustakawan()->post('/staf/buku', $this->printedPayload(['cover' => UploadedFile::fake()->image('sampul.jpg', 300, 450)]))
+            ->assertSessionHasNoErrors();
+
+        $book = Book::sole();
+        Storage::disk('local')->assertExists($book->cover_path);
+        $this->get($book->coverUrl())->assertOk();
+
+        // Replacing the cover removes the old file.
+        $old = $book->cover_path;
+        $this->post("/staf/buku/{$book->id}", $this->printedPayload(['_method' => 'put', 'cover' => UploadedFile::fake()->image('baru.png')]))
+            ->assertSessionHasNoErrors();
+        Storage::disk('local')->assertMissing($old);
+        Storage::disk('local')->assertExists($book->fresh()->cover_path);
+    }
+
+    public function test_form_suggestions_match_names()
+    {
+        $this->asPustakawan()->post('/staf/buku', $this->printedPayload(['subjects' => ['Hukum agraria'], 'publish_place' => 'Jakarta']));
+
+        $this->getJson('/staf/buku/saran?jenis=pengarang&q=boe')->assertExactJson(['Boedi Harsono']);
+        $this->getJson('/staf/buku/saran?jenis=pengarang&q=harso')->assertExactJson(['Boedi Harsono']);
+        $this->getJson('/staf/buku/saran?jenis=subjek&q=agra')->assertExactJson(['Hukum agraria']);
+        $this->getJson('/staf/buku/saran?jenis=tempat&q=jak')->assertExactJson(['Jakarta']);
+        $this->getJson('/staf/buku/saran?jenis=penerbit&q=d')->assertExactJson([]);
+    }
+
     public function test_existing_author_names_are_reused_case_insensitively()
     {
         Author::create(['name' => 'Boedi Harsono', 'type' => 'Perorangan']);
 
-        $this->asPustakawan()->post('/staf/buku', $this->printedPayload(['author' => 'boedi harsono']));
+        $this->asPustakawan()->post('/staf/buku', $this->printedPayload(['authors' => ['boedi harsono']]));
 
         $this->assertSame(1, Author::count());
     }
@@ -116,7 +189,7 @@ class MasterDataTest extends TestCase
     public function test_book_list_can_be_searched_and_filtered_by_type()
     {
         $this->asPustakawan()->post('/staf/buku', $this->printedPayload());
-        $this->post('/staf/buku', $this->printedPayload(['title' => 'Geodesi Satelit', 'author' => 'Hasanuddin Z. Abidin']));
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Geodesi Satelit', 'authors' => ['Hasanuddin Z. Abidin']]));
 
         $this->get('/staf/buku?q=abidin')->assertInertia(fn (Assert $page) => $page->has('records.data', 1)->where('records.data.0.title', 'Geodesi Satelit'));
         $this->get('/staf/buku?jenis=ebook')->assertInertia(fn (Assert $page) => $page->has('records.data', 0));
@@ -199,8 +272,8 @@ class MasterDataTest extends TestCase
         $csv = $response->streamedContent();
 
         $response->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
-        $this->assertStringStartsWith("\xEF\xBB\xBFJenis;Judul;Pengarang", $csv);
-        $this->assertStringContainsString('"Buku fisik";"Hukum Agraria Indonesia";"Boedi Harsono"', $csv);
+        $this->assertStringStartsWith("\xEF\xBB\xBFJenis;Judul;\"Judul seri\";Pengarang", $csv);
+        $this->assertStringContainsString('"Buku fisik";"Hukum Agraria Indonesia";;"Boedi Harsono"', $csv);
     }
 
     private function pad(int $id): string

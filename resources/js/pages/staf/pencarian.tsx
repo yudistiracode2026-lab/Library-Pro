@@ -1,4 +1,4 @@
-import { DDC_COLORS } from '@/components/staf/master/cells';
+import { BookCover } from '@/components/book-cover';
 import { Card, CardTitle, Eyebrow } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { router } from '@inertiajs/react';
@@ -10,6 +10,7 @@ interface Result {
     title: string;
     author: string;
     ddc_class: string;
+    cover: string | null;
     rack: string | null;
     floor: number | null;
     available: number;
@@ -98,7 +99,7 @@ export default function Pencarian({ filters, results, resultCount, selectedBookI
                                     onClick={() => go({ buku: b.id })}
                                     className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left ${on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 bg-white hover:border-teal-300 dark:border-slate-700 dark:bg-slate-800'}`}
                                 >
-                                    <span className={`h-[38px] w-7 flex-none rounded-xs ${DDC_COLORS[b.ddc_class]}`} />
+                                    <BookCover cover={b.cover} ddc={b.ddc_class} className="h-[38px] w-7 rounded-xs" />
                                     <span className="flex min-w-0 flex-1 flex-col">
                                         <span className="text-sm font-semibold">{b.title}</span>
                                         <span className="text-fg-3 truncate text-xs">{b.author}</span>

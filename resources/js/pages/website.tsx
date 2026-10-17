@@ -1,5 +1,5 @@
 import AppLogoIcon from '@/components/app-logo-icon';
-import { DDC_COLORS } from '@/components/staf/master/cells';
+import { BookCover } from '@/components/book-cover';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -26,6 +26,7 @@ import {
     Search,
     SearchX,
     ShieldCheck,
+    Star,
     TabletSmartphone,
     Users,
     UsersRound,
@@ -36,10 +37,19 @@ interface Card {
     id: number;
     type: 'fisik' | 'ebook';
     title: string;
+    series_title: string | null;
     author: string;
+    authors: string[];
+    subjects: string[];
     publisher: string;
+    publish_place: string | null;
     year: number | null;
+    edition: string | null;
+    collation: string | null;
+    language: string;
     isbn: string | null;
+    abstract: string | null;
+    cover: string | null;
     ddc_class: string;
     collection_type: string;
     call_number: string | null;
@@ -333,11 +343,13 @@ export default function Website(props: WebsiteProps) {
                                     key={b.id}
                                     className="grid grid-cols-[48px_minmax(0,1fr)] items-center gap-4 border-b border-slate-200 bg-white px-4 py-4 last:border-0 hover:bg-slate-50 sm:grid-cols-[56px_minmax(0,1fr)_auto] sm:px-5"
                                 >
-                                    <div
-                                        className={`h-[70px] overflow-hidden rounded-[6px] p-1.5 text-[8px] leading-tight font-bold text-white shadow-sm ${DDC_COLORS[b.ddc_class]}`}
+                                    <BookCover
+                                        cover={b.cover}
+                                        ddc={b.ddc_class}
+                                        className="h-[70px] w-full overflow-hidden rounded-[6px] p-1.5 text-[8px] leading-tight font-bold text-white shadow-sm"
                                     >
                                         {b.title}
-                                    </div>
+                                    </BookCover>
                                     <div className="flex min-w-0 flex-col gap-1">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className="text-fg-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold">
@@ -347,7 +359,7 @@ export default function Website(props: WebsiteProps) {
                                         </div>
                                         <div className="font-display text-[17px] font-bold">{b.title}</div>
                                         <div className="text-fg-3 text-sm">
-                                            {b.author} · {b.publisher}
+                                            {b.authors.join('; ') || b.author} · {b.publisher}
                                             {b.year ? `, ${b.year}` : ''}
                                         </div>
                                     </div>
@@ -392,7 +404,7 @@ export default function Website(props: WebsiteProps) {
                                 preserveState
                                 className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium ${c.code === selectedClass ? 'border-teal-400 bg-teal-400 text-white' : 'text-fg-2 border-slate-200 bg-white'}`}
                             >
-                                <span className="font-mono text-xs">{c.code}</span>
+                                {c.code === 'unggulan' ? <Star className="size-3.5" /> : <span className="font-mono text-xs">{c.code}</span>}
                                 {c.name} ({c.count})
                             </Link>
                         ))}
@@ -405,13 +417,15 @@ export default function Website(props: WebsiteProps) {
                                 onClick={() => setDetail(b)}
                                 className="flex cursor-pointer flex-col gap-2.5 text-left hover:-translate-y-0.5"
                             >
-                                <div
-                                    className={`flex aspect-[2/3] w-full flex-col justify-between rounded-sm p-3.5 text-white shadow-md ${DDC_COLORS[b.ddc_class]}`}
+                                <BookCover
+                                    cover={b.cover}
+                                    ddc={b.ddc_class}
+                                    className="flex aspect-[2/3] w-full flex-col justify-between rounded-sm p-3.5 text-white shadow-md"
                                 >
                                     <span className="font-mono text-[10px] opacity-85">{b.call_number ?? b.format}</span>
                                     <span className="font-display text-[15px] leading-tight font-extrabold">{b.title}</span>
                                     <span className="text-[11px] opacity-85">{b.author}</span>
-                                </div>
+                                </BookCover>
                                 <span className="text-sm leading-snug font-semibold">{b.title}</span>
                                 <span className="text-fg-3 text-xs">
                                     {b.year} · {b.type === 'ebook' ? 'E-book' : b.available > 0 ? `${b.available} tersedia` : 'Sedang dipinjam'}
@@ -551,24 +565,43 @@ export default function Website(props: WebsiteProps) {
                 <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl p-7 sm:max-w-[680px]">
                     {detail && (
                         <div className="grid gap-6 sm:grid-cols-[160px_minmax(0,1fr)]">
-                            <div
-                                className={`flex aspect-[2/3] flex-col justify-between rounded-sm p-4 text-white shadow-md ${DDC_COLORS[detail.ddc_class]}`}
+                            <BookCover
+                                cover={detail.cover}
+                                ddc={detail.ddc_class}
+                                className="flex aspect-[2/3] w-full flex-col justify-between self-start rounded-sm p-4 text-white shadow-md"
                             >
                                 <span className="font-mono text-[11px]">{detail.call_number ?? detail.format}</span>
                                 <span className="font-display text-[17px] leading-tight font-extrabold">{detail.title}</span>
                                 <span className="text-xs">{detail.author}</span>
-                            </div>
+                            </BookCover>
                             <div className="flex flex-col gap-4">
-                                <DialogTitle className="font-display pr-6 text-2xl leading-tight font-bold">{detail.title}</DialogTitle>
+                                <div>
+                                    <DialogTitle className="font-display pr-6 text-2xl leading-tight font-bold">{detail.title}</DialogTitle>
+                                    {detail.series_title && <p className="text-fg-3 mt-1 text-sm">Seri: {detail.series_title}</p>}
+                                </div>
                                 <DialogDescription className="sr-only">Detail koleksi</DialogDescription>
                                 <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-2 text-sm">
                                     <dt className="text-fg-3">Pengarang</dt>
-                                    <dd>{detail.author}</dd>
+                                    <dd>{detail.authors.join('; ') || detail.author}</dd>
                                     <dt className="text-fg-3">Penerbit</dt>
                                     <dd>
-                                        {detail.publisher}
+                                        {[detail.publish_place, detail.publisher].filter(Boolean).join(': ')}
                                         {detail.year ? `, ${detail.year}` : ''}
                                     </dd>
+                                    {detail.edition && (
+                                        <>
+                                            <dt className="text-fg-3">Edisi</dt>
+                                            <dd>{detail.edition}</dd>
+                                        </>
+                                    )}
+                                    {detail.collation && (
+                                        <>
+                                            <dt className="text-fg-3">Kolasi</dt>
+                                            <dd>{detail.collation}</dd>
+                                        </>
+                                    )}
+                                    <dt className="text-fg-3">Bahasa</dt>
+                                    <dd>{detail.language}</dd>
                                     {detail.isbn && (
                                         <>
                                             <dt className="text-fg-3">ISBN</dt>
@@ -586,12 +619,32 @@ export default function Website(props: WebsiteProps) {
                                                 {detail.available} tersedia dari {detail.copies}
                                             </dd>
                                             <dt className="text-fg-3">Lokasi</dt>
-                                            <dd>
-                                                Lantai {detail.floor} · Rak {detail.rack}
+                                            <dd>{detail.rack ? `Lantai ${detail.floor} · Rak ${detail.rack}` : 'Tanyakan ke petugas sirkulasi'}</dd>
+                                        </>
+                                    )}
+                                    {detail.subjects.length > 0 && (
+                                        <>
+                                            <dt className="text-fg-3">Subjek</dt>
+                                            <dd className="flex flex-wrap gap-1.5">
+                                                {detail.subjects.map((t) => (
+                                                    <button
+                                                        key={t}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setDetail(null);
+                                                            setQ(t);
+                                                            search({ q: t, field: 'subject' });
+                                                        }}
+                                                        className="cursor-pointer rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 hover:bg-teal-100"
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                ))}
                                             </dd>
                                         </>
                                     )}
                                 </dl>
+                                {detail.abstract && <p className="text-fg-2 text-sm leading-relaxed whitespace-pre-line">{detail.abstract}</p>}
                                 <p className="text-fg-3 text-xs">
                                     {detail.type === 'ebook'
                                         ? 'Pinjam e-book lewat portal pemustaka.'

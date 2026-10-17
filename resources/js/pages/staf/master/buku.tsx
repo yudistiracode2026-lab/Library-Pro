@@ -1,22 +1,34 @@
-import { Badge, Cell, COLLECTION_TONES, DDC_COLORS, StatusBadge } from '@/components/staf/master/cells';
+import { BookCover } from '@/components/book-cover';
+import { Badge, Cell, COLLECTION_TONES, StatusBadge } from '@/components/staf/master/cells';
 import { MasterPage } from '@/components/staf/master/master-page';
 import { type FormValues } from '@/components/staf/master/record-form';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated, type SelectOption } from '@/types';
 import { router } from '@inertiajs/react';
-import { BookOpen, Tablet } from 'lucide-react';
+import { BookOpen, Star, Tablet } from 'lucide-react';
 
 interface BookRow {
     id: number;
     type: 'fisik' | 'ebook';
     title: string;
+    series_title: string | null;
     author: string;
+    authors: string[];
+    subjects: string[];
     publisher: string;
+    publish_place: string | null;
     year: number | null;
+    edition: string | null;
+    collation: string | null;
+    language: string;
     isbn: string | null;
+    classification: string | null;
+    abstract: string | null;
+    cover: string | null;
+    featured: boolean;
     ddc_class: string;
     collection_type: string;
-    acquisition: string;
+    acquisition: string | null;
     donor: string | null;
     call_number: string | null;
     rack_id: string;
@@ -42,13 +54,15 @@ interface BukuProps {
         formats: SelectOption[];
         ebookStatuses: SelectOption[];
         racks: SelectOption[];
-        authors: string[];
-        publishers: string[];
+        languages: SelectOption[];
     };
 }
 
 const isEbook = (v: FormValues) => v.type === 'ebook';
 const isPrinted = (v: FormValues) => v.type !== 'ebook';
+/** The DDC class is derived from a classification number such as 346.04. */
+const hasClassNumber = (v: FormValues) => /(^|[^0-9])[0-9][0-9xX]{2}([^0-9]|$)/.test(String(v.classification ?? ''));
+const suggest = (jenis: string) => route('staf.buku.suggest', { jenis });
 
 export default function Buku({ records, filters, summary, options }: BukuProps) {
     return (
@@ -67,18 +81,23 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     {
                         label: 'Cover',
                         render: (b) => (
-                            <span
-                                title={b.type === 'ebook' ? 'E-book' : 'Buku fisik'}
-                                className={`grid h-[62px] w-11 place-items-center rounded-xs text-white shadow-sm ${DDC_COLORS[b.ddc_class]}`}
+                            <BookCover
+                                cover={b.cover}
+                                ddc={b.ddc_class}
+                                className="grid h-[62px] w-11 place-items-center rounded-xs text-white shadow-sm"
                             >
                                 {b.type === 'ebook' ? <Tablet className="size-4" /> : <BookOpen className="size-4" />}
-                            </span>
+                            </BookCover>
                         ),
                     },
                     {
                         label: 'Judul',
                         render: (b) => (
-                            <Cell bold sub={`${b.author} · ${b.publisher}${b.year ? `, ${b.year}` : ''}`}>
+                            <Cell
+                                bold
+                                sub={`${b.authors.join('; ') || b.author} · ${b.publisher}${b.year ? `, ${b.year}` : ''}${b.classification ? ` · ${b.classification}` : ''}`}
+                            >
+                                {b.featured && <Star className="mr-1 inline size-3.5 fill-amber-400 text-amber-500" aria-label="Buku unggulan" />}
                                 {b.title}
                             </Cell>
                         ),
@@ -91,7 +110,11 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         label: 'Asal perolehan',
                         render: (b) => (
                             <>
-                                <Badge tone={b.acquisition === 'Pengadaan' ? 'teal' : 'warning'}>{b.acquisition}</Badge>
+                                {b.acquisition ? (
+                                    <Badge tone={b.acquisition === 'Pengadaan' ? 'teal' : 'warning'}>{b.acquisition}</Badge>
+                                ) : (
+                                    <span className="text-fg-3">—</span>
+                                )}
                                 {b.donor && <span className="text-fg-3 mt-0.5 truncate text-xs">dari {b.donor}</span>}
                             </>
                         ),
@@ -109,7 +132,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                                     <EbookFile id={b.id} hasFile={b.has_file} />
                                 </>
                             ) : (
-                                <Cell sub={<span className="font-mono">{b.call_number}</span>}>Rak {b.rack}</Cell>
+                                <Cell sub={<span className="font-mono">{b.call_number}</span>}>{b.rack ? `Rak ${b.rack}` : 'Belum ada rak'}</Cell>
                             ),
                     },
                     {
@@ -142,14 +165,26 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 form={{
                     title: (b) => (b ? 'Ubah koleksi' : 'Tambah koleksi'),
                     switcher: { name: 'type', options: options.types },
+                    wide: true,
                     empty: {
                         type: 'fisik',
                         title: '',
-                        author: '',
+                        series_title: '',
+                        authors: [],
                         publisher: '',
+                        publish_place: '',
                         year: String(new Date().getFullYear()),
+                        edition: '',
+                        collation: '',
+                        language: 'Indonesia',
                         isbn: '',
+                        classification: '',
                         ddc_class: '',
+                        subjects: [],
+                        abstract: '',
+                        cover: null,
+                        cover_url: null,
+                        featured: false,
                         collection_type: 'Buku teks',
                         acquisition: 'Pengadaan',
                         donor: '',
@@ -164,41 +199,95 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     fromRow: (b) => ({
                         type: b.type,
                         title: b.title,
-                        author: b.author,
+                        series_title: b.series_title ?? '',
+                        authors: b.authors.length ? b.authors : [b.author],
                         publisher: b.publisher,
+                        publish_place: b.publish_place ?? '',
                         year: b.year ? String(b.year) : '',
+                        edition: b.edition ?? '',
+                        collation: b.collation ?? '',
+                        language: b.language,
                         isbn: b.isbn ?? '',
+                        classification: b.classification ?? '',
                         ddc_class: b.ddc_class,
+                        subjects: b.subjects,
+                        abstract: b.abstract ?? '',
+                        cover: null,
+                        cover_url: b.cover,
+                        featured: b.featured,
                         collection_type: b.collection_type,
-                        acquisition: b.acquisition,
+                        acquisition: b.acquisition ?? '',
                         donor: b.donor ?? '',
                         call_number: b.call_number ?? '',
                         rack_id: b.rack_id,
-                        copies: String(b.copies || 1),
+                        copies: String(b.copies),
                         format: b.format ?? 'PDF',
                         file_size_mb: b.file_size_mb != null ? String(b.file_size_mb) : '',
                         license_count: String(b.license_count ?? 1),
                         status: b.status ?? 'Terbit',
                     }),
                     fields: [
-                        { name: 'title', label: 'Judul', span: 2, required: true },
+                        { name: 'title', label: 'Judul', span: 2, required: true, section: 'Data bibliografi' },
+                        { name: 'series_title', label: 'Judul seri', span: 2, placeholder: 'Jika ada' },
                         {
-                            name: 'author',
+                            name: 'authors',
                             label: 'Pengarang',
-                            type: 'combobox',
-                            suggestions: options.authors,
-                            required: true,
-                            hint: 'Nama baru otomatis masuk ke master pengarang',
+                            type: 'tags',
+                            span: 2,
+                            suggestUrl: suggest('pengarang'),
+                            placeholder: 'Ketik nama lalu Enter',
+                            hint: 'Pengarang pertama menjadi pengarang utama. Nama baru otomatis masuk ke master pengarang.',
                         },
-                        { name: 'publisher', label: 'Penerbit', type: 'combobox', suggestions: options.publishers, required: true },
-                        { name: 'year', label: 'Tahun', type: 'number' },
-                        { name: 'isbn', label: 'ISBN', placeholder: '978-…' },
-                        { name: 'ddc_class', label: 'Kelas DDC', type: 'select', options: options.ddc, required: true },
+                        { name: 'publisher', label: 'Penerbit', type: 'combobox', suggestUrl: suggest('penerbit'), required: true },
+                        { name: 'publish_place', label: 'Tempat terbit', type: 'combobox', suggestUrl: suggest('tempat') },
+                        { name: 'year', label: 'Tahun terbit', type: 'number' },
+                        { name: 'edition', label: 'Edisi', placeholder: 'mis. Cet. 2, Ed. revisi' },
+                        { name: 'isbn', label: 'ISBN/ISSN', placeholder: '978-…' },
+                        { name: 'language', label: 'Bahasa', type: 'select', options: options.languages, required: true },
+                        {
+                            name: 'collation',
+                            label: 'Kolasi',
+                            span: 2,
+                            placeholder: 'mis. xv, 320 hlm.: ilus.; 26 cm',
+                            hint: 'Halaman romawi, halaman arab (hlm.), ilustrasi (ilus.), tinggi buku (cm)',
+                        },
+                        {
+                            name: 'classification',
+                            label: 'Klasifikasi',
+                            placeholder: 'mis. 346.04',
+                            hint: 'Kelas DDC utama mengikuti angka ini',
+                            section: 'Klasifikasi & subjek',
+                        },
+                        { name: 'ddc_class', label: 'Kelas DDC', type: 'select', options: options.ddc, hidden: hasClassNumber },
                         { name: 'collection_type', label: 'Klasifikasi koleksi', type: 'select', options: options.collectionTypes, required: true },
-                        { name: 'acquisition', label: 'Asal perolehan', type: 'select', options: options.acquisitions, required: true },
+                        {
+                            name: 'subjects',
+                            label: 'Tajuk subjek',
+                            type: 'tags',
+                            span: 2,
+                            suggestUrl: suggest('subjek'),
+                            placeholder: 'Ketik subjek lalu Enter',
+                        },
+                        { name: 'abstract', label: 'Abstrak', type: 'textarea', span: 2 },
+                        {
+                            name: 'cover',
+                            label: 'Gambar sampul',
+                            type: 'image',
+                            currentImage: (v) => (typeof v.cover_url === 'string' ? v.cover_url : null),
+                            hint: 'JPG, PNG, atau WebP, maks. 2 MB',
+                        },
+                        { name: 'featured', label: 'Buku unggulan', type: 'checkbox', hint: 'tampil di website' },
+                        {
+                            name: 'acquisition',
+                            label: 'Asal perolehan',
+                            type: 'select',
+                            options: options.acquisitions,
+                            required: true,
+                            section: 'Pengadaan & lokasi',
+                        },
                         { name: 'donor', label: 'Nama penyumbang', hidden: (v) => v.acquisition !== 'Sumbangan mahasiswa' },
-                        { name: 'call_number', label: 'No. panggil', required: true, hidden: isEbook },
-                        { name: 'rack_id', label: 'Rak', type: 'select', options: options.racks, required: true, hidden: isEbook },
+                        { name: 'call_number', label: 'No. panggil', required: true, hidden: isEbook, placeholder: 'mis. 346.04 Boe h' },
+                        { name: 'rack_id', label: 'Rak', type: 'select', options: options.racks, hidden: isEbook },
                         { name: 'copies', label: 'Jumlah eksemplar', type: 'number', required: true, hidden: isEbook },
                         { name: 'format', label: 'Format', type: 'select', options: options.formats, required: true, hidden: isPrinted },
                         { name: 'license_count', label: 'Jumlah lisensi', type: 'number', required: true, hidden: isPrinted },

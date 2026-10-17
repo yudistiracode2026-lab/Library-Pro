@@ -63,7 +63,9 @@ class SearchMapController extends Controller
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('title', 'like', "%{$q}%")
                 ->orWhere('call_number', 'like', "%{$q}%")
-                ->orWhereRelation('author', 'name', 'like', "%{$q}%")));
+                ->orWhereRelation('authors', 'name', 'like', "%{$q}%")
+                ->orWhereRelation('author', 'name', 'like', "%{$q}%")
+                ->orWhereRelation('subjects', 'name', 'like', "%{$q}%")));
     }
 
     private function search(string $q): Collection
@@ -79,6 +81,7 @@ class SearchMapController extends Controller
                 'title' => $b->title,
                 'author' => $b->author->name,
                 'ddc_class' => $b->ddc_class,
+                'cover' => $b->coverUrl(),
                 'rack' => $b->rack?->code,
                 'floor' => $b->rack?->floor,
                 'available' => $b->available_count,

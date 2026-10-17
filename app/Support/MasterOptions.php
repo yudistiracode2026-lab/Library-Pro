@@ -37,6 +37,9 @@ class MasterOptions
 
     public const ACQUISITIONS = ['Pengadaan', 'Penyerahan dosen/tendik tugas belajar', 'Sumbangan mahasiswa'];
 
+    /** Languages used in the old SLiMS catalogue. */
+    public const LANGUAGES = ['Indonesia', 'Inggris', 'Indonesia / Inggris', 'Indonesia / Arab', 'Arab', 'Belanda', 'Jerman', 'Lainnya'];
+
     public const EBOOK_FORMATS = ['PDF', 'EPUB'];
 
     public const EBOOK_STATUSES = ['Terbit', 'Draf'];
