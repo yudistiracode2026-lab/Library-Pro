@@ -31,6 +31,7 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                 addLabel="Tambah pemustaka"
                 records={records}
                 filters={filters}
+                numbered
                 grid="minmax(0,1.8fr) 130px minmax(0,1.2fr) 100px 110px 90px 100px"
                 describeRow={(m) => m.name}
                 columns={[

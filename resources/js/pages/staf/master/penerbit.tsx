@@ -28,6 +28,7 @@ export default function Penerbit({ records, filters, options }: PenerbitProps) {
                 addLabel="Tambah penerbit"
                 records={records}
                 filters={filters}
+                numbered
                 grid="minmax(0,1.8fr) 130px 110px 100px 100px"
                 describeRow={(p) => p.name}
                 columns={[

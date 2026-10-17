@@ -61,6 +61,7 @@ export default function Pegawai({ kind, records, filters, options }: PegawaiProp
                 addLabel={copy.add}
                 records={records}
                 filters={filters}
+                numbered
                 grid="minmax(0,1.6fr) 170px 60px minmax(0,1fr) minmax(0,1.3fr) 90px"
                 describeRow={(e) => e.name}
                 columns={[

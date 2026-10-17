@@ -29,6 +29,7 @@ export default function Penyedia({ records, filters, options }: PenyediaProps) {
                 addLabel="Tambah penyedia"
                 records={records}
                 filters={filters}
+                numbered
                 grid="minmax(0,1.8fr) 140px minmax(0,1.4fr) 120px 100px"
                 describeRow={(s) => s.name}
                 columns={[
