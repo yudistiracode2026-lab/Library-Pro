@@ -114,10 +114,11 @@ export default function Inventaris({ tab, assets, licenses, missingFacilities, o
                 <div className="overflow-x-auto">
                     {isLicense ? (
                         <table className="w-full min-w-[720px] text-sm">
-                            <Head cols={['Perangkat lunak', 'Jenis lisensi', 'Unit', 'Status', '']} />
+                            <Head cols={['No', 'Perangkat lunak', 'Jenis lisensi', 'Unit', 'Status', '']} />
                             <tbody>
-                                {licenses.map((l) => (
+                                {licenses.map((l, i) => (
                                     <tr key={l.id} className="border-b border-slate-200 dark:border-slate-700">
+                                        <td className="text-fg-3 w-12 px-5 py-3 font-mono text-[13px] tabular-nums">{i + 1}</td>
                                         <td className="px-5 py-3">
                                             <div className="font-semibold">{l.name}</div>
                                             <div className="text-fg-3 text-xs">{l.usage}</div>
@@ -155,10 +156,11 @@ export default function Inventaris({ tab, assets, licenses, missingFacilities, o
                         </table>
                     ) : (
                         <table className="w-full min-w-[820px] text-sm">
-                            <Head cols={['Aset', 'Fungsi', 'Ruang', 'Jml', 'Kondisi', '']} />
+                            <Head cols={['No', 'Aset', 'Fungsi', 'Ruang', 'Jml', 'Kondisi', '']} />
                             <tbody>
-                                {assets.map((a) => (
+                                {assets.map((a, i) => (
                                     <tr key={a.id} className="border-b border-slate-200 dark:border-slate-700">
+                                        <td className="text-fg-3 w-12 px-5 py-3 font-mono text-[13px] tabular-nums">{i + 1}</td>
                                         <td className="px-5 py-3">
                                             <div className="font-semibold">{a.name}</div>
                                             <div className="text-fg-3 text-xs">
