@@ -27,7 +27,10 @@ class NameCase
 
     private const PARTICLES = ['bin', 'binti', 'van', 'der', 'den', 'de', 'von', 'da', 'di'];
 
-    public static function title(?string $name): string
+    /**
+     * @param  bool  $organisation  keep acronyms ("BPN", "STPN") even when the whole name is in capitals
+     */
+    public static function title(?string $name, bool $organisation = false): string
     {
         $name = trim(preg_replace('/\s+/u', ' ', (string) $name));
 
@@ -37,7 +40,7 @@ class NameCase
 
         [$proper, $degrees] = array_pad(explode(',', $name, 2), 2, null);
         $words = explode(' ', trim($proper));
-        $mixed = preg_match('/\p{Lu}/u', $proper) && preg_match('/\p{Ll}/u', $proper);
+        $mixed = $organisation || (preg_match('/\p{Lu}/u', $proper) && preg_match('/\p{Ll}/u', $proper));
 
         // Degrees written without a comma at the end of the name.
         $tail = [];
