@@ -35,13 +35,13 @@ class StafMenu
             ['key' => 'pengarang', 'controller' => Master\AuthorController::class, 'label' => 'Pengarang', 'title' => 'Master pengarang', 'icon' => 'pen-tool'],
             ['key' => 'penerbit', 'controller' => Master\PublisherController::class, 'label' => 'Penerbit', 'title' => 'Master penerbit', 'icon' => 'building-2'],
             ['key' => 'penyedia', 'controller' => Master\SupplierController::class, 'label' => 'Penyedia buku', 'title' => 'Master penyedia buku', 'icon' => 'truck'],
+            ['key' => 'pemustaka', 'controller' => Master\MemberController::class, 'label' => 'Pemustaka', 'title' => 'Master pemustaka', 'icon' => 'id-card'],
+            ['key' => 'pustakawan', 'controller' => Master\EmployeeController::class, 'label' => 'Pustakawan', 'title' => 'Master pustakawan', 'icon' => 'user-cog', 'admin_only' => true],
+            ['key' => 'tendik', 'controller' => Master\EmployeeController::class, 'label' => 'Tendik', 'title' => 'Master tendik', 'icon' => 'briefcase', 'admin_only' => true],
             ['key' => 'aset', 'label' => 'Manajemen aset', 'icon' => 'boxes', 'children' => [
                 ['key' => 'aset.ruang', 'custom' => true, 'label' => 'Ruang & denah', 'title' => 'Manajemen aset · ruang & denah', 'icon' => 'layout-grid'],
                 ['key' => 'aset.inventaris', 'custom' => true, 'label' => 'Inventaris & lisensi', 'title' => 'Manajemen aset · inventaris & lisensi', 'icon' => 'package'],
             ]],
-            ['key' => 'pemustaka', 'controller' => Master\MemberController::class, 'label' => 'Pemustaka', 'title' => 'Master pemustaka', 'icon' => 'id-card'],
-            ['key' => 'pustakawan', 'controller' => Master\EmployeeController::class, 'label' => 'Pustakawan', 'title' => 'Master pustakawan', 'icon' => 'user-cog', 'admin_only' => true],
-            ['key' => 'tendik', 'controller' => Master\EmployeeController::class, 'label' => 'Tendik', 'title' => 'Master tendik', 'icon' => 'briefcase', 'admin_only' => true],
         ]],
         ['label' => 'Layanan', 'items' => [
             ['key' => 'kunjungan', 'custom' => true, 'label' => 'Kunjungan & presensi', 'icon' => 'qr-code'],
