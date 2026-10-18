@@ -2,12 +2,14 @@ import { FieldDef, FormValues, RecordForm } from '@/components/staf/master/recor
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { type Paginated, type SelectOption } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Download, Pencil, Plus, Search, SearchX, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown, Download, Pencil, Plus, Search, SearchX, Trash2 } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 export interface Column<T> {
     label: string;
     render: (row: T) => ReactNode;
+    /** Sort key sent as ?urut=; the header becomes a button that sorts by it. */
+    sort?: string;
 }
 
 interface MasterPageProps<T extends { id: number }> {
@@ -17,7 +19,7 @@ interface MasterPageProps<T extends { id: number }> {
     description: ReactNode;
     addLabel: string;
     records: Paginated<T>;
-    filters: { q: string; jenis?: string };
+    filters: { q: string; jenis?: string; urut?: string; arah?: string };
     columns: Column<T>[];
     /** CSS grid-template-columns for the data columns (the action column is appended). */
     grid: string;
@@ -55,9 +57,13 @@ export function MasterPage<T extends { id: number }>({
     const [deleting, setDeleting] = useState<T | null>(null);
     const firstRender = useRef(true);
     const jenis = filters.jenis ?? '';
+    const sort: Record<string, string> = filters.urut ? { urut: filters.urut, arah: filters.arah ?? 'asc' } : {};
 
     const visit = (params: Record<string, string>) =>
-        router.get(route(`staf.${routeKey}`), clean({ q, jenis, ...params }), { preserveState: true, preserveScroll: true, replace: true });
+        router.get(route(`staf.${routeKey}`), clean({ q, jenis, ...sort, ...params }), { preserveState: true, preserveScroll: true, replace: true });
+
+    // First click sorts A-Z / smallest first, the next one reverses it.
+    const sortBy = (key: string) => visit({ urut: key, arah: sort.urut === key && sort.arah === 'asc' ? 'desc' : 'asc' });
 
     useEffect(() => {
         if (firstRender.current) {
@@ -97,7 +103,7 @@ export function MasterPage<T extends { id: number }>({
                         />
                     </label>
                     <a
-                        href={route(`staf.${routeKey}.export`, clean({ q, jenis }))}
+                        href={route(`staf.${routeKey}.export`, clean({ q, jenis, ...sort }))}
                         className="text-fg-1 flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3.5 text-sm font-semibold hover:bg-slate-100 dark:bg-slate-800"
                     >
                         <Download className="size-4" />
@@ -138,9 +144,19 @@ export function MasterPage<T extends { id: number }>({
                     className="text-fg-3 grid min-w-[900px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900"
                     style={{ gridTemplateColumns: gridTemplate }}
                 >
-                    {allColumns.map((c) => (
-                        <span key={c.label}>{c.label}</span>
-                    ))}
+                    {allColumns.map((c) =>
+                        c.sort ? (
+                            <SortHeader
+                                key={c.label}
+                                label={c.label}
+                                active={sort.urut === c.sort}
+                                direction={sort.arah}
+                                onClick={() => sortBy(c.sort!)}
+                            />
+                        ) : (
+                            <span key={c.label}>{c.label}</span>
+                        ),
+                    )}
                     <span />
                 </div>
 
@@ -245,6 +261,23 @@ export function MasterPage<T extends { id: number }>({
                 </DialogContent>
             </Dialog>
         </>
+    );
+}
+
+/** A column header that sorts the list; the arrow shows the current direction. */
+export function SortHeader({ label, active, direction, onClick }: { label: string; active: boolean; direction: string; onClick: () => void }) {
+    const Icon = !active ? ChevronsUpDown : direction === 'desc' ? ArrowDown : ArrowUp;
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-label={`Urutkan berdasarkan ${label}${active ? (direction === 'desc' ? ', sekarang Z ke A' : ', sekarang A ke Z') : ''}`}
+            className={`flex cursor-pointer items-center gap-1 text-left tracking-[.06em] uppercase hover:text-teal-700 ${active ? 'text-teal-700' : ''}`}
+        >
+            {label}
+            <Icon className={`size-3.5 flex-none ${active ? '' : 'opacity-40'}`} />
+        </button>
     );
 }
 

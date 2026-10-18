@@ -14,7 +14,7 @@ interface PublisherRow {
 
 interface PenerbitProps {
     records: Paginated<PublisherRow>;
-    filters: { q: string };
+    filters: { q: string; urut?: string; arah?: string };
     options: { statuses: SelectOption[] };
 }
 
@@ -32,11 +32,11 @@ export default function Penerbit({ records, filters, options }: PenerbitProps) {
                 grid="minmax(0,1.8fr) 130px 110px 100px 100px"
                 describeRow={(p) => p.name}
                 columns={[
-                    { label: 'Penerbit', render: (p) => <Cell bold>{p.name}</Cell> },
-                    { label: 'Kota', render: (p) => <Cell>{p.city}</Cell> },
-                    { label: 'Buku fisik', render: (p) => <Cell sub="judul">{p.printed_count}</Cell> },
-                    { label: 'E-book', render: (p) => <Cell sub="judul">{p.ebook_count}</Cell> },
-                    { label: 'Status', render: (p) => <StatusBadge status={p.status} /> },
+                    { label: 'Penerbit', sort: 'nama', render: (p) => <Cell bold>{p.name}</Cell> },
+                    { label: 'Kota', sort: 'kota', render: (p) => <Cell>{p.city}</Cell> },
+                    { label: 'Buku fisik', sort: 'fisik', render: (p) => <Cell sub="judul">{p.printed_count}</Cell> },
+                    { label: 'E-book', sort: 'ebook', render: (p) => <Cell sub="judul">{p.ebook_count}</Cell> },
+                    { label: 'Status', sort: 'status', render: (p) => <StatusBadge status={p.status} /> },
                 ]}
                 form={{
                     title: (p) => (p ? 'Ubah penerbit' : 'Tambah penerbit'),

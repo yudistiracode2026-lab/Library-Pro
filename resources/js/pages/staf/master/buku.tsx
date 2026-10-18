@@ -44,7 +44,7 @@ interface BookRow {
 
 interface BukuProps {
     records: Paginated<BookRow>;
-    filters: { q: string; jenis: string };
+    filters: { q: string; jenis: string; urut?: string; arah?: string };
     summary: { printed: number; copies: number; ebooks: number };
     options: {
         types: SelectOption[];
@@ -76,7 +76,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 filters={filters}
                 tabs={[{ value: '', label: 'Semua' }, ...options.types]}
                 numbered
-                grid="52px minmax(0,2.2fr) 100px 150px minmax(0,1.2fr) 120px 110px 130px"
+                grid="48px minmax(140px,2.2fr) 90px 120px minmax(120px,1fr) 110px 110px 100px"
                 describeRow={(b) => b.title}
                 columns={[
                     {
@@ -93,6 +93,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     },
                     {
                         label: 'Judul',
+                        sort: 'judul',
                         render: (b) => (
                             <Cell
                                 bold
@@ -105,10 +106,12 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     },
                     {
                         label: 'Jenis',
+                        sort: 'jenis',
                         render: (b) => <Badge tone={b.type === 'ebook' ? 'teal' : 'slate'}>{b.type === 'ebook' ? 'E-book' : 'Buku fisik'}</Badge>,
                     },
                     {
                         label: 'Asal perolehan',
+                        sort: 'perolehan',
                         render: (b) => (
                             <>
                                 {b.acquisition ? (
@@ -122,10 +125,12 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     },
                     {
                         label: 'Klasifikasi koleksi',
+                        sort: 'koleksi',
                         render: (b) => <Badge tone={COLLECTION_TONES[b.collection_type] ?? 'slate'}>{b.collection_type}</Badge>,
                     },
                     {
                         label: 'Lokasi',
+                        sort: 'lokasi',
                         render: (b) =>
                             b.type === 'ebook' ? (
                                 <>
@@ -138,6 +143,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     },
                     {
                         label: 'Ketersediaan',
+                        sort: 'tersedia',
                         render: (b) =>
                             b.type === 'ebook' ? (
                                 <Cell sub="lisensi tersedia">
@@ -151,6 +157,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                     },
                     {
                         label: 'Status',
+                        sort: 'status',
                         render: (b) =>
                             b.type === 'ebook' ? (
                                 <StatusBadge status={b.status ?? 'Draf'} />

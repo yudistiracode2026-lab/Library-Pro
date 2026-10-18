@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Supplier;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
@@ -16,13 +17,15 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplierController extends Controller
 {
+    use SortsRecords;
+
     public function index(Request $request): Response
     {
-        $suppliers = $this->query($request)->orderBy('name')->paginate(25)->withQueryString();
+        $suppliers = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($s) => $s->orderBy('name'))->paginate(25)->withQueryString();
 
         return Inertia::render('staf/master/penyedia', [
             'records' => $suppliers->through(fn (Supplier $s) => $s->only(['id', 'name', 'type', 'city', 'contact_name', 'phone', 'status'])),
-            'filters' => ['q' => $request->string('q')->toString()],
+            'filters' => ['q' => $request->string('q')->toString(), ...$this->sortFilters($request, $this->sortColumns())],
             'options' => [
                 'types' => MasterOptions::forSelect(MasterOptions::SUPPLIER_TYPES),
                 'statuses' => MasterOptions::forSelect(MasterOptions::ACTIVE_STATUSES),
@@ -57,6 +60,16 @@ class SupplierController extends Controller
             ->map(fn (Supplier $s) => [$s->name, $s->type, $s->contact_name, $s->phone, $s->city, $s->status]);
 
         return CsvExport::download('penyedia-buku', ['Nama penyedia', 'Jenis', 'Kontak', 'Telepon', 'Kota', 'Status'], $rows);
+    }
+
+    /**
+     * Columns of the list that can be sorted by their header.
+     *
+     * @return array<string, mixed>
+     */
+    private function sortColumns(): array
+    {
+        return ['nama' => 'name', 'jenis' => 'type', 'kontak' => 'contact_name', 'kota' => 'city', 'status' => 'status'];
     }
 
     /**

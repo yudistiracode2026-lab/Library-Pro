@@ -256,6 +256,37 @@ class MasterDataTest extends TestCase
             ->assertSessionHasErrors(['nip', 'golongan', 'position']);
     }
 
+    public function test_lists_sort_by_any_column_and_numbers_sort_as_numbers()
+    {
+        $this->asPustakawan();
+        foreach ([['Citra', '20220311'], ['Budi', '9182415'], ['Ani', '12D14097']] as [$name, $number]) {
+            Member::create(['name' => $name, 'member_number' => $number, 'study_program' => 'D4 Pertanahan', 'type' => 'Mahasiswa', 'status' => 'Aktif']);
+        }
+
+        $numbers = fn ($response) => collect($response->viewData('page')['props']['records']['data'])->pluck('member_number')->all();
+
+        // NIM as a number: the 7-digit one before the 8-digit ones.
+        $this->assertSame(['9182415', '12D14097', '20220311'], $numbers($this->get('/staf/pemustaka?urut=nim&arah=asc')));
+        $this->assertSame(['20220311', '12D14097', '9182415'], $numbers($this->get('/staf/pemustaka?urut=nim&arah=desc')));
+        $this->get('/staf/pemustaka?urut=nim&arah=desc')->assertInertia(fn (Assert $page) => $page->where('filters.urut', 'nim')->where('filters.arah', 'desc'));
+
+        // Alphabetical by name is the default; an unknown column falls back to it.
+        $this->assertSame(['12D14097', '9182415', '20220311'], $numbers($this->get('/staf/pemustaka')));
+        $this->assertSame(['12D14097', '9182415', '20220311'], $numbers($this->get('/staf/pemustaka?urut=password&arah=desc')));
+    }
+
+    public function test_grades_sort_by_rank_not_alphabetically()
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        foreach ([['A', 'III/a'], ['B', 'IV/a'], ['C', 'II/b']] as $i => [$name, $grade]) {
+            Employee::create(['kind' => 'pustakawan', 'nip' => '19680725199103100'.$i, 'name' => $name, 'golongan' => $grade, 'position' => 'Pustakawan Ahli Muda']);
+        }
+
+        $grades = collect($this->get('/staf/pustakawan?urut=golongan&arah=asc')->viewData('page')['props']['records']['data'])->pluck('golongan')->all();
+
+        $this->assertSame(['II/b', 'III/a', 'IV/a'], $grades);
+    }
+
     public function test_members_need_a_unique_number()
     {
         $this->asPustakawan();

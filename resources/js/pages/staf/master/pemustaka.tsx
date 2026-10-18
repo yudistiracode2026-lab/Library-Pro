@@ -17,7 +17,7 @@ interface MemberRow {
 
 interface PemustakaProps {
     records: Paginated<MemberRow>;
-    filters: { q: string };
+    filters: { q: string; urut?: string; arah?: string };
     options: { types: SelectOption[]; studyPrograms: SelectOption[]; statuses: SelectOption[] };
 }
 
@@ -37,18 +37,19 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                 columns={[
                     {
                         label: 'Nama',
+                        sort: 'nama',
                         render: (m) => (
                             <Cell bold sub={m.email}>
                                 {m.name}
                             </Cell>
                         ),
                     },
-                    { label: 'NIM / NIP', render: (m) => <Cell mono>{m.member_number}</Cell> },
-                    { label: 'Program studi', render: (m) => <Cell>{m.study_program}</Cell> },
-                    { label: 'Jenis', render: (m) => <Cell>{m.type}</Cell> },
-                    { label: 'Akun portal', render: (m) => <Cell>{m.has_account ? 'Terhubung' : 'Belum ada'}</Cell> },
-                    { label: 'Pinjaman', render: (m) => <Cell>{`${m.open_loans} aktif`}</Cell> },
-                    { label: 'Status', render: (m) => <StatusBadge status={m.status} /> },
+                    { label: 'NIM / NIP', sort: 'nim', render: (m) => <Cell mono>{m.member_number}</Cell> },
+                    { label: 'Program studi', sort: 'prodi', render: (m) => <Cell>{m.study_program}</Cell> },
+                    { label: 'Jenis', sort: 'jenis', render: (m) => <Cell>{m.type}</Cell> },
+                    { label: 'Akun portal', sort: 'akun', render: (m) => <Cell>{m.has_account ? 'Terhubung' : 'Belum ada'}</Cell> },
+                    { label: 'Pinjaman', sort: 'pinjaman', render: (m) => <Cell>{`${m.open_loans} aktif`}</Cell> },
+                    { label: 'Status', sort: 'status', render: (m) => <StatusBadge status={m.status} /> },
                 ]}
                 form={{
                     title: (m) => (m ? 'Ubah pemustaka' : 'Tambah pemustaka'),

@@ -19,7 +19,7 @@ interface EmployeeRow {
 interface PegawaiProps {
     kind: 'pustakawan' | 'tendik';
     records: Paginated<EmployeeRow>;
-    filters: { q: string };
+    filters: { q: string; urut?: string; arah?: string };
     options: { golongan: SelectOption[]; positions: SelectOption[] | null; statuses: SelectOption[] };
 }
 
@@ -67,17 +67,18 @@ export default function Pegawai({ kind, records, filters, options }: PegawaiProp
                 columns={[
                     {
                         label: 'Nama',
+                        sort: 'nama',
                         render: (e) => (
                             <Cell bold sub={e.is_head ? 'Kepala Perpustakaan' : undefined}>
                                 {e.name}
                             </Cell>
                         ),
                     },
-                    { label: 'NIP', render: (e) => <Cell mono>{e.nip}</Cell> },
-                    { label: 'Gol.', render: (e) => <Cell>{e.golongan}</Cell> },
-                    { label: 'Pangkat', render: (e) => <Cell>{e.pangkat}</Cell> },
-                    { label: 'Jabatan', render: (e) => <Cell>{e.position}</Cell> },
-                    { label: 'Status', render: (e) => <StatusBadge status={e.status} /> },
+                    { label: 'NIP', sort: 'nip', render: (e) => <Cell mono>{e.nip}</Cell> },
+                    { label: 'Gol.', sort: 'golongan', render: (e) => <Cell>{e.golongan}</Cell> },
+                    { label: 'Pangkat', sort: 'pangkat', render: (e) => <Cell>{e.pangkat}</Cell> },
+                    { label: 'Jabatan', sort: 'jabatan', render: (e) => <Cell>{e.position}</Cell> },
+                    { label: 'Status', sort: 'status', render: (e) => <StatusBadge status={e.status} /> },
                 ]}
                 form={{
                     title: (e) => (e ? `Ubah ${kind}` : copy.add),

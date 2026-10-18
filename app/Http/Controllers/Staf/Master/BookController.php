@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -25,13 +26,15 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookController extends Controller
 {
+    use SortsRecords;
+
     public function index(Request $request): Response
     {
-        $books = $this->query($request)->latest('id')->paginate(25)->withQueryString();
+        $books = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($b) => $b->latest('id'))->paginate(25)->withQueryString();
 
         return Inertia::render('staf/master/buku', [
             'records' => $books->through(fn (Book $b) => $this->row($b)),
-            'filters' => ['q' => $request->string('q')->toString(), 'jenis' => $request->string('jenis')->toString()],
+            'filters' => ['q' => $request->string('q')->toString(), 'jenis' => $request->string('jenis')->toString(), ...$this->sortFilters($request, $this->sortColumns())],
             'summary' => [
                 'printed' => Book::where('type', Book::PRINTED)->count(),
                 'copies' => BookCopy::count(),
@@ -165,6 +168,24 @@ class BookController extends Controller
             'Klasifikasi', 'Kelas DDC', 'Klasifikasi koleksi', 'Subjek', 'Asal perolehan', 'Donatur', 'No. panggil', 'Rak',
             'Eksemplar', 'Tersedia', 'Format', 'Lisensi', 'Status', 'Unggulan',
         ], $rows);
+    }
+
+    /**
+     * Columns of the list that can be sorted by their header.
+     *
+     * @return array<string, mixed>
+     */
+    private function sortColumns(): array
+    {
+        return [
+            'judul' => 'title',
+            'jenis' => 'type',
+            'perolehan' => 'acquisition',
+            'koleksi' => 'collection_type',
+            'lokasi' => 'call_number',
+            'tersedia' => 'available_count',
+            'status' => fn ($b, $direction) => $b->orderBy('status', $direction)->orderBy('available_count', $direction),
+        ];
     }
 
     /**

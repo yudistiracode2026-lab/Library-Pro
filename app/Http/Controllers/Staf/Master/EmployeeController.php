@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Employee;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
@@ -21,10 +22,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class EmployeeController extends Controller
 {
+    use SortsRecords;
+
     public function index(Request $request): Response
     {
         $kind = $this->kind($request);
-        $employees = $this->query($request)->orderByDesc('is_head')->orderBy('name')->paginate(25)->withQueryString();
+        $employees = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($e) => $e->orderByDesc('is_head')->orderBy('name'))
+            ->paginate(25)->withQueryString();
 
         return Inertia::render('staf/master/pegawai', [
             'kind' => $kind,
@@ -33,7 +37,7 @@ class EmployeeController extends Controller
                 'pangkat' => $e->pangkat(),
                 'has_account' => $e->user_id !== null,
             ]),
-            'filters' => ['q' => $request->string('q')->toString()],
+            'filters' => ['q' => $request->string('q')->toString(), ...$this->sortFilters($request, $this->sortColumns())],
             'options' => [
                 'golongan' => collect(MasterOptions::GOLONGAN)->map(fn ($p, $g) => ['value' => $g, 'label' => "{$g} · {$p}"])->values(),
                 'positions' => $kind === 'pustakawan' ? MasterOptions::forSelect(MasterOptions::LIBRARIAN_POSITIONS) : null,
@@ -96,6 +100,26 @@ class EmployeeController extends Controller
         if ($employee->is_head) {
             Employee::whereKeyNot($employee->id)->where('is_head', true)->update(['is_head' => false]);
         }
+    }
+
+    /**
+     * Columns of the list that can be sorted by their header. Grades sort by
+     * rank (I/a lowest), not alphabetically; NIP sorts as a number.
+     *
+     * @return array<string, mixed>
+     */
+    private function sortColumns(): array
+    {
+        $grades = array_reverse(array_keys(MasterOptions::GOLONGAN));
+
+        return [
+            'nama' => 'name',
+            'nip' => $this->numeric('nip'),
+            'golongan' => $this->inOrder('golongan', $grades),
+            'pangkat' => $this->inOrder('golongan', $grades),
+            'jabatan' => 'position',
+            'status' => 'status',
+        ];
     }
 
     /**

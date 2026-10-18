@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Book;
 use App\Models\Publisher;
 use App\Support\CsvExport;
@@ -17,9 +18,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PublisherController extends Controller
 {
+    use SortsRecords;
+
     public function index(Request $request): Response
     {
-        $publishers = $this->query($request)->orderBy('name')->paginate(25)->withQueryString();
+        $publishers = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($p) => $p->orderBy('name'))->paginate(25)->withQueryString();
 
         return Inertia::render('staf/master/penerbit', [
             'records' => $publishers->through(fn (Publisher $p) => [
@@ -30,7 +33,7 @@ class PublisherController extends Controller
                 'printed_count' => $p->printed_count,
                 'ebook_count' => $p->ebook_count,
             ]),
-            'filters' => ['q' => $request->string('q')->toString()],
+            'filters' => ['q' => $request->string('q')->toString(), ...$this->sortFilters($request, $this->sortColumns())],
             'options' => ['statuses' => MasterOptions::forSelect(MasterOptions::ACTIVE_STATUSES)],
         ]);
     }
@@ -66,6 +69,16 @@ class PublisherController extends Controller
             ->map(fn (Publisher $p) => [$p->name, $p->city, $p->printed_count, $p->ebook_count, $p->status]);
 
         return CsvExport::download('penerbit', ['Penerbit', 'Kota', 'Buku fisik', 'E-book', 'Status'], $rows);
+    }
+
+    /**
+     * Columns of the list that can be sorted by their header.
+     *
+     * @return array<string, mixed>
+     */
+    private function sortColumns(): array
+    {
+        return ['nama' => 'name', 'kota' => 'city', 'fisik' => 'printed_count', 'ebook' => 'ebook_count', 'status' => 'status'];
     }
 
     /**

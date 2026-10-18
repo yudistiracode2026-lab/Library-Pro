@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Author;
+use App\Models\Book;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,9 +18,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AuthorController extends Controller
 {
+    use SortsRecords;
+
     public function index(Request $request): Response
     {
-        $authors = $this->query($request)->orderBy('name')->paginate(25)->withQueryString();
+        $authors = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($a) => $a->orderBy('name'))->paginate(25)->withQueryString();
 
         return Inertia::render('staf/master/pengarang', [
             'records' => $authors->through(fn (Author $a) => [
@@ -28,7 +32,7 @@ class AuthorController extends Controller
                 'books_count' => $a->books_count,
                 'sample' => $a->books->first()?->title,
             ]),
-            'filters' => ['q' => $request->string('q')->toString()],
+            'filters' => ['q' => $request->string('q')->toString(), ...$this->sortFilters($request, $this->sortColumns())],
             'options' => ['types' => MasterOptions::forSelect(MasterOptions::AUTHOR_TYPES)],
         ]);
     }
@@ -63,6 +67,23 @@ class AuthorController extends Controller
         $rows = $this->query($request)->orderBy('name')->lazy()->map(fn (Author $a) => [$a->name, $a->type, $a->books_count]);
 
         return CsvExport::download('pengarang', ['Pengarang', 'Jenis', 'Judul di koleksi'], $rows);
+    }
+
+    /**
+     * Columns of the list that can be sorted by their header.
+     *
+     * @return array<string, mixed>
+     */
+    private function sortColumns(): array
+    {
+        return [
+            'nama' => 'name',
+            'jenis' => 'type',
+            'judul' => 'books_count',
+            // The sample title shown is the first one alphabetically.
+            'contoh' => fn ($a, $direction) => $a->orderBy(
+                Book::query()->selectRaw('MIN(title)')->whereColumn('books.author_id', 'authors.id'), $direction),
+        ];
     }
 
     /**

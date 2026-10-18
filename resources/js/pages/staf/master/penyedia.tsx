@@ -15,7 +15,7 @@ interface SupplierRow {
 
 interface PenyediaProps {
     records: Paginated<SupplierRow>;
-    filters: { q: string };
+    filters: { q: string; urut?: string; arah?: string };
     options: { types: SelectOption[]; statuses: SelectOption[] };
 }
 
@@ -33,11 +33,11 @@ export default function Penyedia({ records, filters, options }: PenyediaProps) {
                 grid="minmax(0,1.8fr) 140px minmax(0,1.4fr) 120px 100px"
                 describeRow={(s) => s.name}
                 columns={[
-                    { label: 'Nama penyedia', render: (s) => <Cell bold>{s.name}</Cell> },
-                    { label: 'Jenis', render: (s) => <Cell>{s.type}</Cell> },
-                    { label: 'Kontak', render: (s) => <Cell sub={s.phone}>{s.contact_name}</Cell> },
-                    { label: 'Kota', render: (s) => <Cell>{s.city}</Cell> },
-                    { label: 'Status', render: (s) => <StatusBadge status={s.status} /> },
+                    { label: 'Nama penyedia', sort: 'nama', render: (s) => <Cell bold>{s.name}</Cell> },
+                    { label: 'Jenis', sort: 'jenis', render: (s) => <Cell>{s.type}</Cell> },
+                    { label: 'Kontak', sort: 'kontak', render: (s) => <Cell sub={s.phone}>{s.contact_name}</Cell> },
+                    { label: 'Kota', sort: 'kota', render: (s) => <Cell>{s.city}</Cell> },
+                    { label: 'Status', sort: 'status', render: (s) => <StatusBadge status={s.status} /> },
                 ]}
                 form={{
                     title: (s) => (s ? 'Ubah penyedia' : 'Tambah penyedia'),

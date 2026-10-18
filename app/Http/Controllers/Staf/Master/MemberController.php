@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staf\Master;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Member;
 use App\Support\AuthorName;
 use App\Support\CsvExport;
@@ -17,9 +18,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MemberController extends Controller
 {
+    use SortsRecords;
+
     public function index(Request $request): Response
     {
-        $members = $this->query($request)->orderBy('name')->paginate(25)->withQueryString();
+        $members = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($m) => $m->orderBy('name'))->paginate(25)->withQueryString();
 
         return Inertia::render('staf/master/pemustaka', [
             'records' => $members->through(fn (Member $m) => [
@@ -27,7 +30,7 @@ class MemberController extends Controller
                 'has_account' => $m->user_id !== null,
                 'open_loans' => $m->open_loans_count,
             ]),
-            'filters' => ['q' => $request->string('q')->toString()],
+            'filters' => ['q' => $request->string('q')->toString(), ...$this->sortFilters($request, $this->sortColumns())],
             'options' => [
                 'types' => MasterOptions::forSelect(MasterOptions::MEMBER_TYPES),
                 'studyPrograms' => MasterOptions::forSelect(MasterOptions::STUDY_PROGRAMS),
@@ -67,6 +70,25 @@ class MemberController extends Controller
             ->map(fn (Member $m) => [$m->name, $m->member_number, $m->study_program, $m->type, $m->email, $m->status]);
 
         return CsvExport::download('pemustaka', ['Nama', 'NIM / NIP', 'Program studi', 'Jenis', 'Email', 'Status'], $rows);
+    }
+
+    /**
+     * Columns of the list that can be sorted by their header. NIM/NIP sort
+     * as numbers: "9182415" comes before "20220311".
+     *
+     * @return array<string, mixed>
+     */
+    private function sortColumns(): array
+    {
+        return [
+            'nama' => 'name',
+            'nim' => $this->numeric('member_number'),
+            'prodi' => 'study_program',
+            'jenis' => 'type',
+            'akun' => fn ($m, $direction) => $m->orderByRaw("CASE WHEN user_id IS NULL THEN 1 ELSE 0 END {$direction}"),
+            'pinjaman' => 'open_loans_count',
+            'status' => 'status',
+        ];
     }
 
     /**

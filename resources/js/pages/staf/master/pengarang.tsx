@@ -13,7 +13,7 @@ interface AuthorRow {
 
 interface PengarangProps {
     records: Paginated<AuthorRow>;
-    filters: { q: string };
+    filters: { q: string; urut?: string; arah?: string };
     options: { types: SelectOption[] };
 }
 
@@ -31,10 +31,10 @@ export default function Pengarang({ records, filters, options }: PengarangProps)
                 grid="minmax(0,1.4fr) 120px 130px minmax(0,1.8fr)"
                 describeRow={(a) => a.name}
                 columns={[
-                    { label: 'Pengarang', render: (a) => <Cell bold>{a.name}</Cell> },
-                    { label: 'Jenis', render: (a) => <Badge tone={a.type === 'Lembaga' ? 'warning' : 'teal'}>{a.type}</Badge> },
-                    { label: 'Judul di koleksi', render: (a) => <Cell sub="judul">{a.books_count}</Cell> },
-                    { label: 'Contoh judul', render: (a) => <Cell>{a.sample}</Cell> },
+                    { label: 'Pengarang', sort: 'nama', render: (a) => <Cell bold>{a.name}</Cell> },
+                    { label: 'Jenis', sort: 'jenis', render: (a) => <Badge tone={a.type === 'Lembaga' ? 'warning' : 'teal'}>{a.type}</Badge> },
+                    { label: 'Judul di koleksi', sort: 'judul', render: (a) => <Cell sub="judul">{a.books_count}</Cell> },
+                    { label: 'Contoh judul', sort: 'contoh', render: (a) => <Cell>{a.sample}</Cell> },
                 ]}
                 form={{
                     title: (a) => (a ? 'Ubah pengarang' : 'Tambah pengarang'),

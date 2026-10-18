@@ -1,4 +1,5 @@
 import { IndicatorCard, type IndicatorBrief } from '@/components/staf/akreditasi';
+import { SortHeader } from '@/components/staf/master/master-page';
 import { RecordForm } from '@/components/staf/master/record-form';
 import { Alert, Button, Card, IconButton, PillTabs } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
@@ -51,6 +52,23 @@ const LICENSE_STYLE: Record<string, string> = {
     'Tidak berlisensi': 'border-danger text-danger',
 };
 
+/** Rows in the order of one column; numbers as numbers, text alphabetically (Indonesian collation). */
+function sortRows<T>(rows: T[], order: Order | null, value: (row: T, key: string) => string | number | null): T[] {
+    if (!order) {
+        return rows;
+    }
+    const sign = order.dir === 'asc' ? 1 : -1;
+
+    return [...rows].sort((a, b) => {
+        const [x, y] = [value(a, order.key) ?? '', value(b, order.key) ?? ''];
+        const cmp = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'id', { numeric: true });
+
+        return cmp * sign;
+    });
+}
+
+type Order = { key: string; dir: 'asc' | 'desc' };
+
 const selectClass = 'h-[34px] cursor-pointer rounded-[9px] border-[1.5px] bg-white px-2 text-[13px] font-semibold dark:bg-slate-800';
 
 export default function Inventaris({ tab, assets, licenses, missingFacilities, options, indicators }: InventarisProps) {
@@ -58,6 +76,20 @@ export default function Inventaris({ tab, assets, licenses, missingFacilities, o
     const isLicense = tab === 'Lisensi';
     const tabs = ['Semua', ...options.categories, 'Lisensi'];
     const patch = (url: string, data: Record<string, string>) => router.patch(url, data, { preserveScroll: true, preserveState: true });
+    const [order, setOrder] = useState<Order | null>(null);
+    // First click sorts A-Z / smallest first, the next one reverses it.
+    const sortBy = (key: string) => setOrder(order?.key === key && order.dir === 'asc' ? { key, dir: 'desc' } : { key, dir: 'asc' });
+    const head = (cols: [string, string?][]) => <Head cols={cols} order={order} onSort={sortBy} />;
+    const sortedLicenses = sortRows(
+        licenses,
+        order,
+        (l, key) => ({ nama: l.name, jenis: l.license_type, unit: l.seats, status: l.status })[key] ?? null,
+    );
+    const sortedAssets = sortRows(
+        assets,
+        order,
+        (a, key) => ({ nama: a.name, fungsi: a.function, ruang: a.room, jumlah: a.quantity, kondisi: a.condition })[key] ?? null,
+    );
 
     return (
         <StafLayout title="Manajemen aset · inventaris & lisensi" group="Master data">
@@ -114,9 +146,9 @@ export default function Inventaris({ tab, assets, licenses, missingFacilities, o
                 <div className="overflow-x-auto">
                     {isLicense ? (
                         <table className="w-full min-w-[720px] text-sm">
-                            <Head cols={['No', 'Perangkat lunak', 'Jenis lisensi', 'Unit', 'Status', '']} />
+                            {head([['No'], ['Perangkat lunak', 'nama'], ['Jenis lisensi', 'jenis'], ['Unit', 'unit'], ['Status', 'status'], ['']])}
                             <tbody>
-                                {licenses.map((l, i) => (
+                                {sortedLicenses.map((l, i) => (
                                     <tr key={l.id} className="border-b border-slate-200 dark:border-slate-700">
                                         <td className="text-fg-3 w-12 px-5 py-3 font-mono text-[13px] tabular-nums">{i + 1}</td>
                                         <td className="px-5 py-3">
@@ -156,9 +188,17 @@ export default function Inventaris({ tab, assets, licenses, missingFacilities, o
                         </table>
                     ) : (
                         <table className="w-full min-w-[820px] text-sm">
-                            <Head cols={['No', 'Aset', 'Fungsi', 'Ruang', 'Jml', 'Kondisi', '']} />
+                            {head([
+                                ['No'],
+                                ['Aset', 'nama'],
+                                ['Fungsi', 'fungsi'],
+                                ['Ruang', 'ruang'],
+                                ['Jml', 'jumlah'],
+                                ['Kondisi', 'kondisi'],
+                                [''],
+                            ])}
                             <tbody>
-                                {assets.map((a, i) => (
+                                {sortedAssets.map((a, i) => (
                                     <tr key={a.id} className="border-b border-slate-200 dark:border-slate-700">
                                         <td className="text-fg-3 w-12 px-5 py-3 font-mono text-[13px] tabular-nums">{i + 1}</td>
                                         <td className="px-5 py-3">
@@ -274,13 +314,18 @@ export default function Inventaris({ tab, assets, licenses, missingFacilities, o
     );
 }
 
-function Head({ cols }: { cols: string[] }) {
+/** Table header; a column with a sort key sorts the rows when clicked. */
+function Head({ cols, order, onSort }: { cols: [string, string?][]; order: Order | null; onSort: (key: string) => void }) {
     return (
         <thead className="text-fg-3 border-b border-slate-200 bg-slate-50 text-left text-xs tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900">
             <tr>
-                {cols.map((c) => (
-                    <th key={c} className="px-5 py-3 font-semibold">
-                        {c}
+                {cols.map(([label, key], i) => (
+                    <th key={i} className="px-5 py-3 font-semibold">
+                        {key ? (
+                            <SortHeader label={label} active={order?.key === key} direction={order?.dir ?? 'asc'} onClick={() => onSort(key)} />
+                        ) : (
+                            label
+                        )}
                     </th>
                 ))}
             </tr>
