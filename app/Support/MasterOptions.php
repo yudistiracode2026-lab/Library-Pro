@@ -35,7 +35,7 @@ class MasterOptions
         'Terbitan STPN Press',
     ];
 
-    public const ACQUISITIONS = ['Pengadaan', 'Penyerahan dosen/tendik tugas belajar', 'Sumbangan mahasiswa'];
+    public const ACQUISITIONS = ['Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa'];
 
     /** Languages used in the old SLiMS catalogue. */
     public const LANGUAGES = ['Indonesia', 'Inggris', 'Indonesia / Inggris', 'Indonesia / Arab', 'Arab', 'Belanda', 'Jerman', 'Lainnya'];
