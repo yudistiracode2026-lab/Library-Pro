@@ -332,6 +332,9 @@ function Return({ returning, loans, rules }: SirkulasiProps) {
     );
 }
 
+/** Columns of the active loans table, shared by its header and rows. */
+const ACTIVE_GRID = 'grid min-w-[900px] grid-cols-[44px_90px_minmax(0,1.6fr)_minmax(0,1fr)_110px_110px_130px_120px] items-center gap-3 px-5';
+
 function ActiveLoans({ loans, filters }: SirkulasiProps) {
     const [q, setQ] = useState(filters.q);
 
@@ -356,14 +359,25 @@ function ActiveLoans({ loans, filters }: SirkulasiProps) {
                 </button>
             </form>
             <div className="mt-4 overflow-x-auto border-t border-slate-200 dark:border-slate-700">
-                {loans.data.map((l) => {
+                <div
+                    className={`${ACTIVE_GRID} text-fg-3 border-b border-slate-200 bg-slate-50 py-3 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900`}
+                >
+                    <span>No</span>
+                    <span>Eksemplar</span>
+                    <span>Judul</span>
+                    <span>Peminjam</span>
+                    <span>Tgl. pinjam</span>
+                    <span>Jatuh tempo</span>
+                    <span>Status</span>
+                    <span>Aksi</span>
+                </div>
+                {loans.data.map((l, i) => {
                     const status = loanStatus(l.days_left);
 
                     return (
-                        <div
-                            key={l.id}
-                            className="grid min-w-[860px] grid-cols-[90px_minmax(0,1.6fr)_minmax(0,1fr)_110px_110px_130px_120px] items-center gap-3 border-b border-slate-200 px-5 py-3.5 text-sm dark:border-slate-700"
-                        >
+                        <div key={l.id} className={`${ACTIVE_GRID} border-b border-slate-200 py-3.5 text-sm dark:border-slate-700`}>
+                            {/* Numbers continue across pages (page 2 starts at 26). */}
+                            <span className="text-fg-3 font-mono text-[13px] tabular-nums">{(loans.from ?? 1) + i}</span>
                             <span className="text-fg-3 font-mono text-xs">{l.code}</span>
                             <span className="font-semibold">{l.title}</span>
                             <span>
