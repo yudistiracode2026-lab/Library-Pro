@@ -88,7 +88,7 @@ Buka `https://pustaka.domainkamu.id` — website publik harus tampil.
 
 ## 4. Setelah terpasang
 
-1. Login dengan akun admin, **ganti password** (menu profil).
+1. Login dengan akun admin di `https://pustaka.domainkamu.id/staf/masuk` (halaman login staf; `/login` khusus pemustaka), lalu **ganti password** (menu profil).
 2. **Pengaturan → Jaringan perpustakaan**: isi dengan IP publik Wi-Fi
    perpustakaan (buka https://ifconfig.me dari Wi-Fi perpustakaan), mis.
    `103.10.20.30/32`. Ini syarat Baca di tempat.

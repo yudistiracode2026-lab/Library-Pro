@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
+
+        // A signed-out visit to a staff page goes to the staff sign-in page.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('staf', 'staf/*') ? route('staf.login') : route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Branded Inertia error page. Server errors keep Laravel's debug

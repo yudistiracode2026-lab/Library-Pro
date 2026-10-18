@@ -36,15 +36,22 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Attempt to authenticate the request's credentials through one of the
+     * two sign-in pages: members at /login, staff at /staf/masuk. A correct
+     * password at the wrong page signs nobody in and points to the right one.
+     *
+     * @param  'pemustaka'|'staf'  $portal
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(string $portal = 'pemustaka'): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->loginEmail(), 'password' => $this->string('password')->toString()], $this->boolean('remember'))) {
+        $provider = Auth::getProvider();
+        $user = $provider->retrieveByCredentials(['email' => $this->loginEmail()]);
+
+        if (! $user || ! $provider->validateCredentials($user, ['password' => $this->string('password')->toString()])) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -52,7 +59,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($user->isStaff() !== ($portal === 'staf')) {
+            throw ValidationException::withMessages([
+                'email' => $user->isStaff()
+                    ? 'Akun petugas masuk lewat halaman login staf.'
+                    : 'Akun pemustaka masuk lewat halaman login pemustaka.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
+        Auth::login($user, $this->boolean('remember'));
     }
 
     /**

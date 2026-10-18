@@ -21,6 +21,13 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // Staff sign in on their own page; it is shared with them, not linked from the website.
+    Route::get('staf/masuk', [AuthenticatedSessionController::class, 'createStaff'])
+        ->name('staf.login');
+
+    Route::post('staf/masuk', [AuthenticatedSessionController::class, 'storeStaff'])
+        ->name('staf.login.store');
+
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 

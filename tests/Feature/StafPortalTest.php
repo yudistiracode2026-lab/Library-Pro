@@ -12,9 +12,10 @@ class StafPortalTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guests_are_redirected_to_the_login_page()
+    public function test_guests_are_redirected_to_the_staff_login_page()
     {
-        $this->get('/staf')->assertRedirect('/login');
+        $this->get('/staf')->assertRedirect('/staf/masuk');
+        $this->get('/staf/buku')->assertRedirect('/staf/masuk');
     }
 
     public function test_staff_are_sent_from_dashboard_to_the_staff_portal()
