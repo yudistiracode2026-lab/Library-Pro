@@ -32,7 +32,7 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                 records={records}
                 filters={filters}
                 numbered
-                grid="minmax(0,1.8fr) 130px minmax(0,1.2fr) 100px 110px 90px 100px"
+                grid="minmax(0,1.8fr) 130px minmax(0,1.2fr) 100px 90px 100px"
                 describeRow={(m) => m.name}
                 columns={[
                     {
@@ -47,7 +47,6 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                     { label: 'NIM / NIP', sort: 'nim', render: (m) => <Cell mono>{m.member_number}</Cell> },
                     { label: 'Program studi', sort: 'prodi', render: (m) => <Cell>{m.study_program}</Cell> },
                     { label: 'Jenis', sort: 'jenis', render: (m) => <Cell>{m.type}</Cell> },
-                    { label: 'Akun portal', sort: 'akun', render: (m) => <Cell>{m.has_account ? 'Terhubung' : 'Belum ada'}</Cell> },
                     { label: 'Pinjaman', sort: 'pinjaman', render: (m) => <Cell>{`${m.open_loans} aktif`}</Cell> },
                     { label: 'Status', sort: 'status', render: (m) => <StatusBadge status={m.status} /> },
                 ]}
