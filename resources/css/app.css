@@ -301,3 +301,62 @@
         top: 8%;
     }
 }
+
+/*
+ * Native dropdowns: the browser puts its arrow against the right edge, and
+ * padding cannot move it. Draw our own chevron with room on both sides.
+ * Unlayered on purpose, so it wins over the px-* utilities on each select.
+ */
+select:not([multiple]):not([size]) {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.25rem;
+    padding-inline-end: 2.25rem;
+    text-overflow: ellipsis;
+}
+
+/*
+ * Checkboxes: with a light accent colour the browser draws a black tick.
+ * Our own box keeps a white tick on teal. Sizes still come from size-*.
+ */
+@layer base {
+    input[type='checkbox'] {
+        appearance: none;
+        flex: none;
+        width: 1rem;
+        height: 1rem;
+        border: 1.5px solid var(--color-slate-300);
+        border-radius: 0.3rem;
+        background-color: white;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 80%;
+        cursor: pointer;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
+    }
+
+    input[type='checkbox']:hover {
+        border-color: var(--color-teal-400);
+    }
+
+    input[type='checkbox']:checked {
+        border-color: var(--color-teal-600);
+        background-color: var(--color-teal-600);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+    }
+
+    input[type='checkbox']:focus-visible {
+        outline: 2px solid var(--color-teal-400);
+        outline-offset: 2px;
+    }
+
+    input[type='checkbox']:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
