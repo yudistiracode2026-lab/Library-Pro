@@ -24,6 +24,7 @@ class Reports
         'populer' => ['trending-up', 'Buku paling sering dipinjam', 'Peringkat judul terpopuler.'],
         'opname' => ['clipboard-check', 'Hasil stock opname', 'Eksemplar ditemukan, rusak, dan hilang per rak.'],
         'bebas' => ['file-check-2', 'Rekap bebas pustaka', 'Surat bebas pustaka yang terbit.'],
+        'jatuh-tempo' => ['alarm-clock', 'Pinjaman jatuh tempo', 'Buku yang belum kembali setelah tanggal jatuh tempo.'],
     ];
 
     public const PERIODS = [
@@ -88,8 +89,45 @@ class Reports
                 'populer' => $this->popular($from, $to),
                 'opname' => $this->opname(),
                 'bebas' => $this->clearance($from, $to),
+                'jatuh-tempo' => $this->overdue(),
                 default => $this->visits($from, $to),
             },
+        ];
+    }
+
+    /**
+     * Loans still out after their due date, the oldest first. A snapshot of
+     * today, so the period does not apply.
+     *
+     * @return array<string, mixed>
+     */
+    private function overdue(): array
+    {
+        $loans = Loan::open()->whereDate('due_at', '<', today())
+            ->with(['copy.book', 'member'])->orderBy('due_at')->orderBy('id')->get();
+        $days = fn (Loan $l) => (int) $l->due_at->diffInDays(today());
+
+        return [
+            'period' => 'Per '.today()->translatedFormat('j F Y'),
+            'columns' => ['No', 'Eksemplar', 'Judul', 'Peminjam', 'NIM / NIP', 'Tgl. pinjam', 'Jatuh tempo', 'Terlambat'],
+            // For the PDF: a wide title column, dates and day counts on one line.
+            'widths' => ['4%', '9%', '34%', '18%', '13%', '8%', '8%', '6%'],
+            'nowrap' => [1, 4, 5, 6, 7],
+            'rows' => $loans->values()->map(fn (Loan $l, int $i) => [
+                $i + 1,
+                $l->copy->code,
+                $l->copy->book->title,
+                $l->member->name,
+                $l->member->member_number,
+                $l->loaned_at->translatedFormat('j M Y'),
+                $l->due_at->translatedFormat('j M Y'),
+                number_format($days($l), 0, ',', '.').' hari',
+            ])->all(),
+            'summary' => [
+                ['label' => 'Pinjaman jatuh tempo', 'value' => number_format($loans->count(), 0, ',', '.')],
+                ['label' => 'Peminjam', 'value' => number_format($loans->pluck('member_id')->unique()->count(), 0, ',', '.').' orang'],
+                ['label' => 'Terlambat lebih dari 1 tahun', 'value' => number_format($loans->filter(fn (Loan $l) => $days($l) > 365)->count(), 0, ',', '.')],
+            ],
         ];
     }
 

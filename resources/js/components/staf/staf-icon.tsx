@@ -1,4 +1,5 @@
 import {
+    AlarmClock,
     Award,
     BookCopy,
     Boxes,
@@ -36,6 +37,7 @@ import { ComponentType } from 'react';
 
 // Icon names come from app/Support/StafMenu.php (Lucide kebab-case names).
 const ICONS: Record<string, ComponentType<LucideProps>> = {
+    'alarm-clock': AlarmClock,
     award: Award,
     'book-copy': BookCopy,
     boxes: Boxes,

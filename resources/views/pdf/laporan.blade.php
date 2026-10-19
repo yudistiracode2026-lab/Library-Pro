@@ -13,11 +13,19 @@
         @endforeach
     </table>
 
-    <table class="data">
-        <thead><tr>@foreach ($columns as $c)<th>{{ $c }}</th>@endforeach</tr></thead>
+    {{-- Long lists print compact; a report may give column widths and columns that never wrap. --}}
+    @php($compact = count($rows) > 40)
+    @if ($compact)
+        <style>
+            table.data.compact { font-size: 8pt; line-height: 1.25; }
+            table.data.compact th, table.data.compact td { padding: 3px 5px; }
+        </style>
+    @endif
+    <table class="data {{ $compact ? 'compact' : '' }}">
+        <thead><tr>@foreach ($columns as $i => $c)<th style="{{ isset($widths[$i]) ? 'width:'.$widths[$i].';' : '' }}">{{ $c }}</th>@endforeach</tr></thead>
         <tbody>
             @forelse ($rows as $row)
-                <tr>@foreach ($row as $cell)<td>{{ $cell }}</td>@endforeach</tr>
+                <tr>@foreach ($row as $i => $cell)<td style="{{ in_array($i, $nowrap ?? [], true) ? 'white-space:nowrap;' : '' }}">{{ $cell }}</td>@endforeach</tr>
             @empty
                 <tr><td colspan="{{ count($columns) }}">Tidak ada data pada periode ini.</td></tr>
             @endforelse

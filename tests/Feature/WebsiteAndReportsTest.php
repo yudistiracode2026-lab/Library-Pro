@@ -116,6 +116,31 @@ class WebsiteAndReportsTest extends TestCase
         $this->get('/staf/laporan/unduh/pdf?laporan=bebas&periode=semester')->assertOk()->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_overdue_loans_report_lists_the_oldest_first()
+    {
+        $this->actingAs(User::factory()->pustakawan()->create());
+        $member = Member::create(['member_number' => '20220311', 'name' => 'Annisa', 'type' => 'Mahasiswa']);
+        [$a, $b] = Book::first()->copies()->get();
+        $c = Book::latest('id')->first()->copies()->first();
+        Loan::create(['book_copy_id' => $a->id, 'member_id' => $member->id, 'loaned_at' => now()->subMonth(), 'due_at' => today()->subDays(3)]);
+        Loan::create(['book_copy_id' => $b->id, 'member_id' => $member->id, 'loaned_at' => now()->subYears(2), 'due_at' => today()->subDays(400)]);
+        // Not overdue yet, and already returned: both left out.
+        Loan::create(['book_copy_id' => $c->id, 'member_id' => $member->id, 'loaned_at' => now(), 'due_at' => today()->addWeek()]);
+        Loan::create(['book_copy_id' => $c->id, 'member_id' => $member->id, 'loaned_at' => now()->subYear(), 'due_at' => today()->subMonths(11), 'returned_at' => now()->subMonths(10)]);
+
+        $this->get('/staf/laporan?laporan=jatuh-tempo')->assertInertia(fn (Assert $page) => $page
+            ->where('data.title', 'Pinjaman jatuh tempo')
+            ->where('data.period', 'Per 15 Oktober 2026')
+            ->has('data.rows', 2)
+            ->where('data.rows.0.0', 1)
+            ->where('data.rows.0.7', '400 hari')
+            ->where('data.rows.1.7', '3 hari')
+            ->where('data.summary.0.value', '2')
+            ->where('data.summary.2.value', '1'));
+
+        $this->get('/staf/laporan/unduh/pdf?laporan=jatuh-tempo')->assertOk()->assertHeader('content-type', 'application/pdf');
+    }
+
     public function test_dashboard_shows_live_figures()
     {
         $this->actingAs(User::factory()->pustakawan()->create());
