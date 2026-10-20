@@ -101,7 +101,7 @@ export default function Cms({ content, weeklyHours, news, tags, websiteUrl }: Cm
                                             aria-label="Nama hari"
                                             className={`${inputClass} h-9 w-auto min-w-[180px] flex-1 font-semibold`}
                                         />
-                                        <div className="flex gap-1">
+                                        <div className="flex flex-wrap gap-1">
                                             {DAYS.map((d, day) => {
                                                 const on = row.days.includes(day);
 

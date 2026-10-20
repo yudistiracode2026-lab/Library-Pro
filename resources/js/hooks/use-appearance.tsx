@@ -12,22 +12,25 @@ const applyTheme = (appearance: Appearance) => {
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
+// Light unless the user picks otherwise: the public site, the member portal and
+// the login pages are designed for a light background only.
+const DEFAULT_APPEARANCE: Appearance = 'light';
+
+const savedAppearance = () => (localStorage.getItem('appearance') as Appearance | null) || DEFAULT_APPEARANCE;
+
 const handleSystemThemeChange = () => {
-    const currentAppearance = localStorage.getItem('appearance') as Appearance;
-    applyTheme(currentAppearance || 'system');
+    applyTheme(savedAppearance());
 };
 
 export function initializeTheme() {
-    const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
-
-    applyTheme(savedAppearance);
+    applyTheme(savedAppearance());
 
     // Add the event listener for system theme changes...
     mediaQuery.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
 
     const updateAppearance = (mode: Appearance) => {
         setAppearance(mode);
@@ -36,8 +39,7 @@ export function useAppearance() {
     };
 
     useEffect(() => {
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
+        updateAppearance(savedAppearance());
 
         return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
     }, []);

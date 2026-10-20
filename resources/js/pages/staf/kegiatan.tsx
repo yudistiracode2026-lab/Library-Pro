@@ -150,12 +150,12 @@ function Daily({
                     )}
                 </div>
                 {isAdmin && (
-                    <label className="text-fg-2 flex items-center gap-2 text-[13px] font-semibold">
+                    <label className="text-fg-2 flex max-w-full min-w-0 items-center gap-2 text-[13px] font-semibold">
                         Petugas
                         <select
                             value={String(employee.id)}
                             onChange={(e) => go({ pegawai: e.target.value })}
-                            className="text-fg-1 h-[38px] max-w-[320px] rounded-[10px] border-[1.5px] border-slate-200 bg-white px-2.5 text-sm font-normal dark:bg-slate-800"
+                            className="text-fg-1 h-[38px] max-w-[320px] min-w-0 flex-1 rounded-[10px] border-[1.5px] border-slate-200 bg-white px-2.5 text-sm font-normal dark:bg-slate-800"
                         >
                             {staff.map((st) => (
                                 <option key={st.value} value={st.value}>

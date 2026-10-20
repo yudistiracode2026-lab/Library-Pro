@@ -17,9 +17,10 @@ export default function StafLayout({ title, group, children }: StafLayoutProps) 
         <AppShell variant="sidebar">
             <Head title={title} />
             <StafSidebar />
-            <SidebarInset className="bg-slate-50 dark:bg-slate-900">
+            {/* min-w-0: wide tables scroll inside their own box instead of widening the page on a phone. */}
+            <SidebarInset className="min-w-0 bg-slate-50 dark:bg-slate-900">
                 <StafHeader title={title} crumb={group ? `Portal staf · ${group}` : 'Portal staf'} />
-                <main className="flex w-full max-w-[1440px] flex-col gap-6 p-4 md:p-7">{children}</main>
+                <main className="flex w-full max-w-[1440px] min-w-0 flex-col gap-6 p-4 md:p-7">{children}</main>
             </SidebarInset>
             <FlashToast />
         </AppShell>

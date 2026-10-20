@@ -26,8 +26,8 @@ export default function Kios({ qr }: { qr: KioskQr }) {
                     </div>
                 </div>
                 <h1 className="text-center text-4xl font-extrabold text-balance">Pindai untuk presensi masuk atau keluar</h1>
-                <div className="rounded-xl bg-white p-6 shadow-xl">
-                    <QRCodeSVG value={qr.url} size={340} marginSize={0} fgColor="#0F0E0A" />
+                <div className="w-[388px] max-w-full rounded-xl bg-white p-6 shadow-xl">
+                    <QRCodeSVG value={qr.url} size={340} marginSize={0} fgColor="#0F0E0A" style={{ width: '100%', height: 'auto' }} />
                 </div>
                 <div className="flex w-[388px] max-w-full flex-col gap-2">
                     <div className="h-2 overflow-hidden rounded-full bg-white/25">

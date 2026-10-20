@@ -203,7 +203,10 @@ export default function Website(props: WebsiteProps) {
                     </div>
                 </header>
 
-                <section id="beranda" className="mx-auto grid max-w-[1200px] items-center gap-12 px-4 pt-14 pb-12 md:px-6 lg:grid-cols-2">
+                <section
+                    id="beranda"
+                    className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] items-center gap-10 px-4 pt-10 pb-12 md:px-6 md:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-12"
+                >
                     <div className="flex flex-col gap-6">
                         <span className="inline-flex items-center gap-2 self-start rounded-full bg-teal-50 px-3 py-1.5 text-xs font-semibold tracking-[.08em] text-teal-700 uppercase">
                             <MapPin className="size-3.5" />
@@ -212,7 +215,7 @@ export default function Website(props: WebsiteProps) {
                         <h1 className="text-4xl leading-[1.08] font-extrabold tracking-tight text-balance md:text-[52px]">{hero.title}</h1>
                         <p className="text-fg-2 max-w-xl text-lg leading-relaxed text-pretty">{hero.subtitle}</p>
                         <form onSubmit={submit} className="flex max-w-xl gap-2 rounded-lg bg-white p-2 shadow-lg">
-                            <label className="text-fg-3 flex flex-1 items-center gap-2.5 px-3">
+                            <label className="text-fg-3 flex min-w-0 flex-1 items-center gap-2.5 px-2 sm:px-3">
                                 <Search className="size-5 flex-none" />
                                 <input
                                     value={q}
@@ -224,9 +227,9 @@ export default function Website(props: WebsiteProps) {
                             </label>
                             <button
                                 type="submit"
-                                className="h-12 cursor-pointer rounded-md bg-teal-400 px-5 font-semibold text-white hover:bg-teal-500 active:scale-[.98]"
+                                className="h-12 flex-none cursor-pointer rounded-md bg-teal-400 px-4 font-semibold text-white hover:bg-teal-500 active:scale-[.98] sm:px-5"
                             >
-                                Cari di OPAC
+                                Cari<span className="hidden sm:inline"> di OPAC</span>
                             </button>
                         </form>
                         <div className="text-fg-3 flex flex-wrap items-center gap-2 text-[13px]">
@@ -246,10 +249,10 @@ export default function Website(props: WebsiteProps) {
                             ))}
                         </div>
                     </div>
-                    <div className="relative h-[380px] lg:h-[440px]">
-                        <div className="bg-grad-leaf absolute inset-[0_0_40px_40px] flex flex-col items-center justify-center gap-4 overflow-hidden rounded-xl p-8 text-center text-white shadow-xl">
-                            <AppLogoIcon className="size-28 rounded-full bg-white p-2 shadow-lg" />
-                            <span className="font-display text-2xl font-extrabold">Perpustakaan Politeknik Agraria STPN</span>
+                    <div className="relative h-[340px] sm:h-[380px] lg:h-[440px]">
+                        <div className="bg-grad-leaf absolute inset-[0_0_40px_24px] flex flex-col items-center justify-center gap-4 overflow-hidden rounded-xl p-6 text-center text-white shadow-xl sm:inset-[0_0_40px_40px] sm:p-8">
+                            <AppLogoIcon className="size-24 rounded-full bg-white p-2 shadow-lg sm:size-28" />
+                            <span className="font-display text-xl font-extrabold sm:text-2xl">Perpustakaan Politeknik Agraria STPN</span>
                             <span className="max-w-sm text-sm text-teal-50">
                                 Koleksi pertanahan, survei, dan tata ruang untuk sivitas STPN dan masyarakat umum.
                             </span>
