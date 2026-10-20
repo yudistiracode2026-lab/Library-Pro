@@ -1,8 +1,8 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import InputError from '@/components/input-error';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { type FormEventHandler } from 'react';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { useState, type FormEventHandler } from 'react';
 
 type LoginForm = {
     email: string;
@@ -47,6 +47,7 @@ const COPY = {
 export default function Login({ portal, status, canResetPassword }: LoginProps) {
     const copy = COPY[portal];
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({ email: '', password: '', remember: false });
+    const [showPassword, setShowPassword] = useState(false);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -97,15 +98,27 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
                                 </Link>
                             )}
                         </span>
-                        <input
-                            id="password"
-                            type="password"
-                            required
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            className={field}
-                        />
+                        <span className="relative flex flex-col">
+                            <input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                required
+                                autoComplete="current-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                className={`${field} pr-12`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((shown) => !shown)}
+                                aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                                aria-pressed={showPassword}
+                                title={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                                className="text-fg-3 absolute inset-y-0 right-0 grid w-12 cursor-pointer place-items-center rounded-r-md hover:text-teal-600 focus-visible:text-teal-600 focus-visible:outline-none"
+                            >
+                                {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+                            </button>
+                        </span>
                         <InputError message={errors.password} />
                     </label>
                     <label className="text-fg-2 flex items-center gap-2 text-sm">
