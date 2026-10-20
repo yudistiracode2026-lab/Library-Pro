@@ -14,6 +14,8 @@ fi
 commit=$(git rev-parse --short HEAD)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
+# mktemp makes the folder private (700); the package root must stay readable by the web server.
+chmod 755 "$work"
 
 echo "Menyalin kode commit $commit..."
 git archive HEAD | tar -x -C "$work"

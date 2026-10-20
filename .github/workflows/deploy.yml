@@ -53,3 +53,9 @@ jobs:
         run: |
           scp -P "$PORT" dist/pustagra-*.tar.gz "$TARGET:pustagra-release.tar.gz"
           ssh -p "$PORT" "$TARGET" 'bash -s' < deploy/remote-update.sh
+
+      - name: Check the site
+        run: |
+          for path in / /staf/masuk; do
+            curl -fsS -o /dev/null --retry 3 --retry-delay 5 "https://pustagra.unrest.pro$path"
+          done

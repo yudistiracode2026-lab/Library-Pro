@@ -13,7 +13,8 @@ cd "$APP"
 php artisan down --retry=15 || true
 trap 'php artisan up' EXIT
 
-tar -xzf "$PACKAGE" -C "$APP"
+# Keep the existing folders' permissions: a private app folder means 404 for everyone.
+tar -xzf "$PACKAGE" -C "$APP" --no-overwrite-dir
 # Caches from the previous version may name classes that changed.
 rm -f bootstrap/cache/*.php
 
