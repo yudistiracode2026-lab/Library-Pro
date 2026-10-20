@@ -58,7 +58,7 @@ Lalu masuk SSH (`ssh -p 65002 u123456789@HOST`) dan jalankan:
 
 ```bash
 DOMAIN=pustaka.domainkamu.id
-APP=~/domains/$DOMAIN/pustagra
+APP=~/pustagra-app
 
 mkdir -p $APP && tar -xzf ~/pustagra-*.tar.gz -C $APP
 tar -xzf ~/sampul.tar.gz -C $APP/storage/app/private
@@ -83,8 +83,8 @@ chmod -R ug+rwX storage bootstrap/cache
 Buka `https://pustaka.domainkamu.id` — website publik harus tampil.
 
 > Kalau `ln -s` ditolak, salin isi folder `public/` ke `public_html/` lalu ubah
-> dua baris di `public_html/index.php` agar menunjuk ke `../pustagra/vendor/autoload.php`
-> dan `../pustagra/bootstrap/app.php`.
+> dua baris di `public_html/index.php` agar menunjuk ke `../../../pustagra-app/vendor/autoload.php`
+> dan `../../../pustagra-app/bootstrap/app.php`.
 
 ## 4. Setelah terpasang
 
@@ -103,7 +103,7 @@ Hostinger Business membuat backup harian otomatis (**Files → Backups**).
 Tetap simpan salinan sendiri seminggu sekali:
 
 ```bash
-cd ~/domains/$DOMAIN/pustagra
+cd ~/pustagra-app
 mysqldump -u u123456789_pustagra -p u123456789_pustagra | gzip > ~/backup-$(date +%F).sql.gz
 tar -czf ~/berkas-$(date +%F).tar.gz storage/app/private
 ```
@@ -112,26 +112,33 @@ Unduh kedua berkas itu ke komputer kantor.
 
 ## 6. Memperbarui aplikasi
 
+**Otomatis.** Setiap push ke `main` yang lolos workflow `tests` akan dipasang
+ke server oleh workflow `deploy` (`.github/workflows/deploy.yml`). Workflow itu
+membangun paket rilis, mengunggahnya, lalu menjalankan `deploy/remote-update.sh`
+di server (down → ekstrak → migrate → optimize → up). Bisa juga dijalankan
+manual dari tab **Actions → deploy → Run workflow**.
+
+Secrets repo yang dibutuhkan: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_KEY`
+(kunci privat khusus GitHub; kunci publiknya ada di `~/.ssh/authorized_keys`
+server) dan `SSH_KNOWN_HOSTS` (`ssh-keyscan -p 65002 HOST`).
+
+**Manual** (kalau GitHub Actions bermasalah):
+
 ```bash
 # lokal
 bash scripts/release.sh
-scp -P 65002 dist/pustagra-<commit>.tar.gz u123456789@HOST:~/
-
-# server
-cd ~/domains/$DOMAIN/pustagra
-php artisan down
-tar -xzf ~/pustagra-<commit>.tar.gz -C .      # .env dan storage tidak tertimpa
-php artisan migrate --force
-php artisan optimize
-php artisan up
+scp -P 65002 dist/pustagra-<commit>.tar.gz u123456789@HOST:pustagra-release.tar.gz
+ssh -p 65002 u123456789@HOST 'bash -s' < deploy/remote-update.sh
 ```
+
+`.env`, sampul, dan berkas unggahan tidak ikut tertimpa.
 
 ## Masalah umum
 
 | Gejala | Penyebab |
 |---|---|
 | Halaman putih / error 500 | Lihat `storage/logs/laravel-*.log`; biasanya `.env` salah atau izin `storage` |
-| Tampilan tanpa gaya | `public_html` belum menunjuk ke `pustagra/public` |
+| Tampilan tanpa gaya | `public_html` belum menunjuk ke `pustagra-app/public` |
 | "419 Page expired" saat login | `APP_URL` tidak sama dengan alamat yang dibuka (http vs https) |
 | Scan QR tidak bisa membuka kamera | Situs belum HTTPS |
 | Baca di tempat selalu terkunci | IP Wi-Fi perpustakaan belum diisi di Pengaturan |
