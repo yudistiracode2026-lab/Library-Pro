@@ -31,9 +31,8 @@ class SearchMapController extends Controller
 
         return Inertia::render('staf/pencarian', [
             'filters' => ['q' => $q],
-            // Like the prototype, the list shows the first five titles even before typing.
-            'results' => $this->search($q)->take(5)->values(),
-            'resultCount' => $this->query($q)->count(),
+            // Like the prototype, the list shows five titles at a time, even before typing.
+            ...$this->search($q, max(1, $request->integer('hal', 1))),
             'selectedBookId' => $book?->id,
             'floor' => $rack?->floor ?? 1,
             'floors' => collect(FloorPlan::fixtures())->map(fn ($fixtures, $floor) => [
@@ -51,9 +50,6 @@ class SearchMapController extends Controller
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
-     */
-    /**
      * @return Builder<Book>
      */
     private function query(string $q): Builder
@@ -68,15 +64,21 @@ class SearchMapController extends Controller
                 ->orWhereRelation('subjects', 'name', 'like', "%{$q}%")));
     }
 
-    private function search(string $q): Collection
+    /**
+     * @return array{results: Collection<int, array<string, mixed>>, resultCount: int, resultPage: array{current: int, last: int}}
+     */
+    private function search(string $q, int $page): array
     {
-        return $this->query($q)
+        $books = $this->query($q)
             ->with(['author', 'rack'])
             ->withCount(['copies', 'copies as available_count' => fn ($c) => $c->where('status', BookCopy::AVAILABLE)])
             ->orderBy('title')
-            ->limit(5)
-            ->get()
-            ->map(fn (Book $b) => [
+            ->paginate(5, page: $page);
+
+        return [
+            'resultCount' => $books->total(),
+            'resultPage' => ['current' => $books->currentPage(), 'last' => $books->lastPage()],
+            'results' => $books->getCollection()->map(fn (Book $b) => [
                 'id' => $b->id,
                 'title' => $b->title,
                 'author' => $b->author->name,
@@ -86,6 +88,7 @@ class SearchMapController extends Controller
                 'floor' => $b->rack?->floor,
                 'available' => $b->available_count,
                 'copies' => $b->copies_count,
-            ]);
+            ]),
+        ];
     }
 }

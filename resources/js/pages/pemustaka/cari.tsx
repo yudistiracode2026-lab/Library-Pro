@@ -1,4 +1,5 @@
 import { BookCover } from '@/components/book-cover';
+import { Pager } from '@/components/pager';
 import PemustakaLayout from '@/layouts/pemustaka-layout';
 import { router } from '@inertiajs/react';
 import { BookOpen, Download, Search, X } from 'lucide-react';
@@ -58,18 +59,24 @@ interface Ebook {
 interface CariProps {
     filters: { q: string; jenis: string };
     results: Result[];
+    resultPage: { current: number; last: number; total: number };
     selected: Location | null;
     ebook: Ebook | null;
 }
 
-export default function Cari({ filters, results, selected, ebook }: CariProps) {
+export default function Cari({ filters, results, resultPage, selected, ebook }: CariProps) {
     const [q, setQ] = useState(filters.q);
     const first = useRef(true);
     const go = (params: Record<string, string | number | undefined>) =>
         router.get(
             route('pemustaka.cari'),
             Object.fromEntries(
-                Object.entries({ q: q || undefined, jenis: filters.jenis || undefined, ...params }).filter(([, v]) => v !== undefined && v !== ''),
+                Object.entries({
+                    q: q || undefined,
+                    jenis: filters.jenis || undefined,
+                    hal: resultPage.current > 1 ? resultPage.current : undefined,
+                    ...params,
+                }).filter(([, v]) => v !== undefined && v !== ''),
             ),
             { preserveState: true, preserveScroll: true, replace: true },
         );
@@ -79,7 +86,7 @@ export default function Cari({ filters, results, selected, ebook }: CariProps) {
             first.current = false;
             return;
         }
-        const timer = setTimeout(() => go({ buku: selected?.id }), 300);
+        const timer = setTimeout(() => go({ buku: selected?.id, hal: undefined }), 300);
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [q]);
@@ -105,7 +112,7 @@ export default function Cari({ filters, results, selected, ebook }: CariProps) {
                     <button
                         key={value}
                         type="button"
-                        onClick={() => go({ jenis: value || undefined })}
+                        onClick={() => go({ jenis: value || undefined, hal: undefined })}
                         className={`h-9 cursor-pointer rounded-full border px-3.5 text-[13px] font-semibold ${filters.jenis === value ? 'border-teal-400 bg-teal-400 text-white' : 'text-fg-2 border-slate-200 bg-white dark:bg-slate-800'}`}
                     >
                         {label}
@@ -113,6 +120,7 @@ export default function Cari({ filters, results, selected, ebook }: CariProps) {
                 ))}
             </div>
 
+            <span className="text-fg-3 text-sm">{resultPage.total} hasil</span>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-start gap-5">
                 <div className="flex flex-col gap-2.5">
                     {results.map((b) => {
@@ -155,6 +163,15 @@ export default function Cari({ filters, results, selected, ebook }: CariProps) {
                     {results.length === 0 && (
                         <p className="text-fg-3 p-8 text-center text-sm">Belum ada koleksi yang cocok. Coba kata kunci lain, ya.</p>
                     )}
+                    <Pager
+                        page={resultPage.current}
+                        last={resultPage.last}
+                        onPage={(page) => {
+                            go({ hal: page, buku: selected?.id });
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="pt-1"
+                    />
                 </div>
 
                 {selected && <LocationPanel book={selected} />}

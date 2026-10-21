@@ -35,7 +35,7 @@ class WebsiteController extends Controller
         $class = $request->query('kelas') === 'unggulan' || array_key_exists($request->query('kelas'), MasterOptions::DDC_CLASSES)
             ? $request->query('kelas')
             : ($featured > 0 ? 'unggulan' : '300');
-        $results = $this->search($filters)->limit(30)->get();
+        $results = $this->search($filters)->paginate(20, pageName: 'hal');
 
         return Inertia::render('website', [
             'hero' => ['title' => $content['hero_title'], 'subtitle' => $content['hero_subtitle']],
@@ -61,8 +61,9 @@ class WebsiteController extends Controller
                 ['footprints', number_format(Visit::where('checked_in_at', '>=', now()->startOfMonth())->count(), 0, ',', '.'), 'Kunjungan bulan ini'],
             ],
             'filters' => $filters,
-            'resultCount' => $this->search($filters)->count(),
-            'results' => $results->map(fn (Book $b) => $this->card($b)),
+            'resultCount' => $results->total(),
+            'results' => $results->getCollection()->map(fn (Book $b) => $this->card($b)),
+            'resultPage' => ['current' => $results->currentPage(), 'last' => $results->lastPage(), 'from' => $results->firstItem(), 'to' => $results->lastItem()],
             'classes' => collect(MasterOptions::DDC_CLASSES)->map(fn ($name, $code) => [
                 'code' => (string) $code,
                 'name' => $name,

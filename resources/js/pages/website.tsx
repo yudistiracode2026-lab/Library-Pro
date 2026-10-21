@@ -1,5 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { BookCover } from '@/components/book-cover';
+import { Pager } from '@/components/pager';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -68,6 +69,7 @@ interface WebsiteProps {
     filters: { q: string; field: string; type: string; available: boolean };
     resultCount: number;
     results: Card[];
+    resultPage: { current: number; last: number; from: number | null; to: number | null };
     classes: { code: string; name: string; count: number }[];
     selectedClass: string;
     gallery: Card[];
@@ -136,6 +138,7 @@ export default function Website(props: WebsiteProps) {
         filters,
         resultCount,
         results,
+        resultPage,
         classes,
         selectedClass,
         gallery,
@@ -147,7 +150,8 @@ export default function Website(props: WebsiteProps) {
     const [q, setQ] = useState(filters.q);
     const [detail, setDetail] = useState<Card | null>(null);
 
-    const search = (params: Partial<{ q: string; field: string; type: string; tersedia: string }>) => {
+    // Any change but the page number starts again at page 1.
+    const search = (params: Partial<{ q: string; field: string; type: string; tersedia: string; hal: string }>) => {
         const next = { q, field: filters.field, type: filters.type, tersedia: filters.available ? '1' : '', kelas: selectedClass, ...params };
         router.get(
             route('home'),
@@ -386,10 +390,13 @@ export default function Website(props: WebsiteProps) {
                                 </div>
                             )}
                         </div>
-                        {resultCount > results.length && (
-                            <p className="text-fg-3 text-center text-sm">
-                                Menampilkan {results.length} dari {resultCount} hasil. Persempit kata kunci untuk hasil lebih tepat.
-                            </p>
+                        {resultPage.last > 1 && (
+                            <div className="flex flex-col items-center gap-2">
+                                <Pager page={resultPage.current} last={resultPage.last} onPage={(page) => search({ hal: String(page) })} />
+                                <p className="text-fg-3 text-center text-sm">
+                                    Menampilkan {resultPage.from}–{resultPage.to} dari {resultCount} hasil
+                                </p>
+                            </div>
                         )}
                     </div>
                 </section>

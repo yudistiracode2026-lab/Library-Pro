@@ -48,8 +48,7 @@ class CatalogController extends Controller
                 'ebookLoans as licences_used' => fn ($l) => $l->active(),
             ])
             ->orderBy('title')
-            ->limit(40)
-            ->get();
+            ->paginate(20, pageName: 'hal');
 
         $selected = $request->integer('buku')
             ? Book::with(['author', 'rack'])->where('type', Book::PRINTED)->find($request->integer('buku'))
@@ -60,7 +59,8 @@ class CatalogController extends Controller
 
         return Inertia::render('pemustaka/cari', [
             'filters' => ['q' => $q, 'jenis' => $kind],
-            'results' => $books->map(fn (Book $b) => [
+            'resultPage' => ['current' => $books->currentPage(), 'last' => $books->lastPage(), 'total' => $books->total()],
+            'results' => $books->getCollection()->map(fn (Book $b) => [
                 'id' => $b->id,
                 'type' => $b->type,
                 'title' => $b->title,

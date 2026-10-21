@@ -49,6 +49,29 @@ class WebsiteAndReportsTest extends TestCase
         $this->get('/?kelas=500')->assertInertia(fn (Assert $page) => $page->has('gallery', 1));
     }
 
+    public function test_every_result_of_a_search_can_be_reached_page_by_page()
+    {
+        $rack = Rack::first();
+        foreach (range(1, 25) as $i) {
+            Book::create([
+                'type' => Book::PRINTED, 'title' => sprintf('Kadaster Jilid %02d', $i), 'author_id' => Author::idForName('Rudi Purnomo'),
+                'publisher_id' => Publisher::idForName('Andi'), 'ddc_class' => '300', 'collection_type' => 'Buku teks', 'call_number' => "333 R {$i}", 'rack_id' => $rack->id,
+            ]);
+        }
+
+        $this->get('/?q=purnomo&field=author')->assertInertia(fn (Assert $page) => $page
+            ->where('resultCount', 25)
+            ->has('results', 20)
+            ->where('resultPage.last', 2)
+            ->where('results.0.title', 'Kadaster Jilid 01'));
+
+        $this->get('/?q=purnomo&field=author&hal=2')->assertInertia(fn (Assert $page) => $page
+            ->has('results', 5)
+            ->where('resultPage.current', 2)
+            ->where('resultPage.from', 21)
+            ->where('results.4.title', 'Kadaster Jilid 25'));
+    }
+
     public function test_only_published_news_appears_on_the_website()
     {
         NewsPost::create(['title' => 'Terbit', 'published_at' => now()->subDay()]);

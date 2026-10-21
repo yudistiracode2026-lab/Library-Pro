@@ -1,4 +1,5 @@
 import { BookCover } from '@/components/book-cover';
+import { Pager } from '@/components/pager';
 import { Card, CardTitle, Eyebrow } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { router } from '@inertiajs/react';
@@ -36,6 +37,7 @@ interface PencarianProps {
     filters: { q: string };
     results: Result[];
     resultCount: number;
+    resultPage: { current: number; last: number };
     selectedBookId: number | null;
     floor: number;
     floors: Floor[];
@@ -51,7 +53,7 @@ const FIXTURE_ICONS: Record<string, ComponentType<{ className?: string }>> = {
     'users-round': UsersRound,
 };
 
-export default function Pencarian({ filters, results, resultCount, selectedBookId, floor, floors, rack }: PencarianProps) {
+export default function Pencarian({ filters, results, resultCount, resultPage, selectedBookId, floor, floors, rack }: PencarianProps) {
     const [q, setQ] = useState(filters.q);
     const first = useRef(true);
     const plan = floors.find((f) => f.floor === floor) ?? floors[0];
@@ -83,9 +85,7 @@ export default function Pencarian({ filters, results, resultCount, selectedBookI
                         aria-label="Cari buku"
                         className="text-fg-1 min-w-0 flex-1 bg-transparent text-sm outline-none"
                     />
-                    <span className="text-xs whitespace-nowrap">
-                        {resultCount > results.length ? `${results.length} dari ${resultCount} hasil` : `${resultCount} hasil`}
-                    </span>
+                    <span className="text-xs whitespace-nowrap">{resultCount} hasil</span>
                 </label>
                 {results.length > 0 && (
                     <div className="flex flex-col gap-1.5">
@@ -96,7 +96,7 @@ export default function Pencarian({ filters, results, resultCount, selectedBookI
                                 <button
                                     key={b.id}
                                     type="button"
-                                    onClick={() => go({ buku: b.id })}
+                                    onClick={() => go({ buku: b.id, ...(resultPage.current > 1 ? { hal: resultPage.current } : {}) })}
                                     className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left ${on ? 'border-teal-300 bg-teal-50 dark:bg-teal-900' : 'border-slate-200 bg-white hover:border-teal-300 dark:border-slate-700 dark:bg-slate-800'}`}
                                 >
                                     <BookCover cover={b.cover} ddc={b.ddc_class} className="h-[38px] w-7 rounded-xs" />
@@ -116,6 +116,11 @@ export default function Pencarian({ filters, results, resultCount, selectedBookI
                     </div>
                 )}
                 {results.length === 0 && <p className="text-fg-3 text-sm">Belum ada buku yang cocok. Coba kata kunci lain, ya.</p>}
+                <Pager
+                    page={resultPage.current}
+                    last={resultPage.last}
+                    onPage={(page) => go({ hal: page, ...(selectedBookId ? { buku: selectedBookId } : {}) })}
+                />
             </Card>
 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-stretch gap-4">
