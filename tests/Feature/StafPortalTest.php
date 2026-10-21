@@ -98,7 +98,7 @@ class StafPortalTest extends TestCase
                 ->flatMap(fn ($item) => $item['children'] ?? [$item])
                 ->pluck('href');
 
-            $this->assertCount(27, $hrefs);
+            $this->assertCount(28, $hrefs);
             $this->assertNotContains(null, $hrefs);
         });
     }
