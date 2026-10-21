@@ -48,6 +48,11 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
     const copy = COPY[portal];
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({ email: '', password: '', remember: false });
     const [showPassword, setShowPassword] = useState(false);
+    // Read-only until touched: browsers do not autofill read-only fields when the page
+    // loads, so a saved login (say the admin's, on the members' page) does not appear by
+    // itself. Saved logins are still offered once the field is tapped.
+    const [unlocked, setUnlocked] = useState(false);
+    const unlock = { readOnly: !unlocked, onPointerDown: () => setUnlocked(true), onFocus: () => setUnlocked(true) };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -80,7 +85,7 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
                             type={portal === 'staf' ? 'email' : 'text'}
                             inputMode={portal === 'staf' ? 'email' : 'numeric'}
                             required
-                            autoFocus
+                            {...unlock}
                             autoComplete="username"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
@@ -103,6 +108,7 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 required
+                                {...unlock}
                                 autoComplete="current-password"
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
