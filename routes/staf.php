@@ -184,6 +184,8 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
             Route::post('akun/{account}/rincian', 'storeItem')->name('.item.store');
             Route::put('rincian/{item}', 'updateItem')->name('.item.update');
             Route::delete('rincian/{item}', 'destroyItem')->name('.item.destroy');
+            Route::post('rincian/{item}/progres', 'storeProgress')->name('.progress.store');
+            Route::delete('progres/{progress}', 'destroyProgress')->name('.progress.destroy');
         });
 
         Route::middleware('role:admin')->controller(CmsController::class)->prefix('cms')->name('cms')->group(function () {

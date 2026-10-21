@@ -6,16 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\PokAccount;
 use App\Models\PokActivity;
 use App\Models\PokItem;
+use App\Models\PokProgress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
  * Petunjuk Operasional Kegiatan (admin): the budget of each year as
- * activity -> account -> detail line, with realisation per period. Only
- * detail lines are typed in; the other rows and the total add them up.
+ * activity -> account -> detail line. Detail lines carry the pagu; their
+ * realisation is entered as dated amounts (never more than the pagu in
+ * all), and "periode lalu / ini" follow from the month being reported.
  */
 class PokController extends Controller
 {
@@ -25,14 +29,38 @@ class PokController extends Controller
     {
         $years = PokActivity::distinct()->orderByDesc('year')->pluck('year');
         $year = $request->integer('tahun') ?: ($years->first() ?? (int) now()->year);
+        // The month reported on: this month for this year, December for past years.
+        $month = $request->integer('bulan') ?: ($year === (int) now()->year ? (int) now()->month : 12);
+        $month = max(1, min(12, $month));
+        $start = Carbon::create($year, $month, 1)->startOfDay();
+        $end = $start->copy()->endOfMonth();
 
-        $activities = PokActivity::where('year', $year)->orderBy('code')->with('accounts.items')->get();
+        $activities = PokActivity::where('year', $year)->orderBy('code')->with('accounts.items.progress.user')->get();
 
-        $rows = $activities->map(function (PokActivity $activity) {
-            $accounts = $activity->accounts->map(function (PokAccount $account) {
-                $items = $account->items->map(fn (PokItem $i) => [
-                    'id' => $i->id, 'code' => $i->code, 'name' => $i->name, ...$this->figures($i->only(self::AMOUNTS)),
-                ]);
+        $rows = $activities->map(function (PokActivity $activity) use ($start, $end) {
+            $accounts = $activity->accounts->map(function (PokAccount $account) use ($start, $end) {
+                $items = $account->items->map(function (PokItem $i) use ($start, $end) {
+                    $spent = $i->progress->sum('amount');
+
+                    return [
+                        'id' => $i->id, 'code' => $i->code, 'name' => $i->name,
+                        ...$this->figures([
+                            'pagu' => $i->pagu,
+                            'lock_pagu' => $i->lock_pagu,
+                            'previous' => $i->progress->filter(fn (PokProgress $p) => $p->date->lt($start))->sum('amount'),
+                            'current' => $i->progress->filter(fn (PokProgress $p) => $p->date->between($start, $end))->sum('amount'),
+                        ]),
+                        // What can still be entered, whatever the period.
+                        'available' => max(0, $i->pagu - $spent),
+                        'progress' => $i->progress->map(fn (PokProgress $p) => [
+                            'id' => $p->id,
+                            'date' => $p->date->toDateString(),
+                            'label' => $p->date->translatedFormat('j M Y'),
+                            'amount' => $p->amount,
+                            'by' => $p->user?->name,
+                        ])->values(),
+                    ];
+                });
 
                 return ['id' => $account->id, 'code' => $account->code, 'name' => $account->name, ...$this->sum($items), 'items' => $items];
             });
@@ -42,6 +70,8 @@ class PokController extends Controller
 
         return Inertia::render('staf/pok', [
             'year' => $year,
+            'month' => $month,
+            'periodLabel' => $start->translatedFormat('F Y'),
             // The years with data, plus the chosen one and the current one.
             'years' => $years->push($year, (int) now()->year)->unique()->sortDesc()->values(),
             'activities' => $rows,
@@ -100,7 +130,12 @@ class PokController extends Controller
 
     public function updateItem(Request $request, PokItem $item): RedirectResponse
     {
-        $item->update($this->itemData($request, $item->pok_account_id, $item->id));
+        $data = $this->itemData($request, $item->pok_account_id, $item->id);
+        $spent = (int) $item->progress()->sum('amount');
+        if ($data['pagu'] < $spent) {
+            throw ValidationException::withMessages(['pagu' => 'Pagu tidak boleh lebih kecil dari realisasi yang sudah diinput ('.$this->rupiah($spent).').']);
+        }
+        $item->update($data);
 
         return back()->with('success', 'Rincian diperbarui.');
     }
@@ -110,6 +145,35 @@ class PokController extends Controller
         $item->delete();
 
         return back()->with('success', 'Rincian dihapus.');
+    }
+
+    /** Records realisation on a detail line; the lines's total stays within its pagu. */
+    public function storeProgress(Request $request, PokItem $item): RedirectResponse
+    {
+        $year = $item->account->activity->year;
+        $available = max(0, $item->pagu - (int) $item->progress()->sum('amount'));
+
+        $data = $request->validate([
+            'date' => ['required', 'date', "after_or_equal:{$year}-01-01", "before_or_equal:{$year}-12-31"],
+            'amount' => ['required', 'integer', 'min:1', 'max:'.$available],
+        ], [
+            'date.after_or_equal' => "Tanggal harus di tahun anggaran {$year}.",
+            'date.before_or_equal' => "Tanggal harus di tahun anggaran {$year}.",
+            'amount.max' => $available > 0
+                ? 'Melebihi pagu. Yang masih bisa diinput paling banyak '.$this->rupiah($available).'.'
+                : 'Realisasi rincian ini sudah mencapai pagu.',
+        ], ['date' => 'tanggal', 'amount' => 'nominal']);
+
+        $item->progress()->create([...$data, 'user_id' => $request->user()->id]);
+
+        return back()->with('success', 'Progres '.$this->rupiah((int) $data['amount'])." dicatat untuk {$item->code} {$item->name}.");
+    }
+
+    public function destroyProgress(PokProgress $progress): RedirectResponse
+    {
+        $progress->delete();
+
+        return back()->with('success', 'Progres dihapus.');
     }
 
     /**
@@ -144,6 +208,11 @@ class PokController extends Controller
         return $this->figures($totals);
     }
 
+    private function rupiah(int $amount): string
+    {
+        return 'Rp '.number_format($amount, 0, ',', '.');
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -157,6 +226,7 @@ class PokController extends Controller
     }
 
     /**
+     * @param  array<string, mixed>  $extra
      * @return array<string, mixed>
      */
     private function codeAndName(Request $request, string $table, string $parentColumn, int $parentId, ?int $ignore = null, array $extra = []): array
@@ -165,7 +235,7 @@ class PokController extends Controller
             'code' => ['required', 'string', 'max:30', Rule::unique($table)->where($parentColumn, $parentId)->ignore($ignore)],
             'name' => ['required', 'string', 'max:255'],
             ...$extra,
-        ], [], ['code' => 'kode', 'name' => 'uraian', 'pagu' => 'pagu', 'lock_pagu' => 'lock pagu', 'previous' => 'periode lalu', 'current' => 'periode ini']);
+        ], [], ['code' => 'kode', 'name' => 'uraian', 'pagu' => 'pagu', 'lock_pagu' => 'lock pagu']);
     }
 
     /**
@@ -175,6 +245,6 @@ class PokController extends Controller
     {
         $amount = ['required', 'integer', 'min:0', 'max:999999999999'];
 
-        return $this->codeAndName($request, 'pok_items', 'pok_account_id', $accountId, $ignore, array_fill_keys(self::AMOUNTS, $amount));
+        return $this->codeAndName($request, 'pok_items', 'pok_account_id', $accountId, $ignore, ['pagu' => $amount, 'lock_pagu' => $amount]);
     }
 }
