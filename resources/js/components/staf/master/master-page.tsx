@@ -36,6 +36,8 @@ interface MasterPageProps<T extends { id: number }> {
         wide?: boolean;
     };
     describeRow: (row: T) => string;
+    /** Extra buttons before "Ubah" and "Hapus" in each row. */
+    rowActions?: (row: T) => ReactNode;
 }
 
 export function MasterPage<T extends { id: number }>({
@@ -51,6 +53,7 @@ export function MasterPage<T extends { id: number }>({
     numbered,
     form,
     describeRow,
+    rowActions,
 }: MasterPageProps<T>) {
     const [q, setQ] = useState(filters.q ?? '');
     const [editor, setEditor] = useState<{ row: T | null; nonce: number } | null>(null);
@@ -81,7 +84,7 @@ export function MasterPage<T extends { id: number }>({
     const allColumns: Column<T>[] = numbered
         ? [{ label: 'No', render: (row) => <span className="text-fg-3 font-mono text-[13px] tabular-nums">{numbers.get(row.id)}</span> }, ...columns]
         : columns;
-    const gridTemplate = `${numbered ? '44px ' : ''}${grid} 80px`;
+    const gridTemplate = `${numbered ? '44px ' : ''}${grid} ${rowActions ? 118 : 80}px`;
     const editing = editor?.row ?? null;
 
     return (
@@ -172,6 +175,7 @@ export function MasterPage<T extends { id: number }>({
                             </div>
                         ))}
                         <div className="flex justify-end gap-1">
+                            {rowActions?.(row)}
                             <button
                                 type="button"
                                 title="Ubah"

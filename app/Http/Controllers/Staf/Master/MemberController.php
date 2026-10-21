@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Staf\Master;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Member;
+use App\Services\MemberAccounts;
 use App\Support\AuthorName;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,11 +41,19 @@ class MemberController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, MemberAccounts $accounts): RedirectResponse
     {
-        Member::create($this->validated($request));
+        $accounts->resetToNumber(Member::create($this->validated($request)));
 
-        return back()->with('success', 'Pemustaka ditambahkan.');
+        return back()->with('success', 'Pemustaka ditambahkan. Masuk portal dengan NIM/NIP sebagai kata sandi awal.');
+    }
+
+    /** Gives the member their NIM/NIP back as the portal password, for one who forgot it. */
+    public function resetPassword(Member $record, MemberAccounts $accounts): RedirectResponse
+    {
+        $accounts->resetToNumber($record);
+
+        return back()->with('success', "Kata sandi portal {$record->name} kembali ke NIM/NIP ({$record->member_number}). Wajib diganti saat masuk.");
     }
 
     public function update(Request $request, Member $record): RedirectResponse
@@ -59,7 +69,11 @@ class MemberController extends Controller
             return back()->with('error', 'Pemustaka ini punya riwayat peminjaman. Ubah statusnya menjadi Diblokir saja, ya.');
         }
 
-        $record->delete();
+        DB::transaction(function () use ($record) {
+            $user = $record->user;
+            $record->delete();
+            $user?->delete();
+        });
 
         return back()->with('success', 'Pemustaka dihapus.');
     }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Staf\ClearanceController;
 use App\Http\Controllers\Staf\CmsController;
 use App\Http\Controllers\Staf\DashboardController;
 use App\Http\Controllers\Staf\Master\BookController;
+use App\Http\Controllers\Staf\Master\MemberController;
 use App\Http\Controllers\Staf\OpnameController;
 use App\Http\Controllers\Staf\OvertimeController;
 use App\Http\Controllers\Staf\ProcurementController;
@@ -47,6 +48,9 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
                 Route::delete("{$path}/{record}", [$controller, 'destroy'])->name("{$key}.destroy");
             });
         }
+
+        // Member portal password back to the NIM/NIP (also makes the account).
+        Route::post('pemustaka/{record}/reset-sandi', [MemberController::class, 'resetPassword'])->name('pemustaka.reset-password');
 
         Route::controller(CirculationController::class)->prefix('sirkulasi')->name('sirkulasi')->group(function () {
             Route::get('/', 'index')->name('');

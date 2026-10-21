@@ -1,7 +1,11 @@
 import { Cell, StatusBadge } from '@/components/staf/master/cells';
 import { MasterPage } from '@/components/staf/master/master-page';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated, type SelectOption } from '@/types';
+import { router } from '@inertiajs/react';
+import { KeyRound } from 'lucide-react';
+import { useState } from 'react';
 
 interface MemberRow {
     id: number;
@@ -22,6 +26,8 @@ interface PemustakaProps {
 }
 
 export default function Pemustaka({ records, filters, options }: PemustakaProps) {
+    const [resetting, setResetting] = useState<MemberRow | null>(null);
+
     return (
         <StafLayout title="Master pemustaka" group="Master data">
             <MasterPage<MemberRow>
@@ -34,6 +40,17 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                 numbered
                 grid="minmax(0,1.8fr) 130px minmax(0,1.2fr) 100px 90px 100px"
                 describeRow={(m) => m.name}
+                rowActions={(m) => (
+                    <button
+                        type="button"
+                        title="Reset kata sandi portal"
+                        aria-label={`Reset kata sandi portal ${m.name}`}
+                        onClick={() => setResetting(m)}
+                        className="text-fg-2 grid size-[34px] cursor-pointer place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
+                    >
+                        <KeyRound className="size-4" />
+                    </button>
+                )}
                 columns={[
                     {
                         label: 'Nama',
@@ -71,6 +88,43 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                     ],
                 }}
             />
+
+            <Dialog open={resetting !== null} onOpenChange={(open) => !open && setResetting(null)}>
+                <DialogContent className="rounded-xl p-7 sm:max-w-[460px]">
+                    <DialogTitle className="font-display text-xl font-bold">Reset kata sandi portal?</DialogTitle>
+                    <DialogDescription className="text-fg-2 text-[15px] leading-relaxed">
+                        Kata sandi portal <b>{resetting?.name}</b> dikembalikan ke NIM/NIP-nya (
+                        <span className="font-mono">{resetting?.member_number}</span>). Pemustaka wajib menggantinya saat masuk berikutnya.
+                        {resetting && !resetting.has_account && ' Akun portalnya juga dibuat sekarang.'}
+                    </DialogDescription>
+                    <div className="mt-2 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setResetting(null)}
+                            className="h-11 cursor-pointer rounded-md border border-slate-200 bg-white px-[18px] font-semibold hover:bg-slate-100 dark:bg-slate-800"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                resetting &&
+                                router.post(
+                                    route('staf.pemustaka.reset-password', { record: resetting.id }),
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        onFinish: () => setResetting(null),
+                                    },
+                                )
+                            }
+                            className="h-11 cursor-pointer rounded-md bg-teal-600 px-5 font-semibold text-white hover:bg-teal-700 active:scale-[.98]"
+                        >
+                            Reset kata sandi
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </StafLayout>
     );
 }

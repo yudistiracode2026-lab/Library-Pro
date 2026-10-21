@@ -14,6 +14,7 @@ import {
     GraduationCap,
     History,
     House,
+    KeyRound,
     Library,
     Lightbulb,
     LogOut,
@@ -80,6 +81,13 @@ export default function PemustakaLayout({ title, children, wide }: { title: stri
                                 <span className="text-fg-3 font-mono text-xs">{member?.member_number}</span>
                             </div>
                         </div>
+                        <Link
+                            href={route('pemustaka.sandi')}
+                            className={`hover:text-fg-1 flex h-[38px] items-center gap-2.5 rounded-[10px] px-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${route().current('pemustaka.sandi') ? 'text-fg-1 bg-slate-100 dark:bg-slate-700' : 'text-fg-2'}`}
+                        >
+                            <KeyRound className="size-4" />
+                            Ganti kata sandi
+                        </Link>
                         <button
                             type="button"
                             onClick={() => router.post(route('logout'))}

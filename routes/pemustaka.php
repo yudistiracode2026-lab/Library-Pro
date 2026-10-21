@@ -4,6 +4,7 @@ use App\Http\Controllers\Pemustaka\CatalogController;
 use App\Http\Controllers\Pemustaka\ClearanceController;
 use App\Http\Controllers\Pemustaka\HomeController;
 use App\Http\Controllers\Pemustaka\LoansController;
+use App\Http\Controllers\Pemustaka\PasswordController;
 use App\Http\Controllers\Pemustaka\ReadingController;
 use App\Http\Controllers\Pemustaka\SuggestionController;
 use App\Http\Controllers\Pemustaka\TitleCheckController;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 */
 Route::middleware(['auth', 'role:pemustaka'])->prefix('pemustaka')->name('pemustaka.')->group(function () {
     Route::get('/', HomeController::class)->name('beranda');
+    Route::get('kata-sandi', [PasswordController::class, 'edit'])->name('sandi');
+    Route::put('kata-sandi', [PasswordController::class, 'update'])->name('sandi.update');
     Route::post('pinjaman/{loan}/perpanjang', [HomeController::class, 'extend'])->name('loan.extend');
 
     Route::get('cari', [CatalogController::class, 'index'])->name('cari');
