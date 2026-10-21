@@ -171,7 +171,7 @@ function LocationPanel({ book }: { book: Location }) {
     return (
         <section className="flex flex-col gap-4 rounded-lg bg-white p-5 shadow-sm lg:sticky lg:top-[84px] dark:bg-slate-800">
             <div className="flex gap-4">
-                <BookCover cover={book.cover} ddc={book.ddc_class} className="h-[110px] w-20 rounded-[6px]" />
+                <BookCover cover={book.cover} ddc={book.ddc_class} zoom={book.title} className="h-[110px] w-20 rounded-[6px]" />
                 <div className="flex flex-col gap-1">
                     <span className="font-display text-[19px] leading-tight font-bold">{book.title}</span>
                     <span className="text-fg-3 text-sm">{book.author}</span>
@@ -277,6 +277,7 @@ function EbookModal({ ebook, onClose }: { ebook: Ebook; onClose: () => void }) {
                 <BookCover
                     cover={ebook.cover}
                     ddc={ebook.ddc_class}
+                    zoom={ebook.title}
                     className="flex aspect-[2/3] w-full max-w-[200px] flex-col justify-between rounded-[8px] p-3.5 text-white shadow-md"
                 >
                     <span className="self-start rounded-[4px] bg-white/25 px-1.5 py-0.5 font-mono text-[10px] font-semibold">{ebook.format}</span>

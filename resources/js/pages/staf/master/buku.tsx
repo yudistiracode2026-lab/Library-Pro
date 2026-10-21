@@ -85,6 +85,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             <BookCover
                                 cover={b.cover}
                                 ddc={b.ddc_class}
+                                zoom={b.title}
                                 className="grid h-[62px] w-11 place-items-center rounded-xs text-white shadow-sm"
                             >
                                 {b.type === 'ebook' ? <Tablet className="size-4" /> : <BookOpen className="size-4" />}

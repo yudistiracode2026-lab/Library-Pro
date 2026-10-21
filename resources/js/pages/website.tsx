@@ -349,6 +349,7 @@ export default function Website(props: WebsiteProps) {
                                     <BookCover
                                         cover={b.cover}
                                         ddc={b.ddc_class}
+                                        zoom={b.title}
                                         className="h-[70px] w-full overflow-hidden rounded-[6px] p-1.5 text-[8px] leading-tight font-bold text-white shadow-sm"
                                     >
                                         {b.title}
@@ -571,6 +572,7 @@ export default function Website(props: WebsiteProps) {
                             <BookCover
                                 cover={detail.cover}
                                 ddc={detail.ddc_class}
+                                zoom={detail.title}
                                 className="flex aspect-[2/3] w-full flex-col justify-between self-start rounded-sm p-4 text-white shadow-md"
                             >
                                 <span className="font-mono text-[11px]">{detail.call_number ?? detail.format}</span>
