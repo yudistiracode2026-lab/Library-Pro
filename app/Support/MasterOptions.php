@@ -24,6 +24,7 @@ class MasterOptions
         '900' => 'Sejarah & geografi',
     ];
 
+    /** Sub-types of the collection; each belongs to one SNP collection type below. */
     public const COLLECTION_TYPES = [
         'Buku teks',
         'Skripsi',
@@ -33,6 +34,30 @@ class MasterOptions
         'Referensi',
         'Peta & atlas',
         'Terbitan STPN Press',
+    ];
+
+    /**
+     * Collection types of the Standar Nasional Perpustakaan Perguruan Tinggi
+     * (Perka Perpusnas 13/2017), and the sub-types in each.
+     */
+    public const COLLECTION_CATEGORIES = [
+        'Koleksi umum' => ['Buku teks'],
+        'Referensi' => ['Referensi', 'Peta & atlas'],
+        'Terbitan berkala' => ['Jurnal & majalah'],
+        'Muatan lokal' => ['Skripsi', 'Tugas akhir & laporan PKL', 'Prosiding', 'Terbitan STPN Press'],
+    ];
+
+    /** Material types (jenis bahan) as in INLISLite, the Perpusnas library system. */
+    public const MATERIAL_TYPES = [
+        'Monograf',
+        'Terbitan berkala',
+        'Bahan kartografis',
+        'Bahan grafis',
+        'Rekaman suara',
+        'Rekaman video',
+        'Bentuk mikro',
+        'Sumber elektronik',
+        'Braille',
     ];
 
     public const ACQUISITIONS = ['Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa'];
@@ -91,6 +116,28 @@ class MasterOptions
      * @param  array<int|string, string>  $options
      * @return list<array{value: string, label: string}>
      */
+    /** The SNP collection type of a sub-type: "Skripsi" -> "Muatan lokal". */
+    public static function categoryOf(?string $collectionType): ?string
+    {
+        foreach (self::COLLECTION_CATEGORIES as $category => $types) {
+            if (in_array($collectionType, $types, true)) {
+                return $category;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sub-types for a select, labelled with their collection type: "Skripsi · Muatan lokal".
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    public static function collectionTypeOptions(): array
+    {
+        return array_map(fn ($t) => ['value' => $t, 'label' => $t === self::categoryOf($t) ? $t : $t.' · '.self::categoryOf($t)], self::COLLECTION_TYPES);
+    }
+
     public static function forSelect(array $options): array
     {
         return array_is_list($options)

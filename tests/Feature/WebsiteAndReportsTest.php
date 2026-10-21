@@ -72,6 +72,18 @@ class WebsiteAndReportsTest extends TestCase
             ->where('results.4.title', 'Kadaster Jilid 25'));
     }
 
+    public function test_the_opac_filters_by_snp_collection_type()
+    {
+        Book::first()->update(['collection_type' => 'Skripsi']);
+
+        $this->get('/?type='.urlencode('kategori:Muatan lokal'))->assertInertia(fn (Assert $page) => $page
+            ->where('resultCount', 1)
+            ->where('results.0.collection_category', 'Muatan lokal')
+            ->where('results.0.material_type', 'Monograf'));
+        $this->get('/?type='.urlencode('kategori:Koleksi umum'))->assertInertia(fn (Assert $page) => $page->where('resultCount', 1));
+        $this->get('/?type=Skripsi')->assertInertia(fn (Assert $page) => $page->where('resultCount', 1));
+    }
+
     public function test_only_published_news_appears_on_the_website()
     {
         NewsPost::create(['title' => 'Terbit', 'published_at' => now()->subDay()]);

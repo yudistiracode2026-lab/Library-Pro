@@ -10,6 +10,7 @@ use App\Models\Member;
 use App\Models\Publisher;
 use App\Models\Rack;
 use App\Models\User;
+use App\Support\MasterOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,32 @@ class MasterDataTest extends TestCase
             'penyedia' => 'staf/master/penyedia', 'pemustaka' => 'staf/master/pemustaka'] as $path => $component) {
             $this->get("/staf/{$path}")->assertInertia(fn (Assert $page) => $page->component($component)->has('records.data'));
         }
+    }
+
+    public function test_material_type_defaults_to_the_usual_one_and_collection_type_gives_the_snp_category()
+    {
+        $this->asPustakawan();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Atlas Indonesia', 'collection_type' => 'Peta & atlas']))->assertSessionHasNoErrors();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Video Pengukuran', 'collection_type' => 'Referensi', 'material_type' => 'Rekaman video']))->assertSessionHasNoErrors();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Salah', 'material_type' => 'Kaset']))->assertSessionHasErrors('material_type');
+
+        $atlas = Book::where('title', 'Atlas Indonesia')->sole();
+        $this->assertSame('Bahan kartografis', $atlas->material_type);
+        $this->assertSame('Referensi', $atlas->collectionCategory());
+        $this->assertSame('Rekaman video', Book::where('title', 'Video Pengukuran')->sole()->material_type);
+
+        $this->get('/staf/buku?q=Atlas')->assertInertia(fn (Assert $page) => $page
+            ->where('records.data.0.material_type', 'Bahan kartografis')
+            ->where('records.data.0.collection_category', 'Referensi'));
+    }
+
+    public function test_every_collection_sub_type_belongs_to_one_snp_collection_type()
+    {
+        foreach (MasterOptions::COLLECTION_TYPES as $type) {
+            $this->assertNotNull(MasterOptions::categoryOf($type), $type);
+        }
+        $this->assertSame('Muatan lokal', MasterOptions::categoryOf('Skripsi'));
+        $this->assertSame('Sumber elektronik', Book::materialTypeOf(Book::EBOOK, 'Buku teks'));
     }
 
     public function test_adding_a_printed_book_creates_its_copies_and_master_records()

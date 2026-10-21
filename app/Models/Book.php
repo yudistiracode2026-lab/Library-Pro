@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MasterOptions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,10 +19,37 @@ class Book extends Model
     public const EBOOK = 'ebook';
 
     protected $fillable = [
-        'type', 'title', 'author_id', 'publisher_id', 'year', 'isbn', 'ddc_class', 'collection_type',
+        'type', 'title', 'author_id', 'publisher_id', 'year', 'isbn', 'ddc_class', 'collection_type', 'material_type',
         'acquisition', 'donor', 'call_number', 'rack_id', 'format', 'file_size_mb', 'license_count', 'status', 'file_path',
         'classification', 'edition', 'publish_place', 'collation', 'language', 'series_title', 'abstract', 'cover_path', 'featured',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Book $book) {
+            $book->material_type ??= self::materialTypeOf($book->type, $book->collection_type);
+        });
+    }
+
+    /**
+     * The usual material type (jenis bahan) of a title: e-books are electronic
+     * resources, journals serials, maps cartographic, the rest monographs.
+     */
+    public static function materialTypeOf(?string $type, ?string $collectionType): string
+    {
+        return match (true) {
+            $type === self::EBOOK => 'Sumber elektronik',
+            $collectionType === 'Jurnal & majalah' => 'Terbitan berkala',
+            $collectionType === 'Peta & atlas' => 'Bahan kartografis',
+            default => 'Monograf',
+        };
+    }
+
+    /** The SNP collection type (Koleksi umum, Referensi, Terbitan berkala, Muatan lokal). */
+    public function collectionCategory(): ?string
+    {
+        return MasterOptions::categoryOf($this->collection_type);
+    }
 
     /**
      * Main DDC class from a classification or call number: "346.04" -> 300.

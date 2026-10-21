@@ -29,6 +29,8 @@ interface BookRow {
     featured: boolean;
     ddc_class: string;
     collection_type: string;
+    collection_category: string | null;
+    material_type: string | null;
     acquisition: string | null;
     donor: string | null;
     call_number: string | null;
@@ -51,6 +53,7 @@ interface BukuProps {
         types: SelectOption[];
         ddc: SelectOption[];
         collectionTypes: SelectOption[];
+        materialTypes: SelectOption[];
         acquisitions: SelectOption[];
         formats: SelectOption[];
         ebookStatuses: SelectOption[];
@@ -126,9 +129,16 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         ),
                     },
                     {
-                        label: 'Klasifikasi koleksi',
+                        label: 'Jenis koleksi',
                         sort: 'koleksi',
-                        render: (b) => <Badge tone={COLLECTION_TONES[b.collection_type] ?? 'slate'}>{b.collection_type}</Badge>,
+                        render: (b) => (
+                            <>
+                                <Badge tone={COLLECTION_TONES[b.collection_type] ?? 'slate'}>{b.collection_type}</Badge>
+                                <span className="text-fg-3 mt-0.5 truncate text-xs">
+                                    {b.collection_category} · {b.material_type}
+                                </span>
+                            </>
+                        ),
                     },
                     {
                         label: 'Lokasi',
@@ -196,6 +206,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         cover_url: null,
                         featured: false,
                         collection_type: 'Buku teks',
+                        material_type: '',
                         acquisition: 'Pengadaan',
                         donor: '',
                         call_number: '',
@@ -228,6 +239,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         cover_url: b.cover,
                         featured: b.featured,
                         collection_type: b.collection_type,
+                        material_type: b.material_type ?? '',
                         acquisition: b.acquisition ?? '',
                         donor: b.donor ?? '',
                         call_number: b.call_number ?? '',
@@ -274,7 +286,21 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             ),
                         },
                         { name: 'ddc_class', label: 'Kelas DDC', type: 'select', options: options.ddc, hidden: hasClassNumber },
-                        { name: 'collection_type', label: 'Klasifikasi koleksi', type: 'select', options: options.collectionTypes, required: true },
+                        {
+                            name: 'collection_type',
+                            label: 'Jenis koleksi',
+                            type: 'select',
+                            options: options.collectionTypes,
+                            required: true,
+                            hint: 'Sub-jenis · jenis koleksi SNP Perpusnas',
+                        },
+                        {
+                            name: 'material_type',
+                            label: 'Jenis bahan',
+                            type: 'select',
+                            options: options.materialTypes,
+                            hint: 'Kosongkan: Monograf, atau Sumber elektronik untuk e-book',
+                        },
                         {
                             name: 'subjects',
                             label: 'Tajuk subjek',

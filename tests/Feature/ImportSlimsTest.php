@@ -44,6 +44,8 @@ class ImportSlimsTest extends TestCase
         $this->assertSame('346.04', $book->classification);
         $this->assertSame('300', $book->ddc_class);
         $this->assertSame('Buku teks', $book->collection_type);
+        $this->assertSame('Monograf', $book->material_type);
+        $this->assertSame('Rekaman video', Book::find(12)->material_type, 'GMD Movie');
         $this->assertSame('Jakarta', $book->publish_place);
         $this->assertSame('Inggris', $book->language);
         $this->assertSame('xv, 320 hlm.: 24 cm', $book->collation);
@@ -148,11 +150,11 @@ class ImportSlimsTest extends TestCase
         $db->table('mst_place')->insert([['place_id' => 1, 'place_name' => 'Jakarta']]);
         $db->table('buku_unggulan')->insert([['biblio_id' => 10, 'status' => 1], ['biblio_id' => 12, 'status' => 0]]);
         $db->table('mst_publisher')->insert([['publisher_id' => 1, 'publisher_name' => 'Djambatan']]);
-        $db->table('mst_gmd')->insert([['gmd_id' => 1, 'gmd_name' => 'Buku'], ['gmd_id' => 2, 'gmd_name' => 'Skripsi']]);
+        $db->table('mst_gmd')->insert([['gmd_id' => 1, 'gmd_name' => 'Buku'], ['gmd_id' => 2, 'gmd_name' => 'Skripsi'], ['gmd_id' => 3, 'gmd_name' => 'Movie']]);
         $db->table('biblio')->insert([
             ['biblio_id' => 10, 'gmd_id' => 1, 'title' => "Hukum Agraria\nIndonesia", 'publisher_id' => 1, 'publish_year' => 2008, 'isbn_issn' => null, 'classification' => '346.04', 'call_number' => '346.04 Boe h', 'notes' => null, 'input_date' => '2015-02-01 10:00:00', 'last_update' => null, 'publish_place_id' => 1, 'series_title' => null, 'edition' => 'Ed. revisi', 'collation' => 'xv, 320 hlm.: 24 cm', 'language_id' => 'en', 'image' => 'hukum.jpg'],
             ['biblio_id' => 11, 'gmd_id' => 2, 'title' => 'Evaluasi PTSL di Sleman', 'publisher_id' => 0, 'publish_year' => 0, 'isbn_issn' => null, 'classification' => '', 'call_number' => 'SK', 'notes' => 'Abstrak.', 'input_date' => '2021-08-01 10:00:00', 'last_update' => null, 'publish_place_id' => null, 'series_title' => null, 'edition' => null, 'collation' => null, 'language_id' => 'id', 'image' => null],
-            ['biblio_id' => 12, 'gmd_id' => 1, 'title' => 'Tafsir Islam', 'publisher_id' => 1, 'publish_year' => 2001, 'isbn_issn' => null, 'classification' => '2X4.1', 'call_number' => null, 'notes' => null, 'input_date' => '0000-00-00 00:00:00', 'last_update' => null, 'publish_place_id' => 0, 'series_title' => null, 'edition' => null, 'collation' => null, 'language_id' => 'id', 'image' => 'hilang.jpg'],
+            ['biblio_id' => 12, 'gmd_id' => 3, 'title' => 'Tafsir Islam', 'publisher_id' => 1, 'publish_year' => 2001, 'isbn_issn' => null, 'classification' => '2X4.1', 'call_number' => null, 'notes' => null, 'input_date' => '0000-00-00 00:00:00', 'last_update' => null, 'publish_place_id' => 0, 'series_title' => null, 'edition' => null, 'collation' => null, 'language_id' => 'id', 'image' => 'hilang.jpg'],
         ]);
         $db->table('biblio_author')->insert([
             ['biblio_id' => 10, 'author_id' => 2, 'level' => 2],

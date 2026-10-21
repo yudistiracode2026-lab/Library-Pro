@@ -27,7 +27,9 @@ class WebsiteController extends Controller
         $filters = [
             'q' => $request->string('q')->trim()->toString(),
             'field' => in_array($request->query('field'), ['title', 'author', 'subject', 'isbn'], true) ? $request->query('field') : 'all',
-            'type' => in_array($request->query('type'), ['fisik', 'ebook', ...MasterOptions::COLLECTION_TYPES], true) ? $request->query('type') : '',
+            // A kind (fisik/ebook), an SNP collection type ("kategori:Muatan lokal") or a sub-type ("Skripsi").
+            'type' => in_array($request->query('type'), ['fisik', 'ebook', ...MasterOptions::COLLECTION_TYPES, ...array_map(fn ($c) => "kategori:{$c}", array_keys(MasterOptions::COLLECTION_CATEGORIES))], true)
+                ? $request->query('type') : '',
             'available' => $request->boolean('tersedia'),
         ];
         // The gallery opens on the featured titles ("buku unggulan") when there are any.
@@ -75,6 +77,7 @@ class WebsiteController extends Controller
                 // Titles with a cover first, so the gallery looks like a shelf.
                 ->orderByRaw('cover_path IS NULL')->orderBy('title')->limit(18)->get()->map(fn (Book $b) => $this->card($b)),
             'collectionTypes' => MasterOptions::COLLECTION_TYPES,
+            'collectionCategories' => array_keys(MasterOptions::COLLECTION_CATEGORIES),
             'services' => collect(WebsiteContent::SERVICES)->map(fn ($s) => ['icon' => $s[0], 'name' => $s[1], 'description' => $s[2]]),
             'facilities' => collect(WebsiteContent::FACILITIES)->map(fn ($f) => ['icon' => $f[0], 'name' => $f[1], 'description' => $f[2]]),
             'news' => NewsPost::published()->latest('published_at')->limit(6)->get()->map(fn (NewsPost $n) => [
@@ -96,6 +99,7 @@ class WebsiteController extends Controller
             ->withCount(['copies', 'copies as available_count' => fn ($c) => $c->where('status', BookCopy::AVAILABLE)])
             ->when($filters['type'] === 'fisik' || $filters['type'] === 'ebook', fn ($b) => $b->where('type', $filters['type']))
             ->when(in_array($filters['type'], MasterOptions::COLLECTION_TYPES, true), fn ($b) => $b->where('collection_type', $filters['type']))
+            ->when(str_starts_with($filters['type'], 'kategori:'), fn ($b) => $b->whereIn('collection_type', MasterOptions::COLLECTION_CATEGORIES[substr($filters['type'], 9)]))
             ->when($filters['available'], fn ($b) => $b->where(fn ($w) => $w->where('type', Book::EBOOK)->orWhereHas('copies', fn ($c) => $c->where('status', BookCopy::AVAILABLE))))
             ->when($q !== '', fn ($b) => $b->where(fn ($w) => match ($filters['field']) {
                 'title' => $w->where('title', 'like', "%{$q}%"),
@@ -138,6 +142,8 @@ class WebsiteController extends Controller
             'cover' => $b->coverUrl(),
             'ddc_class' => $b->ddc_class,
             'collection_type' => $b->collection_type,
+            'collection_category' => $b->collectionCategory(),
+            'material_type' => $b->material_type,
             'call_number' => $b->call_number,
             'rack' => $b->rack?->code,
             'floor' => $b->rack?->floor,

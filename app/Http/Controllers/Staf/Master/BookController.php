@@ -44,7 +44,8 @@ class BookController extends Controller
             'options' => [
                 'types' => MasterOptions::forSelect(MasterOptions::BOOK_TYPES),
                 'ddc' => collect(MasterOptions::DDC_CLASSES)->map(fn ($l, $c) => ['value' => (string) $c, 'label' => "{$c} · {$l}"])->values(),
-                'collectionTypes' => MasterOptions::forSelect(MasterOptions::COLLECTION_TYPES),
+                'collectionTypes' => MasterOptions::collectionTypeOptions(),
+                'materialTypes' => MasterOptions::forSelect(MasterOptions::MATERIAL_TYPES),
                 'acquisitions' => MasterOptions::forSelect(MasterOptions::ACQUISITIONS),
                 'formats' => MasterOptions::forSelect(MasterOptions::EBOOK_FORMATS),
                 'ebookStatuses' => MasterOptions::forSelect(MasterOptions::EBOOK_STATUSES),
@@ -172,7 +173,7 @@ class BookController extends Controller
     {
         $rows = $this->query($request)->with('subjects')->orderBy('title')->lazy()->map(fn (Book $b) => [
             MasterOptions::BOOK_TYPES[$b->type], $b->title, $b->series_title, implode('; ', $b->authorNames()), $b->publisher->name, $b->publish_place,
-            $b->year, $b->edition, $b->collation, $b->language, $b->isbn, $b->classification, $b->ddc_class, $b->collection_type,
+            $b->year, $b->edition, $b->collation, $b->language, $b->isbn, $b->classification, $b->ddc_class, $b->material_type, $b->collectionCategory(), $b->collection_type,
             $b->subjects->pluck('name')->implode('; '), $b->acquisition, $b->donor, $b->call_number, $b->rack?->code,
             $b->isPrinted() ? $b->copies_count : null, $b->isPrinted() ? $b->available_count : null,
             $b->format, $b->license_count, $b->status, $b->featured ? 'Ya' : '',
@@ -180,7 +181,7 @@ class BookController extends Controller
 
         return CsvExport::download('buku-dan-ebook', [
             'Jenis', 'Judul', 'Judul seri', 'Pengarang', 'Penerbit', 'Tempat terbit', 'Tahun', 'Edisi', 'Kolasi', 'Bahasa', 'ISBN',
-            'Klasifikasi', 'Kelas DDC', 'Klasifikasi koleksi', 'Subjek', 'Asal perolehan', 'Donatur', 'No. panggil', 'Rak',
+            'Klasifikasi', 'Kelas DDC', 'Jenis bahan', 'Jenis koleksi', 'Sub-jenis koleksi', 'Subjek', 'Asal perolehan', 'Donatur', 'No. panggil', 'Rak',
             'Eksemplar', 'Tersedia', 'Format', 'Lisensi', 'Status', 'Unggulan',
         ], $rows);
     }
@@ -197,6 +198,7 @@ class BookController extends Controller
             'jenis' => 'type',
             'perolehan' => 'acquisition',
             'koleksi' => 'collection_type',
+            'bahan' => 'material_type',
             'lokasi' => 'call_number',
             'tersedia' => 'available_count',
             'status' => fn ($b, $direction) => $b->orderBy('status', $direction)->orderBy('available_count', $direction),
@@ -252,6 +254,8 @@ class BookController extends Controller
             'featured' => $b->featured,
             'ddc_class' => $b->ddc_class,
             'collection_type' => $b->collection_type,
+            'collection_category' => $b->collectionCategory(),
+            'material_type' => $b->material_type,
             'acquisition' => $b->acquisition,
             'donor' => $b->donor,
             'call_number' => $b->call_number,
@@ -295,6 +299,7 @@ class BookController extends Controller
             'cover' => ['nullable', 'image', 'max:2048'],
             'featured' => ['boolean'],
             'collection_type' => ['required', Rule::in(MasterOptions::COLLECTION_TYPES)],
+            'material_type' => ['nullable', Rule::in(MasterOptions::MATERIAL_TYPES)],
             'acquisition' => ['required', Rule::in(MasterOptions::ACQUISITIONS)],
             'donor' => ['nullable', 'string', 'max:255'],
             'call_number' => [$printed ? 'required' : 'nullable', 'string', 'max:40'],
@@ -310,7 +315,7 @@ class BookController extends Controller
             'title' => 'judul', 'series_title' => 'judul seri', 'authors' => 'pengarang', 'publisher' => 'penerbit',
             'publish_place' => 'tempat terbit', 'year' => 'tahun', 'edition' => 'edisi', 'collation' => 'kolasi', 'language' => 'bahasa',
             'classification' => 'klasifikasi', 'subjects' => 'subjek', 'abstract' => 'abstrak', 'cover' => 'gambar sampul',
-            'ddc_class' => 'kelas DDC', 'collection_type' => 'klasifikasi koleksi', 'acquisition' => 'asal perolehan',
+            'ddc_class' => 'kelas DDC', 'collection_type' => 'sub-jenis koleksi', 'material_type' => 'jenis bahan', 'acquisition' => 'asal perolehan',
             'call_number' => 'nomor panggil', 'rack_id' => 'rak', 'copies' => 'jumlah eksemplar',
             'license_count' => 'jumlah lisensi', 'file_size_mb' => 'ukuran berkas',
         ]);
@@ -374,6 +379,7 @@ class BookController extends Controller
             'featured' => (bool) ($data['featured'] ?? false),
             'ddc_class' => $data['ddc_class'],
             'collection_type' => $data['collection_type'],
+            'material_type' => $data['material_type'] ?? Book::materialTypeOf($data['type'], $data['collection_type']),
             'acquisition' => $data['acquisition'],
             'donor' => $data['acquisition'] === 'Sumbangan mahasiswa' ? ($data['donor'] ?? null) : null,
             'call_number' => $printed ? $data['call_number'] : null,

@@ -53,6 +53,8 @@ interface Card {
     cover: string | null;
     ddc_class: string;
     collection_type: string;
+    collection_category: string | null;
+    material_type: string | null;
     call_number: string | null;
     rack: string | null;
     floor: number | null;
@@ -74,6 +76,7 @@ interface WebsiteProps {
     selectedClass: string;
     gallery: Card[];
     collectionTypes: string[];
+    collectionCategories: string[];
     services: { icon: string; name: string; description: string }[];
     facilities: { icon: string; name: string; description: string }[];
     news: { id: number; tag: string; title: string; excerpt: string | null; date: string }[];
@@ -143,6 +146,7 @@ export default function Website(props: WebsiteProps) {
         selectedClass,
         gallery,
         collectionTypes,
+        collectionCategories,
         services,
         facilities,
         news,
@@ -330,9 +334,18 @@ export default function Website(props: WebsiteProps) {
                                 <option value="">Semua jenis</option>
                                 <option value="fisik">Buku fisik</option>
                                 <option value="ebook">E-book</option>
-                                {collectionTypes.map((t) => (
-                                    <option key={t}>{t}</option>
-                                ))}
+                                <optgroup label="Jenis koleksi">
+                                    {collectionCategories.map((c) => (
+                                        <option key={c} value={`kategori:${c}`}>
+                                            {c}
+                                        </option>
+                                    ))}
+                                </optgroup>
+                                <optgroup label="Sub-jenis">
+                                    {collectionTypes.map((t) => (
+                                        <option key={t}>{t}</option>
+                                    ))}
+                                </optgroup>
                             </select>
                             <label className="text-fg-2 flex cursor-pointer items-center gap-2 text-sm">
                                 <input
@@ -620,8 +633,16 @@ export default function Website(props: WebsiteProps) {
                                             <dd className="font-mono">{detail.isbn}</dd>
                                         </>
                                     )}
-                                    <dt className="text-fg-3">Jenis</dt>
-                                    <dd>{detail.type === 'ebook' ? `E-book (${detail.format})` : detail.collection_type}</dd>
+                                    <dt className="text-fg-3">Jenis koleksi</dt>
+                                    <dd>
+                                        {detail.collection_category ? `${detail.collection_category} · ` : ''}
+                                        {detail.collection_type}
+                                    </dd>
+                                    <dt className="text-fg-3">Jenis bahan</dt>
+                                    <dd>
+                                        {detail.material_type}
+                                        {detail.type === 'ebook' && detail.format ? ` (${detail.format})` : ''}
+                                    </dd>
                                     {detail.type === 'fisik' && (
                                         <>
                                             <dt className="text-fg-3">No. panggil</dt>

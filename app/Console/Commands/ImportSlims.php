@@ -47,6 +47,9 @@ class ImportSlims extends Command
         'kamus' => 'Referensi', 'ensiklopedi' => 'Referensi', 'bibliografi' => 'Referensi', 'handbook' => 'Referensi', 'pedoman' => 'Referensi',
     ];
 
+    /** SLiMS GMD name (lowercase) => material type, where it is not the usual one for the collection. */
+    private const MATERIALS = ['movie' => 'Rekaman video', 'video' => 'Rekaman video', 'film' => 'Rekaman video'];
+
     /** SLiMS GMD name (lowercase) => thesis repository type. */
     private const THESES = ['skripsi' => 'Skripsi', 'tesis' => 'Tesis', 'disertasi' => 'Disertasi'];
 
@@ -242,6 +245,7 @@ class ImportSlims extends Command
                 'classification' => $this->clean($b->classification, 40) ?: null,
                 'ddc_class' => Book::ddcClassOf($b->classification, $b->call_number) ?? $this->fallbackDdc($collection),
                 'collection_type' => $collection,
+                'material_type' => self::MATERIALS[$gmd[$b->gmd_id] ?? ''] ?? Book::materialTypeOf(Book::PRINTED, $collection),
                 'call_number' => $this->clean($b->call_number, 40) ?: null,
                 'abstract' => $this->text($b->notes),
                 'cover_path' => $cover,
