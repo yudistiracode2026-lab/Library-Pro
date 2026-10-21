@@ -26,6 +26,8 @@ export interface FieldDef {
     step?: string;
     hint?: string;
     hidden?: (values: FormValues) => boolean;
+    /** A helper shown under the field across the form, e.g. suggestions that fill it in. */
+    assist?: (form: { values: FormValues; set: (name: string, value: FormValues[string]) => void }) => React.ReactNode;
 }
 
 interface RecordFormProps {
@@ -112,6 +114,11 @@ export function RecordForm({ open, onOpenChange, title, fields, initial, method,
                                     error={fieldError(form.errors, field.name)}
                                     onChange={(value) => form.setData(field.name, value)}
                                 />
+                                {field.assist && (
+                                    <div className="sm:col-span-2">
+                                        {field.assist({ values: form.data, set: (name, value) => form.setData(name, value) })}
+                                    </div>
+                                )}
                             </FieldBlock>
                         ))}
                     </div>

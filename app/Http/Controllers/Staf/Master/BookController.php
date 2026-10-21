@@ -10,6 +10,7 @@ use App\Models\BookCopy;
 use App\Models\Publisher;
 use App\Models\Rack;
 use App\Models\Subject;
+use App\Services\DdcSuggestions;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
 use Illuminate\Database\Eloquent\Builder;
@@ -136,6 +137,20 @@ class BookController extends Controller
             : collect();
 
         return response()->json($starts->concat($contains)->values());
+    }
+
+    /** DDC numbers to suggest for the title being catalogued (Library of Congress and this catalogue). */
+    public function ddcSuggestions(Request $request, DdcSuggestions $suggestions): JsonResponse
+    {
+        $data = $request->validate([
+            'isbn' => ['nullable', 'string', 'max:40'],
+            'title' => ['nullable', 'string', 'max:500'],
+            'subjects' => ['nullable', 'array', 'max:30'],
+            'subjects.*' => ['string', 'max:255'],
+            'id' => ['nullable', 'integer'],
+        ]);
+
+        return response()->json($suggestions->for($data['isbn'] ?? null, $data['title'] ?? null, $data['subjects'] ?? [], $data['id'] ?? null));
     }
 
     public function destroy(Book $record): RedirectResponse

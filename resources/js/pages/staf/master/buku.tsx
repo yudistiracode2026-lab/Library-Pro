@@ -1,4 +1,5 @@
 import { BookCover } from '@/components/book-cover';
+import { DdcAssist } from '@/components/staf/ddc-assist';
 import { Badge, Cell, COLLECTION_TONES, StatusBadge } from '@/components/staf/master/cells';
 import { MasterPage } from '@/components/staf/master/master-page';
 import { type FormValues } from '@/components/staf/master/record-form';
@@ -206,6 +207,8 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         status: 'Terbit',
                     },
                     fromRow: (b) => ({
+                        // Only for the DDC suggestions (not to suggest this title's own number); the server ignores it.
+                        _id: b.id,
                         type: b.type,
                         title: b.title,
                         series_title: b.series_title ?? '',
@@ -266,6 +269,9 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             placeholder: 'mis. 346.04',
                             hint: 'Kelas DDC utama mengikuti angka ini',
                             section: 'Klasifikasi & subjek',
+                            assist: ({ values, set }) => (
+                                <DdcAssist values={values} set={set} bookId={typeof values._id === 'number' ? values._id : undefined} />
+                            ),
                         },
                         { name: 'ddc_class', label: 'Kelas DDC', type: 'select', options: options.ddc, hidden: hasClassNumber },
                         { name: 'collection_type', label: 'Klasifikasi koleksi', type: 'select', options: options.collectionTypes, required: true },

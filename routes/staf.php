@@ -32,6 +32,8 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
         Route::post('buku/{book}/berkas', [BookController::class, 'uploadFile'])->name('buku.file');
         // Name suggestions for the catalogue form (authors, publishers, ...).
         Route::get('buku/saran', [BookController::class, 'suggest'])->name('buku.suggest');
+        // DDC numbers for the title being catalogued.
+        Route::get('buku/saran-ddc', [BookController::class, 'ddcSuggestions'])->name('buku.ddc');
 
         // Master data CRUD, generated from the menu.
         foreach (StafMenu::pages() as $page) {
