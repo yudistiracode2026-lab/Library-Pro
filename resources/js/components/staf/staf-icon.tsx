@@ -32,6 +32,7 @@ import {
     TrendingUp,
     Truck,
     UserCog,
+    Wallet,
 } from 'lucide-react';
 import { ComponentType } from 'react';
 
@@ -68,6 +69,7 @@ const ICONS: Record<string, ComponentType<LucideProps>> = {
     'trending-up': TrendingUp,
     truck: Truck,
     'user-cog': UserCog,
+    wallet: Wallet,
 };
 
 export function StafIcon({ name, ...props }: { name: string } & LucideProps) {

@@ -13,6 +13,7 @@ use App\Http\Controllers\Staf\Master\BookController;
 use App\Http\Controllers\Staf\Master\MemberController;
 use App\Http\Controllers\Staf\OpnameController;
 use App\Http\Controllers\Staf\OvertimeController;
+use App\Http\Controllers\Staf\PokController;
 use App\Http\Controllers\Staf\ProcurementController;
 use App\Http\Controllers\Staf\ReportController;
 use App\Http\Controllers\Staf\SearchMapController;
@@ -169,6 +170,20 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
         Route::controller(ReportController::class)->prefix('laporan')->name('laporan')->group(function () {
             Route::get('/', 'index')->name('');
             Route::get('unduh/{format}', 'download')->name('.download');
+        });
+
+        // Petunjuk Operasional Kegiatan: activity -> account -> detail line, per budget year.
+        Route::middleware('role:admin')->controller(PokController::class)->prefix('pok')->name('pok')->group(function () {
+            Route::get('/', 'index')->name('');
+            Route::post('kegiatan', 'storeActivity')->name('.activity.store');
+            Route::put('kegiatan/{activity}', 'updateActivity')->name('.activity.update');
+            Route::delete('kegiatan/{activity}', 'destroyActivity')->name('.activity.destroy');
+            Route::post('kegiatan/{activity}/akun', 'storeAccount')->name('.account.store');
+            Route::put('akun/{account}', 'updateAccount')->name('.account.update');
+            Route::delete('akun/{account}', 'destroyAccount')->name('.account.destroy');
+            Route::post('akun/{account}/rincian', 'storeItem')->name('.item.store');
+            Route::put('rincian/{item}', 'updateItem')->name('.item.update');
+            Route::delete('rincian/{item}', 'destroyItem')->name('.item.destroy');
         });
 
         Route::middleware('role:admin')->controller(CmsController::class)->prefix('cms')->name('cms')->group(function () {

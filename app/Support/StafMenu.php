@@ -69,6 +69,9 @@ class StafMenu
                 ['key' => 'akreditasi.berkas', 'custom' => true, 'label' => 'Berkas pengajuan', 'title' => 'Akreditasi · berkas pengajuan SiPAPI', 'icon' => 'file-output'],
             ]],
         ]],
+        ['label' => 'Anggaran', 'items' => [
+            ['key' => 'pok', 'custom' => true, 'label' => 'POK kegiatan', 'title' => 'Petunjuk Operasional Kegiatan', 'icon' => 'wallet', 'admin_only' => true],
+        ]],
         ['label' => 'Sistem', 'items' => [
             ['key' => 'cms', 'custom' => true, 'label' => 'CMS website', 'icon' => 'layout-template', 'admin_only' => true],
             ['key' => 'laporan', 'custom' => true, 'label' => 'Laporan', 'icon' => 'clipboard-list'],
