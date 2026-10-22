@@ -60,7 +60,41 @@ class MasterOptions
         'Braille',
     ];
 
-    public const ACQUISITIONS = ['Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa'];
+    /** How a title came to the library, with the code written on its label ("SM", "P", ...). */
+    public const ACQUISITION_CODES = [
+        'Pengadaan' => 'P',
+        'Penyerahan mahasiswa, tendik dan dosen' => null,
+        'Sumbangan mahasiswa' => 'SM',
+        'Sumbangan luar' => 'SL',
+        'Sumbangan pusat' => 'SP',
+        'Sumbangan dosen' => 'SD',
+        'Sumbangan individu' => 'SI',
+        'Sumbangan STPN' => 'SS',
+    ];
+
+    public const ACQUISITIONS = [
+        'Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa', 'Sumbangan luar',
+        'Sumbangan pusat', 'Sumbangan dosen', 'Sumbangan individu', 'Sumbangan STPN',
+    ];
+
+    /** Donations of every kind name their donor. */
+    public static function isDonation(?string $acquisition): bool
+    {
+        return str_starts_with((string) $acquisition, 'Sumbangan');
+    }
+
+    /**
+     * Acquisitions for a select: "Sumbangan luar (SL)", "Pengadaan / pembelian (P)".
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    public static function acquisitionOptions(): array
+    {
+        return array_map(fn ($a) => [
+            'value' => $a,
+            'label' => ($a === 'Pengadaan' ? 'Pengadaan / pembelian' : $a).(self::ACQUISITION_CODES[$a] ? ' ('.self::ACQUISITION_CODES[$a].')' : ''),
+        ], self::ACQUISITIONS);
+    }
 
     /** Languages used in the old SLiMS catalogue. */
     public const LANGUAGES = ['Indonesia', 'Inggris', 'Indonesia / Inggris', 'Indonesia / Arab', 'Arab', 'Belanda', 'Jerman', 'Lainnya'];

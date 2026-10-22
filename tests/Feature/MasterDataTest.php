@@ -81,6 +81,26 @@ class MasterDataTest extends TestCase
             ->where('records.data.0.collection_category', 'Referensi'));
     }
 
+    public function test_every_kind_of_donation_keeps_its_donor_and_the_options_show_the_label_codes()
+    {
+        $this->asPustakawan();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Hibah', 'acquisition' => 'Sumbangan luar', 'donor' => 'Kementerian ATR/BPN']))->assertSessionHasNoErrors();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Beli', 'acquisition' => 'Pengadaan', 'donor' => 'Diabaikan']))->assertSessionHasNoErrors();
+
+        $this->assertSame('Kementerian ATR/BPN', Book::where('title', 'Hibah')->sole()->donor);
+        $this->assertNull(Book::where('title', 'Beli')->sole()->donor);
+
+        $labels = array_column(MasterOptions::acquisitionOptions(), 'label');
+        $this->assertContains('Pengadaan / pembelian (P)', $labels);
+        $this->assertContains('Sumbangan STPN (SS)', $labels);
+        $this->assertContains('Penyerahan mahasiswa, tendik dan dosen', $labels);
+
+        // The dashboard chart counts every donation together.
+        $this->get('/staf')->assertInertia(fn (Assert $page) => $page
+            ->where('growth.sources', ['Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'])
+            ->where('growth.types.Semua jenis.6', [1, 0, 1]));
+    }
+
     public function test_every_collection_sub_type_belongs_to_one_snp_collection_type()
     {
         foreach (MasterOptions::COLLECTION_TYPES as $type) {

@@ -326,7 +326,12 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             required: true,
                             section: 'Pengadaan & lokasi',
                         },
-                        { name: 'donor', label: 'Nama penyumbang', hidden: (v) => v.acquisition !== 'Sumbangan mahasiswa' },
+                        {
+                            name: 'donor',
+                            label: 'Nama penyumbang',
+                            placeholder: 'Nama orang atau instansi',
+                            hidden: (v) => !String(v.acquisition ?? '').startsWith('Sumbangan'),
+                        },
                         { name: 'call_number', label: 'No. panggil', required: true, hidden: isEbook, placeholder: 'mis. 346.04 Boe h' },
                         { name: 'rack_id', label: 'Rak', type: 'select', options: options.racks, hidden: isEbook },
                         { name: 'copies', label: 'Jumlah eksemplar', type: 'number', required: true, hidden: isEbook },
