@@ -38,6 +38,8 @@ interface MasterPageProps<T extends { id: number }> {
     describeRow: (row: T) => string;
     /** Extra buttons before "Ubah" and "Hapus" in each row. */
     rowActions?: (row: T) => ReactNode;
+    /** Extra buttons next to "Ekspor". */
+    headerActions?: ReactNode;
 }
 
 export function MasterPage<T extends { id: number }>({
@@ -54,6 +56,7 @@ export function MasterPage<T extends { id: number }>({
     form,
     describeRow,
     rowActions,
+    headerActions,
 }: MasterPageProps<T>) {
     const [q, setQ] = useState(filters.q ?? '');
     const [editor, setEditor] = useState<{ row: T | null; nonce: number } | null>(null);
@@ -105,6 +108,7 @@ export function MasterPage<T extends { id: number }>({
                             className="text-fg-1 min-w-0 flex-1 bg-transparent text-sm outline-none"
                         />
                     </label>
+                    {headerActions}
                     <a
                         href={route(`staf.${routeKey}.export`, clean({ q, jenis, ...sort }))}
                         className="text-fg-1 flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3.5 text-sm font-semibold hover:bg-slate-100 dark:bg-slate-800"

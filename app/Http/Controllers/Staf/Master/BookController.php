@@ -29,6 +29,9 @@ class BookController extends Controller
 {
     use SortsRecords;
 
+    /** Ten A4 sheets of 21 medium labels a page. */
+    private const LABELS_PER_PAGE = 210;
+
     public function index(Request $request): Response
     {
         $books = $this->sorted($this->query($request), $request, $this->sortColumns(), fn ($b) => $b->latest('id'))->paginate(25)->withQueryString();
@@ -138,6 +141,48 @@ class BookController extends Controller
             : collect();
 
         return response()->json($starts->concat($contains)->values());
+    }
+
+    /**
+     * Printable QR labels, one per copy: the QR holds the copy code that
+     * circulation scans. For chosen titles, or for the list as filtered.
+     */
+    public function labels(Request $request): Response
+    {
+        $data = $request->validate([
+            'buku' => ['nullable', 'array', 'max:200'],
+            'buku.*' => ['integer'],
+            'sejak' => ['nullable', 'date'],
+            'ukuran' => ['nullable', 'in:sedang,kecil'],
+        ]);
+        $ids = $data['buku'] ?? [];
+        $books = $ids ? Book::whereIn('id', $ids) : $this->query($request)->setEagerLoads([]);
+
+        $copies = BookCopy::query()
+            ->join('books', 'books.id', '=', 'book_copies.book_id')
+            ->whereIn('book_copies.book_id', $books->where('type', Book::PRINTED)->select('books.id'))
+            ->when($data['sejak'] ?? null, fn ($c, $since) => $c->whereDate('book_copies.created_at', '>=', $since))
+            ->orderBy('books.title')->orderBy('book_copies.id')
+            ->with('book:id,title,call_number,author_id', 'book.author:id,name')
+            ->select('book_copies.*')
+            ->paginate(self::LABELS_PER_PAGE, pageName: 'hal')->withQueryString();
+
+        return Inertia::render('staf/master/label', [
+            'labels' => $copies->getCollection()->map(fn (BookCopy $c) => [
+                'code' => $c->code,
+                'call_number' => $c->book->call_number,
+                'title' => $c->book->title,
+                'author' => $c->book->author?->name,
+            ]),
+            'page' => ['current' => $copies->currentPage(), 'last' => $copies->lastPage(), 'total' => $copies->total()],
+            'filters' => [
+                'buku' => array_map('intval', $ids),
+                'q' => $request->string('q')->toString(),
+                'jenis' => $request->string('jenis')->toString(),
+                'sejak' => $data['sejak'] ?? '',
+                'ukuran' => $data['ukuran'] ?? 'sedang',
+            ],
+        ]);
     }
 
     /** DDC numbers to suggest for the title being catalogued (Library of Congress and this catalogue). */

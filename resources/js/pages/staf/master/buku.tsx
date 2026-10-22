@@ -6,7 +6,7 @@ import { type FormValues } from '@/components/staf/master/record-form';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated, type SelectOption } from '@/types';
 import { router } from '@inertiajs/react';
-import { BookOpen, Star, Tablet } from 'lucide-react';
+import { BookOpen, QrCode, Star, Tablet } from 'lucide-react';
 
 interface BookRow {
     id: number;
@@ -82,6 +82,35 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 numbered
                 grid="48px minmax(140px,2.2fr) 90px 120px minmax(120px,1fr) 110px 110px 100px"
                 describeRow={(b) => b.title}
+                headerActions={
+                    <a
+                        href={route(
+                            'staf.buku.labels',
+                            Object.fromEntries(Object.entries({ q: filters.q, jenis: filters.jenis }).filter(([, v]) => v)),
+                        )}
+                        target="_blank"
+                        rel="noopener"
+                        title="Label QR untuk semua eksemplar dalam daftar ini (sesuai pencarian dan filter)"
+                        className="text-fg-1 flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3.5 text-sm font-semibold hover:bg-slate-100 dark:bg-slate-800"
+                    >
+                        <QrCode className="size-4" />
+                        Cetak label QR
+                    </a>
+                }
+                rowActions={(b) =>
+                    b.type === 'fisik' && (
+                        <a
+                            href={route('staf.buku.labels', { buku: [b.id] })}
+                            target="_blank"
+                            rel="noopener"
+                            title="Cetak label QR"
+                            aria-label={`Cetak label QR ${b.title}`}
+                            className="text-fg-2 grid size-[34px] place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
+                        >
+                            <QrCode className="size-4" />
+                        </a>
+                    )
+                }
                 columns={[
                     {
                         label: 'Cover',

@@ -101,6 +101,36 @@ class MasterDataTest extends TestCase
             ->where('growth.types.Semua jenis.6', [1, 0, 1]));
     }
 
+    public function test_qr_labels_are_one_per_copy_for_chosen_titles_or_the_filtered_list()
+    {
+        $this->asPustakawan();
+        $this->post('/staf/buku', $this->printedPayload())->assertSessionHasNoErrors();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Geodesi Satelit', 'call_number' => '526.1 ABI g', 'copies' => 2]))->assertSessionHasNoErrors();
+        $this->post('/staf/buku', [
+            'type' => 'ebook', 'title' => 'E-book Agraria', 'authors' => ['X'], 'publisher' => 'Y', 'language' => 'Indonesia', 'ddc_class' => '300',
+            'collection_type' => 'Buku teks', 'acquisition' => 'Pengadaan', 'format' => 'PDF', 'license_count' => 1, 'status' => 'Terbit',
+        ])->assertSessionHasNoErrors();
+        $hukum = Book::where('title', 'Hukum Agraria Indonesia')->sole();
+        $ebook = Book::where('title', 'E-book Agraria')->sole();
+
+        $this->get('/staf/buku/label?'.http_build_query(['buku' => [$hukum->id, $ebook->id]]))->assertInertia(fn (Assert $page) => $page
+            ->component('staf/master/label')
+            ->has('labels', 3)
+            ->where('labels.0.code', $hukum->copies()->orderBy('id')->first()->code)
+            ->where('labels.0.call_number', '346.04 HAR h')
+            ->where('page.total', 3));
+
+        // The list as searched: only that title; every printed copy without a filter.
+        $this->get('/staf/buku/label?q=Geodesi')->assertInertia(fn (Assert $page) => $page->has('labels', 2)->where('labels.0.title', 'Geodesi Satelit'));
+        $this->get('/staf/buku/label')->assertInertia(fn (Assert $page) => $page->where('page.total', 5)->where('filters.ukuran', 'sedang'));
+
+        // Copies added since a date.
+        $hukum->copies()->update(['created_at' => now()->subMonth()]);
+        $this->get('/staf/buku/label?sejak='.now()->subDay()->toDateString())->assertInertia(fn (Assert $page) => $page->where('page.total', 2));
+
+        $this->actingAs(User::factory()->create())->get('/staf/buku/label')->assertForbidden();
+    }
+
     public function test_every_collection_sub_type_belongs_to_one_snp_collection_type()
     {
         foreach (MasterOptions::COLLECTION_TYPES as $type) {
