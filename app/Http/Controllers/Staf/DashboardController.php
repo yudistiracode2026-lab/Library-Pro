@@ -110,7 +110,7 @@ class DashboardController extends Controller
             ->toBase()->get(['type', 'collection_type', 'acquisition', 'created_at']);
 
         // Three bands keep the chart readable: every kind of donation counts as "Sumbangan".
-        $sources = ['Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'];
+        $sources = ['Pembelian', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'];
         foreach ($rows as $b) {
             $year = (int) substr((string) $b->created_at, 0, 4);
             $kind = $b->type === Book::EBOOK ? 'E-book' : $b->collection_type;

@@ -114,7 +114,7 @@ class MasterDataSeeder extends Seeder
                 'ddc_class' => $ddc,
                 'collection_type' => self::BOOK_COLLECTION[$id] ?? 'Buku teks',
                 // Titles handed over by lecturers/staff returning from study leave.
-                'acquisition' => in_array($id, [11, 12, 17, 20, 25], true) ? 'Penyerahan mahasiswa, tendik dan dosen' : 'Pengadaan',
+                'acquisition' => in_array($id, [11, 12, 17, 20, 25], true) ? 'Penyerahan mahasiswa, tendik dan dosen' : 'Pembelian',
                 'call_number' => $call,
                 'rack_id' => $racks[$rack],
             ]);
@@ -130,7 +130,7 @@ class MasterDataSeeder extends Seeder
                 'year' => $year,
                 'ddc_class' => $ddc,
                 'collection_type' => $collection,
-                'acquisition' => 'Pengadaan',
+                'acquisition' => 'Pembelian',
                 'format' => $format,
                 'file_size_mb' => $size,
                 'license_count' => $licenses,

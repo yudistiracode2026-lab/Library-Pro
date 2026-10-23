@@ -41,7 +41,7 @@ class MasterDataTest extends TestCase
             'language' => 'Indonesia',
             'ddc_class' => '300',
             'collection_type' => 'Buku teks',
-            'acquisition' => 'Pengadaan',
+            'acquisition' => 'Pembelian',
             'call_number' => '346.04 HAR h',
             'rack_id' => $this->rack->id,
             'copies' => 3,
@@ -85,19 +85,19 @@ class MasterDataTest extends TestCase
     {
         $this->asPustakawan();
         $this->post('/staf/buku', $this->printedPayload(['title' => 'Hibah', 'acquisition' => 'Sumbangan luar', 'donor' => 'Kementerian ATR/BPN']))->assertSessionHasNoErrors();
-        $this->post('/staf/buku', $this->printedPayload(['title' => 'Beli', 'acquisition' => 'Pengadaan', 'donor' => 'Diabaikan']))->assertSessionHasNoErrors();
+        $this->post('/staf/buku', $this->printedPayload(['title' => 'Beli', 'acquisition' => 'Pembelian', 'donor' => 'Diabaikan']))->assertSessionHasNoErrors();
 
         $this->assertSame('Kementerian ATR/BPN', Book::where('title', 'Hibah')->sole()->donor);
         $this->assertNull(Book::where('title', 'Beli')->sole()->donor);
 
         $labels = array_column(MasterOptions::acquisitionOptions(), 'label');
-        $this->assertContains('Pengadaan / pembelian (P)', $labels);
+        $this->assertContains('Pembelian (P)', $labels);
         $this->assertContains('Sumbangan STPN (SS)', $labels);
         $this->assertContains('Penyerahan mahasiswa, tendik dan dosen', $labels);
 
         // The dashboard chart counts every donation together.
         $this->get('/staf')->assertInertia(fn (Assert $page) => $page
-            ->where('growth.sources', ['Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'])
+            ->where('growth.sources', ['Pembelian', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'])
             ->where('growth.types.Semua jenis.6', [1, 0, 1]));
     }
 
@@ -108,7 +108,7 @@ class MasterDataTest extends TestCase
         $this->post('/staf/buku', $this->printedPayload(['title' => 'Geodesi Satelit', 'call_number' => '526.1 ABI g', 'copies' => 2]))->assertSessionHasNoErrors();
         $this->post('/staf/buku', [
             'type' => 'ebook', 'title' => 'E-book Agraria', 'authors' => ['X'], 'publisher' => 'Y', 'language' => 'Indonesia', 'ddc_class' => '300',
-            'collection_type' => 'Buku teks', 'acquisition' => 'Pengadaan', 'format' => 'PDF', 'license_count' => 1, 'status' => 'Terbit',
+            'collection_type' => 'Buku teks', 'acquisition' => 'Pembelian', 'format' => 'PDF', 'license_count' => 1, 'status' => 'Terbit',
         ])->assertSessionHasNoErrors();
         $hukum = Book::where('title', 'Hukum Agraria Indonesia')->sole();
         $ebook = Book::where('title', 'E-book Agraria')->sole();

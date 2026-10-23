@@ -62,7 +62,7 @@ class MasterOptions
 
     /** How a title came to the library, with the code written on its label ("SM", "P", ...). */
     public const ACQUISITION_CODES = [
-        'Pengadaan' => 'P',
+        'Pembelian' => 'P',
         'Penyerahan mahasiswa, tendik dan dosen' => null,
         'Sumbangan mahasiswa' => 'SM',
         'Sumbangan luar' => 'SL',
@@ -73,7 +73,7 @@ class MasterOptions
     ];
 
     public const ACQUISITIONS = [
-        'Pengadaan', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa', 'Sumbangan luar',
+        'Pembelian', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa', 'Sumbangan luar',
         'Sumbangan pusat', 'Sumbangan dosen', 'Sumbangan individu', 'Sumbangan STPN',
     ];
 
@@ -84,7 +84,7 @@ class MasterOptions
     }
 
     /**
-     * Acquisitions for a select: "Sumbangan luar (SL)", "Pengadaan / pembelian (P)".
+     * Acquisitions for a select with their label code: "Pembelian (P)", "Sumbangan luar (SL)".
      *
      * @return list<array{value: string, label: string}>
      */
@@ -92,7 +92,7 @@ class MasterOptions
     {
         return array_map(fn ($a) => [
             'value' => $a,
-            'label' => ($a === 'Pengadaan' ? 'Pengadaan / pembelian' : $a).(self::ACQUISITION_CODES[$a] ? ' ('.self::ACQUISITION_CODES[$a].')' : ''),
+            'label' => $a.(self::ACQUISITION_CODES[$a] ? ' ('.self::ACQUISITION_CODES[$a].')' : ''),
         ], self::ACQUISITIONS);
     }
 

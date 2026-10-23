@@ -149,7 +149,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         render: (b) => (
                             <>
                                 {b.acquisition ? (
-                                    <Badge tone={b.acquisition === 'Pengadaan' ? 'teal' : 'warning'}>{b.acquisition}</Badge>
+                                    <Badge tone={b.acquisition === 'Pembelian' ? 'teal' : 'warning'}>{b.acquisition}</Badge>
                                 ) : (
                                     <span className="text-fg-3">—</span>
                                 )}
@@ -236,7 +236,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         featured: false,
                         collection_type: 'Buku teks',
                         material_type: '',
-                        acquisition: 'Pengadaan',
+                        acquisition: 'Pembelian',
                         donor: '',
                         call_number: '',
                         rack_id: '',
@@ -353,7 +353,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             type: 'select',
                             options: options.acquisitions,
                             required: true,
-                            section: 'Pengadaan & lokasi',
+                            section: 'Perolehan & lokasi',
                         },
                         {
                             name: 'donor',
