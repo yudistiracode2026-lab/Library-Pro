@@ -2,10 +2,10 @@ import { IndicatorCard, type IndicatorBrief } from '@/components/staf/akreditasi
 import { Badge } from '@/components/staf/master/cells';
 import { Button, Card, CardTitle, IconButton, inputClass, Kpi } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
-import { type SelectOption } from '@/types';
-import { router, useForm } from '@inertiajs/react';
-import { Minus, Plus, Trash2, X } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { type SelectOption, type SharedData } from '@/types';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { GripVertical, Minus, PencilRuler, Plus, Trash2, X } from 'lucide-react';
+import { useState, type DragEvent, type FormEvent } from 'react';
 
 interface RoomRow {
     id: number;
@@ -37,6 +37,7 @@ interface RuangProps {
     indicators: IndicatorBrief[];
     kpis: { area: number; perSivitas: number; sivitas: number; basic: number; supporting: number };
     floor: number;
+    floors: { number: number; name: string; width: number; length: number }[];
     rooms: RoomRow[];
     selected: { id: number; assets: AssetRow[] } | null;
     options: { types: SelectOption[]; categories: string[]; functions: Record<string, string[]>; conditions: string[] };
@@ -60,15 +61,28 @@ const nf = (n: number, digits = 0) => n.toLocaleString('id-ID', { minimumFractio
 
 const go = (params: Record<string, number>) => router.get(route('staf.aset.ruang'), params, { preserveState: true, preserveScroll: true });
 
-export default function Ruang({ kpis, floor, rooms, selected, options, indicators }: RuangProps) {
+export default function Ruang({ kpis, floor, floors, rooms, selected, options, indicators }: RuangProps) {
+    const { auth } = usePage<SharedData>().props;
+    const [dropOn, setDropOn] = useState<number | null>(null);
+    const plan = floors.find((f) => f.number === floor) ?? floors[0];
     const room = rooms.find((r) => r.id === selected?.id) ?? null;
     const floorRooms = rooms.filter((r) => r.floor === floor);
     const floorArea = floorRooms.reduce((sum, r) => sum + r.area, 0);
 
+    // An asset row dragged onto a room on the plan moves there.
+    const dropAsset = (e: DragEvent, target: RoomRow) => {
+        e.preventDefault();
+        setDropOn(null);
+        const asset = e.dataTransfer.getData('text/asset');
+        if (asset && target.id !== room?.id && !target.fixed) {
+            router.patch(route('staf.aset.inventaris.assets.update', Number(asset)), { room_id: target.id }, { preserveScroll: true });
+        }
+    };
+
     return (
         <StafLayout title="Manajemen aset · ruang & denah" group="Master data">
             <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-                <Kpi label="Luas perpustakaan" value={`${nf(kpis.area)} m²`} sub="Lantai 2–3 · lantai 1 bukan area perpustakaan" />
+                <Kpi label="Luas perpustakaan" value={`${nf(kpis.area)} m²`} sub="Hanya ruang di area perpustakaan" />
                 <Kpi label="Luas per sivitas" value={`${nf(kpis.perSivitas, 2)} m²`} sub={`${nf(kpis.sivitas)} sivitas · syarat lebih dari 0,5`} />
                 <Kpi label="Ruang dasar" value={`${kpis.basic} / 4`} sub="koleksi, baca, kerja, layanan" />
                 <Kpi label="Ruang pendukung" value={String(kpis.supporting)} sub="diskusi, IT, multimedia, dll" />
@@ -79,24 +93,40 @@ export default function Ruang({ kpis, floor, rooms, selected, options, indicator
                     <CardTitle
                         aside={
                             <div className="flex gap-1 rounded-[10px] bg-slate-100 p-1 dark:bg-slate-700">
-                                {[1, 2, 3].map((f) => (
+                                {floors.map((f) => (
                                     <button
-                                        key={f}
+                                        key={f.number}
                                         type="button"
-                                        onClick={() => go({ lantai: f })}
-                                        className={`h-[30px] cursor-pointer rounded-sm px-3 text-[13px] font-semibold ${f === floor ? 'text-fg-1 bg-white shadow-sm dark:bg-slate-800' : 'text-fg-3'}`}
+                                        onClick={() => go({ lantai: f.number })}
+                                        className={`h-[30px] cursor-pointer rounded-sm px-3 text-[13px] font-semibold whitespace-nowrap ${f.number === floor ? 'text-fg-1 bg-white shadow-sm dark:bg-slate-800' : 'text-fg-3'}`}
                                     >
-                                        Lantai {f}
+                                        {f.name}
                                     </button>
                                 ))}
                             </div>
                         }
                     >
-                        Denah ruang lantai {floor}
+                        Denah {plan.name}
                     </CardTitle>
-                    <p className="text-fg-3 -mt-2 text-[13px]">Luas lantai {nf(floorArea)} m² · klik ruang untuk detail</p>
+                    <div className="-mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-fg-3 text-[13px]">
+                            Luas ruang {nf(floorArea)} m² · klik ruang untuk detail · seret aset ke ruang untuk memindahkannya
+                        </p>
+                        {auth.user.role === 'admin' && (
+                            <Link
+                                href={route('staf.aset.denah', { lantai: floor })}
+                                className="text-fg-1 flex h-[34px] items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold hover:bg-slate-100 dark:bg-slate-800"
+                            >
+                                <PencilRuler className="size-4" />
+                                Edit denah
+                            </Link>
+                        )}
+                    </div>
                     <div className="overflow-x-auto">
-                        <div className="relative mx-auto aspect-square w-full max-w-[640px] min-w-[420px] rounded-md border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-900">
+                        <div
+                            className="relative mx-auto w-full max-w-[640px] min-w-[420px] rounded-md border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-900"
+                            style={{ aspectRatio: plan.width / plan.length }}
+                        >
                             {floorRooms.map((r) => {
                                 const on = r.id === room?.id;
 
@@ -106,9 +136,22 @@ export default function Ruang({ kpis, floor, rooms, selected, options, indicator
                                         type="button"
                                         disabled={r.fixed}
                                         onClick={() => go({ ruang: r.id })}
+                                        onDragOver={(e) => {
+                                            if (!r.fixed && !on) {
+                                                e.preventDefault();
+                                                setDropOn(r.id);
+                                            }
+                                        }}
+                                        onDragLeave={() => setDropOn(null)}
+                                        onDrop={(e) => dropAsset(e, r)}
                                         title={`${r.name} · ${r.typeLabel}${r.area ? ` · ${r.area} m²` : ''}`}
-                                        className={`absolute flex flex-col items-start justify-between overflow-hidden rounded-[4px] px-2 py-1.5 text-left ${GROUP_STYLE[r.group]} ${r.name === 'Void' ? 'border-2 border-dashed' : on ? 'z-10 [animation:roomglow_1.6s_ease-in-out_infinite] border-[3px]' : 'border-2'} ${r.fixed ? 'cursor-default' : 'cursor-pointer'}`}
-                                        style={{ left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%` }}
+                                        className={`absolute flex flex-col items-start justify-between overflow-hidden rounded-[4px] px-2 py-1.5 text-left ${GROUP_STYLE[r.group]} ${r.name === 'Void' ? 'border-2 border-dashed' : on ? 'z-10 [animation:roomglow_1.6s_ease-in-out_infinite] border-[3px]' : 'border-2'} ${r.fixed ? 'cursor-default' : 'cursor-pointer'} ${dropOn === r.id ? 'z-10 ring-4 ring-teal-400' : ''}`}
+                                        style={{
+                                            left: `${(r.x / plan.width) * 100}%`,
+                                            top: `${(r.y / plan.length) * 100}%`,
+                                            width: `${(r.w / plan.width) * 100}%`,
+                                            height: `${(r.h / plan.length) * 100}%`,
+                                        }}
                                     >
                                         <span className="text-[11px] leading-tight font-bold">{r.name}</span>
                                         <span className="font-mono text-xs font-bold whitespace-nowrap">{r.area > 0 ? `${r.area} m²` : '—'}</span>
@@ -128,7 +171,7 @@ export default function Ruang({ kpis, floor, rooms, selected, options, indicator
                 </Card>
 
                 <div className="flex min-w-0 flex-[40_1_300px] flex-col gap-4">
-                    {room && selected && <RoomDetail key={room.id} room={room} assets={selected.assets} options={options} />}
+                    {room && selected && <RoomDetail key={room.id} room={room} rooms={rooms} assets={selected.assets} options={options} />}
                     <Card className="gap-3 md:p-5">
                         <span className="font-display text-base font-bold">Dampak ke indikator akreditasi</span>
                         {indicators.map((ik) => (
@@ -181,7 +224,7 @@ export default function Ruang({ kpis, floor, rooms, selected, options, indicator
     );
 }
 
-function RoomDetail({ room, assets, options }: { room: RoomRow; assets: AssetRow[]; options: RuangProps['options'] }) {
+function RoomDetail({ room, rooms, assets, options }: { room: RoomRow; rooms: RoomRow[]; assets: AssetRow[]; options: RuangProps['options'] }) {
     const roomForm = useForm({ area_m2: String(room.area), type: room.type });
     const [adding, setAdding] = useState(false);
     const dirty = roomForm.data.area_m2 !== String(room.area) || roomForm.data.type !== room.type;
@@ -237,12 +280,43 @@ function RoomDetail({ room, assets, options }: { room: RoomRow; assets: AssetRow
             <span className="text-xs font-semibold tracking-[.08em] text-teal-600 uppercase">Aset di ruang ini ({assets.length})</span>
             <div className="-mt-2 flex max-h-[320px] flex-col overflow-auto">
                 {assets.map((a) => (
-                    <div key={a.id} className="flex items-center gap-2 border-b border-slate-200 py-2 text-sm dark:border-slate-700">
+                    <div
+                        key={a.id}
+                        draggable
+                        onDragStart={(e) => {
+                            e.dataTransfer.setData('text/asset', String(a.id));
+                            e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        className="flex cursor-grab items-center gap-2 border-b border-slate-200 py-2 text-sm active:cursor-grabbing dark:border-slate-700"
+                    >
+                        <GripVertical className="text-fg-3 size-4 flex-none" />
                         <div className="min-w-0 flex-1">
                             <div className="truncate font-semibold">{a.name}</div>
                             <div className="text-fg-3 truncate text-xs">
                                 {a.category} · {a.function}
                             </div>
+                            <select
+                                value=""
+                                aria-label={`Pindahkan ${a.name} ke ruang lain`}
+                                onChange={(e) =>
+                                    e.target.value &&
+                                    router.patch(
+                                        route('staf.aset.inventaris.assets.update', a.id),
+                                        { room_id: Number(e.target.value) },
+                                        { preserveScroll: true },
+                                    )
+                                }
+                                className="text-fg-2 mt-1 h-7 max-w-full rounded-md border border-slate-200 bg-white pl-1.5 text-xs dark:bg-slate-800"
+                            >
+                                <option value="">Pindah ke…</option>
+                                {rooms
+                                    .filter((r) => !r.fixed && r.id !== room.id)
+                                    .map((r) => (
+                                        <option key={r.id} value={r.id}>
+                                            Lt {r.floor} · {r.name}
+                                        </option>
+                                    ))}
+                            </select>
                         </div>
                         <div className="flex items-center gap-1">
                             <IconButton label="Kurangi" onClick={() => setQty(a, a.quantity - 1)} disabled={a.quantity <= 1}>

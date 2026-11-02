@@ -10,6 +10,7 @@ use App\Models\Camera;
 use App\Models\CameraEvent;
 use App\Models\CollectionSuggestion;
 use App\Models\Employee;
+use App\Models\Floor;
 use App\Models\License;
 use App\Models\Loan;
 use App\Models\Member;
@@ -95,9 +96,10 @@ class OperationsDataSeeder extends Seeder
         $ids = [];
 
         foreach (self::ROOMS as [$code, $floor, $name, $type, $area, $x, $y, $w, $h]) {
+            $metres = Floor::metres($floor, $x, $y, $w, $h);
             $ids[$code] = Room::create([
-                'floor' => $floor, 'name' => $name, 'type' => $type, 'area_m2' => $area,
-                'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h, 'outside_library' => $floor === 1,
+                'floor' => $floor, 'name' => $name, 'type' => $type, 'area_m2' => $area, ...$metres,
+                'area_manual' => abs($metres['map_w'] * $metres['map_h'] - $area) > 1, 'outside_library' => $floor === 1,
             ])->id;
         }
 

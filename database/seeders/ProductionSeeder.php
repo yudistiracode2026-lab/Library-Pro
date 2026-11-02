@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\UserRole;
 use App\Models\Evidence;
+use App\Models\Floor;
 use App\Models\Indicator;
 use App\Models\Rack;
 use App\Models\Room;
@@ -44,14 +45,15 @@ class ProductionSeeder extends Seeder
 
         foreach (MasterDataSeeder::RACKS as $floor => $racks) {
             foreach ($racks as $code => [$rackName, $x, $y, $w, $h]) {
-                Rack::create(['code' => $code, 'name' => $rackName, 'floor' => $floor, 'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h]);
+                Rack::create(['code' => $code, 'name' => $rackName, 'floor' => $floor, ...Floor::metres($floor, $x, $y, $w, $h)]);
             }
         }
 
         foreach (OperationsDataSeeder::ROOMS as [, $floor, $roomName, $type, $area, $x, $y, $w, $h]) {
+            $metres = Floor::metres($floor, $x, $y, $w, $h);
             Room::create([
-                'floor' => $floor, 'name' => $roomName, 'type' => $type, 'area_m2' => $area,
-                'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h, 'outside_library' => $floor === 1,
+                'floor' => $floor, 'name' => $roomName, 'type' => $type, 'area_m2' => $area, ...$metres,
+                'area_manual' => abs($metres['map_w'] * $metres['map_h'] - $area) > 1, 'outside_library' => $floor === 1,
             ]);
         }
 

@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\EbookLoan;
+use App\Models\Floor;
+use App\Models\FloorFixture;
 use App\Models\Rack;
-use App\Support\FloorPlan;
 use App\Support\LibrarySettings;
 use App\Support\Shelving;
 use Illuminate\Http\RedirectResponse;
@@ -140,6 +141,7 @@ class CatalogController extends Controller
     private function location(Book $book): array
     {
         $floor = $book->rack?->floor ?? 1;
+        $plan = Floor::with('fixtures')->where('number', $floor)->first();
 
         return [
             'id' => $book->id,
@@ -150,10 +152,9 @@ class CatalogController extends Controller
             'cover' => $book->coverUrl(),
             'available' => $book->copies()->where('status', BookCopy::AVAILABLE)->count(),
             'floor' => $floor,
-            'fixtures' => FloorPlan::fixtures()[$floor] ?? [],
-            'racks' => Rack::where('floor', $floor)->orderBy('code')->get()->map(fn (Rack $r) => [
-                'code' => $r->code, 'x' => $r->map_x, 'y' => $r->map_y, 'w' => $r->map_w, 'h' => $r->map_h,
-            ]),
+            'aspect' => $plan?->aspect() ?? 1,
+            'fixtures' => $plan ? $plan->fixtures->map(fn (FloorFixture $x) => ['label' => $x->label, ...$plan->percent($x)]) : [],
+            'racks' => $plan ? Rack::where('floor', $floor)->orderBy('code')->get()->map(fn (Rack $r) => ['code' => $r->code, ...$plan->percent($r)]) : [],
             'rack' => $book->rack ? Shelving::rack($book->rack, $book) : null,
         ];
     }

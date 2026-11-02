@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Staf\AccreditationController;
 use App\Http\Controllers\Staf\ActivityController;
+use App\Http\Controllers\Staf\Aset\FloorPlanController;
 use App\Http\Controllers\Staf\Aset\InventoryController;
 use App\Http\Controllers\Staf\Aset\RoomController;
 use App\Http\Controllers\Staf\CctvController;
@@ -91,6 +92,17 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
         Route::controller(RoomController::class)->prefix('aset/ruang')->name('aset.ruang')->group(function () {
             Route::get('/', 'index')->name('');
             Route::put('{room}', 'update')->name('.update');
+        });
+
+        // The floor plan editor: rooms, racks and fixtures of each floor.
+        Route::middleware('role:admin')->controller(FloorPlanController::class)->prefix('aset/denah')->name('aset.denah')->group(function () {
+            Route::get('/', 'edit')->name('');
+            Route::post('/', 'store')->name('.store');
+            Route::put('{floor}', 'save')->name('.save');
+            Route::delete('{floor}', 'destroy')->name('.destroy');
+            Route::get('{floor}/latar', 'background')->name('.background.show');
+            Route::post('{floor}/latar', 'uploadBackground')->name('.background.store');
+            Route::delete('{floor}/latar', 'destroyBackground')->name('.background.destroy');
         });
 
         Route::controller(InventoryController::class)->prefix('aset/inventaris')->name('aset.inventaris')->group(function () {

@@ -68,7 +68,9 @@ class InventoryController extends Controller
             'room_id' => ['sometimes', 'nullable', 'exists:rooms,id'],
         ]));
 
-        return back();
+        return $asset->wasChanged('room_id')
+            ? back()->with('success', "{$asset->name} dipindahkan ke ".($asset->room?->name ?? 'tanpa ruang').'.')
+            : back();
     }
 
     public function destroyAsset(Asset $asset): RedirectResponse

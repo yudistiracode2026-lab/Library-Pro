@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Employee;
+use App\Models\Floor;
 use App\Models\Member;
 use App\Models\Publisher;
 use App\Models\Rack;
@@ -97,7 +98,7 @@ class MasterDataSeeder extends Seeder
     {
         foreach (self::RACKS as $floor => $racks) {
             foreach ($racks as $code => [$name, $x, $y, $w, $h]) {
-                Rack::create(['code' => $code, 'name' => $name, 'floor' => $floor, 'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h]);
+                Rack::create(['code' => $code, 'name' => $name, 'floor' => $floor, ...Floor::metres($floor, $x, $y, $w, $h)]);
             }
         }
 

@@ -27,6 +27,7 @@ interface Location {
     cover: string | null;
     available: number;
     floor: number;
+    aspect: number;
     fixtures: { label: string; x: number; y: number; w: number; h: number }[];
     racks: { code: string; x: number; y: number; w: number; h: number }[];
     rack: {
@@ -208,7 +209,10 @@ function LocationPanel({ book }: { book: Location }) {
                         <span className="text-fg-3 text-xs">{book.rack.name}</span>
                     </div>
                     <div className="overflow-x-auto">
-                        <div className="relative aspect-[100/62] w-full min-w-[420px] rounded-md border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-900">
+                        <div
+                            className="relative mx-auto w-full max-w-[560px] min-w-[300px] rounded-md border-2 border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-900"
+                            style={{ aspectRatio: book.aspect }}
+                        >
                             {book.fixtures.map((x) => (
                                 <div
                                     key={x.label}

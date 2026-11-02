@@ -21,6 +21,8 @@ interface Result {
 interface Floor {
     floor: number;
     fixtures: { label: string; x: number; y: number; w: number; h: number; icon: string }[];
+    aspect: number;
+    name: string;
     racks: { code: string; name: string; x: number; y: number; w: number; h: number; books: number }[];
 }
 
@@ -135,7 +137,7 @@ export default function Pencarian({ filters, results, resultCount, resultPage, s
                                         onClick={() => go({ lantai: f.floor })}
                                         className={`h-[30px] cursor-pointer rounded-sm px-3 text-[13px] font-semibold whitespace-nowrap ${f.floor === plan.floor ? 'text-fg-1 bg-white shadow-sm dark:bg-slate-800' : 'text-fg-3'}`}
                                     >
-                                        Lantai {f.floor}
+                                        {f.name}
                                     </button>
                                 ))}
                             </div>
@@ -144,7 +146,10 @@ export default function Pencarian({ filters, results, resultCount, resultPage, s
                         Denah rak · tampak depan
                     </CardTitle>
                     <div className="overflow-x-auto">
-                        <div className="relative aspect-[100/62] w-full min-w-[300px] rounded-md border-2 border-slate-300 bg-slate-50 dark:bg-slate-900">
+                        <div
+                            className="relative mx-auto w-full max-w-[560px] min-w-[300px] rounded-md border-2 border-slate-300 bg-slate-50 dark:bg-slate-900"
+                            style={{ aspectRatio: plan.aspect }}
+                        >
                             {plan.fixtures.map((x) => {
                                 const Icon = FIXTURE_ICONS[x.icon] ?? BookOpen;
 

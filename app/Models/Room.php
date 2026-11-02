@@ -21,13 +21,14 @@ class Room extends Model
     /** The four room types every library must have. */
     public const BASIC_TYPES = ['koleksi', 'baca', 'kerja', 'layanan'];
 
-    protected $fillable = ['floor', 'name', 'type', 'area_m2', 'map_x', 'map_y', 'map_w', 'map_h', 'outside_library'];
+    protected $fillable = ['floor', 'name', 'type', 'area_m2', 'area_manual', 'map_x', 'map_y', 'map_w', 'map_h', 'outside_library'];
 
     protected function casts(): array
     {
         return [
             'floor' => 'integer',
             'area_m2' => 'float',
+            'area_manual' => 'boolean',
             'map_x' => 'float',
             'map_y' => 'float',
             'map_w' => 'float',

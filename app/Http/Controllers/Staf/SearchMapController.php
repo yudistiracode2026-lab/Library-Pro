@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Staf;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\BookCopy;
+use App\Models\Floor;
+use App\Models\FloorFixture;
 use App\Models\Rack;
-use App\Support\FloorPlan;
 use App\Support\Shelving;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -35,16 +36,18 @@ class SearchMapController extends Controller
             ...$this->search($q, max(1, $request->integer('hal', 1))),
             'selectedBookId' => $book?->id,
             'floor' => $rack?->floor ?? 1,
-            'floors' => collect(FloorPlan::fixtures())->map(fn ($fixtures, $floor) => [
-                'floor' => $floor,
-                'fixtures' => $fixtures,
-                'racks' => $racks->where('floor', $floor)->values()->map(fn (Rack $r) => [
+            'floors' => Floor::with('fixtures')->orderBy('number')->get()->map(fn (Floor $f) => [
+                'floor' => $f->number,
+                'name' => $f->name,
+                'aspect' => $f->aspect(),
+                'fixtures' => $f->fixtures->map(fn (FloorFixture $x) => ['label' => $x->label, 'icon' => $x->icon, ...$f->percent($x)]),
+                'racks' => $racks->where('floor', $f->number)->values()->map(fn (Rack $r) => [
                     'code' => $r->code,
                     'name' => $r->name,
-                    'x' => $r->map_x, 'y' => $r->map_y, 'w' => $r->map_w, 'h' => $r->map_h,
+                    ...$f->percent($r),
                     'books' => $r->books_count,
                 ]),
-            ])->values(),
+            ]),
             'rack' => $rack ? Shelving::rack($rack, $book) : null,
         ]);
     }
