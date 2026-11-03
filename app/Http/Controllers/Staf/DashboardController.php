@@ -109,24 +109,21 @@ class DashboardController extends Controller
         $rows = Book::query()->where('created_at', '>=', now()->setDate($years[0], 1, 1)->startOfDay())
             ->toBase()->get(['type', 'collection_type', 'acquisition', 'created_at']);
 
-        // Three bands keep the chart readable: every kind of donation counts as "Sumbangan".
-        $sources = ['Pembelian', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'];
         foreach ($rows as $b) {
             $year = (int) substr((string) $b->created_at, 0, 4);
             $kind = $b->type === Book::EBOOK ? 'E-book' : $b->collection_type;
-            $source = MasterOptions::isDonation($b->acquisition) ? 'Sumbangan' : $b->acquisition;
-            $counts[$kind][$year][$source] = ($counts[$kind][$year][$source] ?? 0) + 1;
-            $counts['Semua jenis'][$year][$source] = ($counts['Semua jenis'][$year][$source] ?? 0) + 1;
+            $counts[$kind][$year][$b->acquisition] = ($counts[$kind][$year][$b->acquisition] ?? 0) + 1;
+            $counts['Semua jenis'][$year][$b->acquisition] = ($counts['Semua jenis'][$year][$b->acquisition] ?? 0) + 1;
         }
 
         $matrix = fn (string $kind) => array_map(fn ($year) => array_map(
             fn ($source) => $counts[$kind][$year][$source] ?? 0,
-            $sources,
+            MasterOptions::ACQUISITIONS,
         ), $years);
 
         return [
             'years' => $years,
-            'sources' => $sources,
+            'sources' => array_column(MasterOptions::acquisitionOptions(), 'label'),
             'types' => collect($types)->mapWithKeys(fn ($type) => [
                 $type => $matrix($type),
             ])->all(),

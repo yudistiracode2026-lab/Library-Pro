@@ -95,10 +95,10 @@ class MasterDataTest extends TestCase
         $this->assertContains('Sumbangan STPN (SS)', $labels);
         $this->assertContains('Penyerahan mahasiswa, tendik dan dosen', $labels);
 
-        // The dashboard chart counts every donation together.
+        // The dashboard chart keeps every acquisition class apart, in the order of the list.
         $this->get('/staf')->assertInertia(fn (Assert $page) => $page
-            ->where('growth.sources', ['Pembelian', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan'])
-            ->where('growth.types.Semua jenis.6', [1, 0, 1]));
+            ->where('growth.sources', ['Pembelian (P)', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa (SM)', 'Sumbangan luar (SL)', 'Sumbangan pusat (SP)', 'Sumbangan dosen (SD)', 'Sumbangan individu (SI)', 'Sumbangan STPN (SS)'])
+            ->where('growth.types.Semua jenis.6', [1, 0, 0, 1, 0, 0, 0, 0]));
     }
 
     public function test_qr_labels_are_one_per_copy_for_chosen_titles_or_the_filtered_list()

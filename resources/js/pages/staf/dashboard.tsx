@@ -51,7 +51,8 @@ const TYPES: Record<string, [Icon, string, string, string]> = {
     'Terbitan STPN Press': [BookMarked, 'var(--color-teal-600)', 'bg-teal-50', 'text-teal-600'],
 };
 
-const SOURCE_COLORS = ['var(--color-teal-400)', 'var(--color-marigold)', 'var(--color-berry)'];
+/** One colour per acquisition class, in the order of the list: a class keeps its colour whatever the filter. */
+const SOURCE_COLORS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `var(--series-${n})`);
 
 const ACTIVITY_ICONS: Record<string, Icon> = {
     'arrow-up-right': ArrowUpRight,
@@ -332,6 +333,7 @@ function CollectionByType({ collection, todayLabel }: { collection: DashboardPro
 
 function CollectionGrowth({ growth, todayLabel }: { growth: DashboardProps['growth']; todayLabel: string }) {
     const [type, setType] = useState('Semua jenis');
+    const [active, setActive] = useState<number | null>(null);
     const { years, sources } = growth;
     const data = growth.types[type];
     const totals = data.map((d) => d.reduce((a, b) => a + b, 0));
@@ -351,7 +353,7 @@ function CollectionGrowth({ growth, todayLabel }: { growth: DashboardProps['grow
                 <div>
                     <PanelTitle>Penambahan koleksi per tahun</PanelTitle>
                     <div className="text-fg-3 text-[13px]">
-                        Jumlah judul baru menurut sumber perolehan · {first}–{last} ({last} s.d. {todayLabel})
+                        Jumlah judul baru menurut asal perolehan · {first}–{last} ({last} s.d. {todayLabel})
                     </div>
                 </div>
                 <label className="text-fg-2 flex items-center gap-2 text-[13px] font-semibold">
@@ -402,25 +404,55 @@ function CollectionGrowth({ growth, todayLabel }: { growth: DashboardProps['grow
                         return (
                             <div
                                 key={year}
-                                title={`${year}: ${sources.map((l, si) => `${l} ${num(data[yi][si])}`).join(' · ')}`}
-                                className="relative flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
+                                tabIndex={0}
+                                aria-label={`${year}: ${num(totals[yi])} judul`}
+                                onPointerEnter={() => setActive(yi)}
+                                onPointerLeave={() => setActive(null)}
+                                onFocus={() => setActive(yi)}
+                                onBlur={() => setActive(null)}
+                                className="relative flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1 outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-teal-400"
                             >
                                 <span className="font-mono text-xs font-semibold">{num(totals[yi])}</span>
                                 <div
-                                    className="flex w-[min(56px,100%)] flex-col-reverse overflow-hidden rounded-t-[6px]"
+                                    className="flex w-[min(56px,100%)] flex-col-reverse gap-0.5 overflow-hidden rounded-t-[4px]"
                                     style={{ height: `${(totals[yi] / top) * 100}%` }}
                                 >
-                                    {sources.map((s, si) => (
-                                        <div
-                                            key={s}
-                                            style={{
-                                                height: `${totals[yi] ? (data[yi][si] / totals[yi]) * 100 : 0}%`,
-                                                background: SOURCE_COLORS[si],
-                                                opacity: current ? 0.55 : 1,
-                                            }}
-                                        />
-                                    ))}
+                                    {sources.map(
+                                        (s, si) =>
+                                            data[yi][si] > 0 && (
+                                                <div
+                                                    key={s}
+                                                    style={{
+                                                        flexGrow: data[yi][si],
+                                                        flexBasis: 0,
+                                                        minHeight: 2,
+                                                        background: SOURCE_COLORS[si],
+                                                        opacity: current ? 0.55 : 1,
+                                                    }}
+                                                />
+                                            ),
+                                    )}
                                 </div>
+                                {active === yi && totals[yi] > 0 && (
+                                    <div
+                                        role="tooltip"
+                                        className={`absolute top-0 z-10 flex w-max max-w-[300px] flex-col gap-1 rounded-md border border-slate-200 bg-white p-3 text-xs shadow-lg dark:border-slate-700 dark:bg-slate-800 ${yi < years.length / 2 ? 'left-full ml-1' : 'right-full mr-1'}`}
+                                    >
+                                        <span className="font-semibold">
+                                            {year} · {num(totals[yi])} judul
+                                        </span>
+                                        {sources.map(
+                                            (s, si) =>
+                                                data[yi][si] > 0 && (
+                                                    <span key={s} className="text-fg-2 flex items-center gap-2">
+                                                        <span className="h-0.5 w-3 flex-none" style={{ background: SOURCE_COLORS[si] }} />
+                                                        <b className="text-fg-1 font-mono font-semibold">{num(data[yi][si])}</b>
+                                                        {s}
+                                                    </span>
+                                                ),
+                                        )}
+                                    </div>
+                                )}
                                 <span className={`absolute -bottom-6 text-xs font-semibold ${current ? 'text-fg-3' : 'text-fg-1'}`}>{year}</span>
                             </div>
                         );
@@ -431,13 +463,51 @@ function CollectionGrowth({ growth, todayLabel }: { growth: DashboardProps['grow
             <div className="text-fg-3 flex flex-wrap justify-between gap-3 text-[13px]">
                 <span>
                     {type}: {num(lastFull)} judul ditambahkan pada {last - 1}, {change >= 0 ? 'naik' : 'turun'} {Math.abs(change)}% dibanding{' '}
-                    {last - 2}. Arahkan kursor ke batang untuk rincian per sumber.
+                    {last - 2}. Arahkan kursor ke batang untuk rincian per asal perolehan.
                 </span>
                 <span className="flex items-center gap-1.5">
                     <span className="size-2.5 rounded-[3px] bg-slate-300" />
                     Batang pudar: tahun berjalan (data belum penuh)
                 </span>
             </div>
+
+            <details className="text-[13px]">
+                <summary className="text-fg-2 cursor-pointer font-semibold">Lihat tabel per tahun</summary>
+                <div className="mt-2 overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left">
+                        <thead className="text-fg-3 border-b border-slate-200 text-xs dark:border-slate-700">
+                            <tr>
+                                <th className="py-2 pr-3 font-semibold">Asal perolehan</th>
+                                {years.map((y) => (
+                                    <th key={y} className="px-2 py-2 text-right font-semibold">
+                                        {y}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sources.map((s, si) => (
+                                <tr key={s} className="border-b border-slate-200 dark:border-slate-700">
+                                    <td className="py-1.5 pr-3">{s}</td>
+                                    {years.map((y, yi) => (
+                                        <td key={y} className="px-2 py-1.5 text-right font-mono">
+                                            {num(data[yi][si])}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                            <tr className="font-semibold">
+                                <td className="py-1.5 pr-3">Jumlah</td>
+                                {years.map((y, yi) => (
+                                    <td key={y} className="px-2 py-1.5 text-right font-mono">
+                                        {num(totals[yi])}
+                                    </td>
+                                ))}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
         </Panel>
     );
 }
