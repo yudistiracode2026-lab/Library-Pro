@@ -53,7 +53,7 @@ export function BarList({
 export function ColumnChart({ items, caption, height = 160 }: { items: Datum[]; caption: string; height?: number }) {
     const max = Math.max(1, ...items.map((i) => i.value));
     const peak = items.reduce((best, item, i) => (item.value > items[best].value ? i : best), 0);
-    const step = items.length > 10 ? 2 : 1;
+    const step = items.length > 12 ? 2 : 1;
 
     return (
         <figure className="flex flex-col gap-1.5">

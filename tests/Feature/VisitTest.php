@@ -146,6 +146,25 @@ class VisitTest extends TestCase
         $this->assertSame(2, Visit::count());
     }
 
+    public function test_the_desk_charts_visits_by_day_of_this_week_and_by_month_of_this_year()
+    {
+        // 15 October 2026 is a Thursday.
+        Visit::create(['purpose' => 'Membaca', 'method' => 'Tamu', 'checked_in_at' => '2026-10-12 09:00:00']);
+        Visit::create(['purpose' => 'Membaca', 'method' => 'Tamu', 'checked_in_at' => '2026-10-11 09:00:00']);
+        Visit::create(['purpose' => 'Membaca', 'method' => 'Tamu', 'checked_in_at' => '2026-02-03 09:00:00']);
+        Visit::create(['purpose' => 'Membaca', 'method' => 'Tamu', 'checked_in_at' => '2025-12-30 09:00:00']);
+        $this->actingAs(User::factory()->pustakawan()->create());
+
+        $this->get('/staf/kunjungan/meja')->assertInertia(fn (Assert $page) => $page
+            ->has('chart.week', 7)->has('chart.year', 12)
+            ->where('chart.week.0.label', 'Sen')->where('chart.week.0.value', 1)
+            ->where('chart.week.0.tip', 'Senin, 12 Okt: 1 kunjungan')
+            ->where('chart.week.6.label', 'Min')
+            ->where('chart.year.1.value', 1)->where('chart.year.9.value', 2)->where('chart.year.11.value', 0));
+
+        $this->scan(PresenceCode::make($this->member))->assertJsonPath('chart.week.3.value', 1)->assertJsonPath('chart.year.9.value', 3);
+    }
+
     public function test_the_third_scan_records_a_new_entry_within_the_same_code_period()
     {
         $this->actingAs(User::factory()->pustakawan()->create());

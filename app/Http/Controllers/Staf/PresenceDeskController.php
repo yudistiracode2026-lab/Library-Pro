@@ -8,6 +8,7 @@ use App\Models\Visit;
 use App\Support\PresenceCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +31,7 @@ class PresenceDeskController extends Controller
             'codeLength' => PresenceCode::LENGTH,
             'inside' => Visit::today()->inside()->count(),
             'recent' => $this->recent(),
+            'chart' => $this->chart(),
         ]);
     }
 
@@ -89,7 +91,39 @@ class PresenceDeskController extends Controller
             'minutes' => $visit?->checked_out_at ? $visit->minutes() : null,
             'inside' => Visit::today()->inside()->count(),
             'recent' => $this->recent(),
+            'chart' => $this->chart(),
         ]);
+    }
+
+    /**
+     * Visits this week, Monday to Sunday, and in each month of this year.
+     *
+     * @return array{week: list<array<string, mixed>>, year: list<array<string, mixed>>}
+     */
+    private function chart(): array
+    {
+        $monday = today()->startOfWeek(Carbon::MONDAY);
+        $january = today()->startOfYear();
+        $perDay = Visit::whereBetween('checked_in_at', [$monday->min($january), $monday->copy()->addDays(6)->endOfDay()->max($january->copy()->endOfYear())])
+            ->selectRaw('DATE(checked_in_at) AS day, COUNT(*) AS total')->groupBy('day')->pluck('total', 'day');
+
+        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        $months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        return [
+            'week' => collect(range(0, 6))->map(function (int $i) use ($monday, $days, $months, $perDay) {
+                $day = $monday->copy()->addDays($i);
+                $total = (int) ($perDay[$day->toDateString()] ?? 0);
+
+                return ['label' => substr($days[$i], 0, 3), 'value' => $total, 'tip' => "{$days[$i]}, {$day->day} ".substr($months[$day->month - 1], 0, 3).": {$total} kunjungan"];
+            })->all(),
+            'year' => collect(range(1, 12))->map(function (int $m) use ($january, $months, $perDay) {
+                $prefix = $january->year.'-'.str_pad((string) $m, 2, '0', STR_PAD_LEFT);
+                $total = (int) $perDay->filter(fn ($n, $day) => str_starts_with((string) $day, $prefix))->sum();
+
+                return ['label' => substr($months[$m - 1], 0, 3), 'value' => $total, 'tip' => "{$months[$m - 1]} {$january->year}: {$total} kunjungan"];
+            })->all(),
+        ];
     }
 
     /**

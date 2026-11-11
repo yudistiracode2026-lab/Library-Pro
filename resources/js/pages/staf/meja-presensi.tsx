@@ -1,4 +1,5 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import { ColumnChart } from '@/components/charts';
 import { duration } from '@/components/staf/ui';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, CircleAlert, CircleCheck, LogIn, LogOut, ScanLine } from 'lucide-react';
@@ -13,10 +14,22 @@ interface Recent {
     stays: number;
 }
 
+interface Column {
+    label: string;
+    value: number;
+    tip: string;
+}
+
+interface Chart {
+    week: Column[];
+    year: Column[];
+}
+
 interface MejaProps {
     codeLength: number;
     inside: number;
     recent: Recent[];
+    chart: Chart;
 }
 
 type Status = 'masuk' | 'keluar' | 'ulang' | 'error';
@@ -64,9 +77,11 @@ function xsrf(): string {
  * the page listens to the keyboard wherever the focus is: a scan ends at the
  * full code length, or at Enter or Tab if the scanner sends one.
  */
-export default function MejaPresensi({ codeLength, inside: startInside, recent: startRecent }: MejaProps) {
+export default function MejaPresensi({ codeLength, inside: startInside, recent: startRecent, chart: startChart }: MejaProps) {
     const [inside, setInside] = useState(startInside);
     const [recent, setRecent] = useState(startRecent);
+    const [chart, setChart] = useState(startChart);
+    const [range, setRange] = useState<keyof Chart>('week');
     const [result, setResult] = useState<Result | null>(null);
     const [expired, setExpired] = useState(false);
     const [focused, setFocused] = useState(true);
@@ -103,6 +118,7 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                 const data = await response.json();
                 setInside(data.inside);
                 setRecent(data.recent);
+                setChart(data.chart);
                 show(data);
             } catch {
                 show({
@@ -189,43 +205,78 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
             )}
 
             <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
-                <section
-                    className="flex min-h-[380px] flex-col items-center justify-center gap-5 rounded-xl bg-white p-8 text-center shadow-xl"
-                    aria-live="polite"
-                >
-                    {result && look ? (
-                        <>
-                            <span className={`flex items-center gap-2.5 rounded-full px-6 py-2.5 text-2xl font-extrabold ${look.box}`}>
-                                <look.icon className="size-7" />
-                                {look.label}
-                            </span>
-                            {result.name && <span className="font-display text-4xl leading-tight font-extrabold text-balance">{result.name}</span>}
-                            {result.number && <span className="text-fg-3 font-mono text-xl">{result.number}</span>}
-                            <span className="text-fg-2 text-xl">{result.message}</span>
-                            {result.status !== 'error' && result.time && (
-                                <span className="text-fg-2 text-lg">
-                                    Pukul <b className="text-fg-1">{result.time}</b>
-                                    {result.minutes !== null && (
-                                        <>
-                                            {' · '}di perpustakaan selama{' '}
-                                            <b className="text-fg-1">
-                                                {duration(result.minutes) === '0 m' ? 'kurang dari 1 menit' : duration(result.minutes)}
-                                            </b>
-                                        </>
-                                    )}
+                <div className="flex flex-col gap-6">
+                    <section
+                        className="flex min-h-[300px] flex-1 flex-col items-center justify-center gap-5 rounded-xl bg-white p-8 text-center shadow-xl"
+                        aria-live="polite"
+                    >
+                        {result && look ? (
+                            <>
+                                <span className={`flex items-center gap-2.5 rounded-full px-6 py-2.5 text-2xl font-extrabold ${look.box}`}>
+                                    <look.icon className="size-7" />
+                                    {look.label}
                                 </span>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <ScanLine className="size-20 text-teal-500" />
-                            <span className="font-display text-4xl font-extrabold">Tunjukkan QR Anda</span>
-                            <span className="text-fg-2 max-w-md text-xl leading-relaxed text-pretty">
-                                Buka aplikasi pemustaka, lalu arahkan QR di layar HP ke alat pemindai saat masuk dan keluar.
-                            </span>
-                        </>
-                    )}
-                </section>
+                                {result.name && (
+                                    <span className="font-display text-4xl leading-tight font-extrabold text-balance">{result.name}</span>
+                                )}
+                                {result.number && <span className="text-fg-3 font-mono text-xl">{result.number}</span>}
+                                <span className="text-fg-2 text-xl">{result.message}</span>
+                                {result.status !== 'error' && result.time && (
+                                    <span className="text-fg-2 text-lg">
+                                        Pukul <b className="text-fg-1">{result.time}</b>
+                                        {result.minutes !== null && (
+                                            <>
+                                                {' · '}di perpustakaan selama{' '}
+                                                <b className="text-fg-1">
+                                                    {duration(result.minutes) === '0 m' ? 'kurang dari 1 menit' : duration(result.minutes)}
+                                                </b>
+                                            </>
+                                        )}
+                                    </span>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <ScanLine className="size-20 text-teal-500" />
+                                <span className="font-display text-4xl font-extrabold">Tunjukkan QR Anda</span>
+                                <span className="text-fg-2 max-w-md text-xl leading-relaxed text-pretty">
+                                    Buka aplikasi pemustaka, lalu arahkan QR di layar HP ke alat pemindai saat masuk dan keluar.
+                                </span>
+                            </>
+                        )}
+                    </section>
+
+                    <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-xl">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-col">
+                                <span className="text-fg-2 font-semibold">
+                                    {range === 'week' ? 'Kunjungan minggu ini' : `Kunjungan tahun ${now.getFullYear()}`}
+                                </span>
+                                <span className="text-fg-3 text-sm">
+                                    {chart[range].reduce((sum, c) => sum + c.value, 0).toLocaleString('id-ID')} kunjungan
+                                </span>
+                            </div>
+                            <div className="flex rounded-lg bg-slate-100 p-1 text-sm font-semibold" role="group" aria-label="Rentang grafik">
+                                {(['week', 'year'] as const).map((key) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        aria-pressed={range === key}
+                                        onClick={() => setRange(key)}
+                                        className={`cursor-pointer rounded-md px-3 py-1.5 ${range === key ? 'text-fg-1 bg-white shadow-sm' : 'text-fg-3 hover:text-fg-1'}`}
+                                    >
+                                        {key === 'week' ? 'Mingguan' : 'Bulanan'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <ColumnChart
+                            items={chart[range]}
+                            caption={range === 'week' ? 'Kunjungan per hari, Senin sampai Minggu' : 'Kunjungan per bulan tahun ini'}
+                            height={150}
+                        />
+                    </section>
+                </div>
 
                 <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-xl">
                     <div className="flex items-baseline justify-between">
