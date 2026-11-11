@@ -101,8 +101,8 @@ class VisitTest extends TestCase
         $this->scan($code)->assertJsonPath('status', 'ulang');
 
         // A phone left on the scanner keeps being read, across a new code too.
-        foreach (['08:00:08', '08:00:16', '08:00:24', '08:00:32'] as $time) {
-            Carbon::setTestNow("2026-10-15 {$time}");
+        foreach (range(4, 32, 4) as $second) {
+            Carbon::setTestNow(sprintf('2026-10-15 08:00:%02d', $second));
             $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'ulang');
         }
         $this->assertNull(Visit::sole()->checked_out_at);
@@ -146,18 +146,28 @@ class VisitTest extends TestCase
         $this->assertSame(2, Visit::count());
     }
 
-    public function test_a_code_records_one_entry_and_one_exit_at_most()
+    public function test_the_third_scan_records_a_new_entry_within_the_same_code_period()
     {
         $this->actingAs(User::factory()->pustakawan()->create());
-        $code = PresenceCode::make($this->member);
-        $this->scan($code)->assertJsonPath('status', 'masuk');
+        $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'masuk');
 
-        Carbon::setTestNow('2026-10-15 08:00:11');
-        $this->scan($code)->assertJsonPath('status', 'keluar');
+        Carbon::setTestNow('2026-10-15 08:00:06');
+        $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'keluar');
 
-        Carbon::setTestNow('2026-10-15 08:00:22');
-        $this->scan($code)->assertJsonPath('status', 'ulang');
-        $this->assertSame(1, Visit::count());
+        Carbon::setTestNow('2026-10-15 08:00:12');
+        $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'masuk');
+        $this->assertSame(2, Visit::count());
+    }
+
+    public function test_the_code_changes_as_soon_as_a_scan_is_recorded_so_a_scanner_will_send_it()
+    {
+        $this->actingAs(User::factory()->pustakawan()->create());
+        $outside = PresenceCode::make($this->member, 2);
+        $this->scan($outside)->assertJsonPath('status', 'masuk');
+
+        $inside = PresenceCode::make($this->member, 2);
+        $this->assertNotSame($outside, $inside);
+        $this->assertSame(2, PresenceCode::read($inside)['purpose']);
     }
 
     public function test_expired_forged_and_foreign_codes_are_rejected()

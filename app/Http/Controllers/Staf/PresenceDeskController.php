@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,7 +22,7 @@ use Inertia\Response;
 class PresenceDeskController extends Controller
 {
     /** How long the scanner must stop reading a member before the next read counts. */
-    private const REST_SECONDS = 10;
+    private const REST_SECONDS = 5;
 
     public function show(): Response
     {
@@ -38,6 +39,8 @@ class PresenceDeskController extends Controller
         $read = PresenceCode::read($code);
 
         if ($read === null) {
+            Log::warning('Pindaian presensi ditolak: bukan kode presensi', ['length' => strlen($code)]);
+
             return $this->reply('error', 'Bukan kode presensi. Buka QR di aplikasi pemustaka, ya.');
         }
 
@@ -47,10 +50,12 @@ class PresenceDeskController extends Controller
             return $this->reply('error', 'Anggota tidak ditemukan.');
         }
         if ($read['expired']) {
+            Log::warning('Pindaian presensi ditolak: kode kedaluwarsa', ['member_id' => $member->id]);
+
             return $this->reply('error', 'Kode sudah kedaluwarsa. Tunjukkan QR yang terbaru di aplikasi, ya.', $member);
         }
 
-        return DB::transaction(function () use ($request, $code, $read, $member) {
+        return DB::transaction(function () use ($request, $read, $member) {
             // One scan at a time per member, even if two arrive together.
             Member::whereKey($member->id)->lockForUpdate()->first();
             $last = $member->visits()->today()->latest('checked_in_at')->first();
@@ -60,8 +65,7 @@ class PresenceDeskController extends Controller
             $held = Cache::has("presensi.baca.{$member->id}");
             Cache::put("presensi.baca.{$member->id}", true, self::REST_SECONDS);
 
-            // A code records one entry and one exit at most, so a screenshot gains little.
-            if ($held || ! Cache::add("presensi.kode.{$code}.".($inside ? 'keluar' : 'masuk'), true, PresenceCode::PERIOD * 4)) {
+            if ($held) {
                 $wait = 'jauhkan HP, lalu pindai lagi setelah '.self::REST_SECONDS.' detik.';
 
                 return $this->reply('ulang', $inside ? "Sudah tercatat masuk. Untuk keluar, {$wait}" : "Sudah tercatat. Untuk masuk lagi, {$wait}", $member, $last);

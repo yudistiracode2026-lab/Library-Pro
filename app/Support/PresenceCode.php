@@ -23,9 +23,18 @@ class PresenceCode
     /** Earlier windows that still count, for a code that changed as it was shown. */
     private const GRACE_WINDOWS = 1;
 
+    /**
+     * Added to the purpose digit while the member is inside. The code then
+     * changes as soon as a scan is recorded: scanners often refuse to send
+     * the same code twice in a row, which would swallow the next scan.
+     */
+    private const INSIDE_OFFSET = 5;
+
     public static function make(Member $member, int $purpose = 0): string
     {
-        return self::build($member->id, self::window(), $purpose);
+        $inside = $member->visits()->today()->inside()->exists();
+
+        return self::build($member->id, self::window(), $purpose + ($inside ? self::INSIDE_OFFSET : 0));
     }
 
     /**
@@ -76,7 +85,7 @@ class PresenceCode
 
         return [
             'member_id' => $member,
-            'purpose' => $purpose,
+            'purpose' => $purpose % self::INSIDE_OFFSET,
             'expired' => $window > self::window() || $window < self::window() - self::GRACE_WINDOWS,
         ];
     }
