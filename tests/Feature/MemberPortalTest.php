@@ -15,8 +15,8 @@ use App\Models\Rack;
 use App\Models\Thesis;
 use App\Models\User;
 use App\Models\Visit;
-use App\Support\KioskToken;
 use App\Support\LibrarySettings;
+use App\Support\PresenceCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -217,12 +217,20 @@ class MemberPortalTest extends TestCase
         $this->get('/pemustaka/baca?jenis=riwayat')->assertInertia(fn (Assert $p) => $p->has('history', 1));
     }
 
-    public function test_the_scanner_checks_in_with_the_kiosk_code()
+    public function test_the_home_page_carries_the_members_own_rotating_qr()
     {
         $this->actingAs($this->user);
-        $this->post('/presensi', ['purpose' => 'Membaca', 't' => 'salah'])->assertSessionHas('error');
-        $this->post('/presensi', ['purpose' => 'Membaca', 't' => KioskToken::current()])->assertSessionHas('success');
-        $this->assertTrue($this->member->visits()->today()->inside()->exists());
+
+        $this->get('/pemustaka')->assertInertia(fn (Assert $p) => $p
+            ->where('qr.code', PresenceCode::make($this->member))
+            ->where('qr.presence', null));
+
+        $this->getJson('/pemustaka/presensi/kode?keperluan=3')->assertOk()->assertJsonPath('code', PresenceCode::make($this->member, 3));
+        // A purpose outside the list falls back to the first.
+        $this->getJson('/pemustaka/presensi/kode?keperluan=99')->assertJsonPath('code', PresenceCode::make($this->member, 0));
+
+        Visit::create(['member_id' => $this->member->id, 'purpose' => 'Membaca', 'method' => 'QR', 'checked_in_at' => now()->subMinutes(20)]);
+        $this->getJson('/pemustaka/presensi/kode')->assertJsonPath('presence.inside', true)->assertJsonPath('presence.minutes', 20);
     }
 
     public function test_library_networks_are_validated()

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Staf;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\Visit;
-use App\Support\KioskToken;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,6 +24,7 @@ class VisitController extends Controller
                 'total' => (clone $today)->count(),
                 'inside' => (clone $today)->inside()->count(),
                 'out' => (clone $today)->whereNotNull('checked_out_at')->count(),
+                'averageMinutes' => (int) round((clone $today)->whereNotNull('checked_out_at')->get()->avg(fn (Visit $v) => $v->minutes()) ?? 0),
                 'purposes' => collect(Visit::PURPOSES)->map(fn ($p) => ['label' => $p, 'total' => (clone $today)->where('purpose', $p)->count()]),
             ],
             'visits' => Visit::today()
@@ -37,16 +37,7 @@ class VisitController extends Controller
                 ->map(fn (Visit $v) => $this->row($v)),
             'filter' => $filter,
             'purposes' => Visit::PURPOSES,
-            'qr' => $this->qr(),
         ]);
-    }
-
-    /**
-     * Full-screen QR for the entrance display.
-     */
-    public function kiosk(): Response
-    {
-        return Inertia::render('staf/kios', ['qr' => $this->qr()]);
     }
 
     /**
@@ -93,18 +84,6 @@ class VisitController extends Controller
     }
 
     /**
-     * @return array{url: string, secondsLeft: int, period: int}
-     */
-    private function qr(): array
-    {
-        return [
-            'url' => route('presensi', ['t' => KioskToken::current()]),
-            'secondsLeft' => KioskToken::secondsLeft(),
-            'period' => KioskToken::PERIOD,
-        ];
-    }
-
-    /**
      * @return array<string, mixed>
      */
     private function row(Visit $v): array
@@ -117,6 +96,7 @@ class VisitController extends Controller
             'method' => $v->method,
             'in' => $v->checked_in_at->format('H.i'),
             'out' => $v->checked_out_at?->format('H.i'),
+            'minutes' => $v->minutes(),
         ];
     }
 }

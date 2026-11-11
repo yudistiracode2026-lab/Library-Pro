@@ -1,4 +1,5 @@
 import { DDC_COLORS } from '@/components/staf/master/cells';
+import { duration } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -30,6 +31,15 @@ interface DashboardProps {
     greeting: string;
     todayLabel: string;
     kpis: { visitsToday: number; inside: number; openLoans: number; overdue: number; clearancePending: number; titles: number; copies: number };
+    presence: {
+        averageMinutes: number;
+        totalMinutes: number;
+        longestMinutes: number;
+        completed: number;
+        missedCheckout: number;
+        insideTotal: number;
+        inside: { id: number; name: string; since: string; minutes: number }[];
+    };
     collection: { label: string; titles: number; copies: number }[];
     growth: { years: number[]; sources: string[]; types: Record<string, number[][]> };
     visits: { day: number; label: string; total: number; weekend: boolean; today: boolean }[];
@@ -89,7 +99,18 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
     );
 }
 
-export default function StafDashboard({ greeting, todayLabel, kpis, collection, growth, visits, loansByClass, due, activity }: DashboardProps) {
+export default function StafDashboard({
+    greeting,
+    todayLabel,
+    kpis,
+    presence,
+    collection,
+    growth,
+    visits,
+    loansByClass,
+    due,
+    activity,
+}: DashboardProps) {
     const { auth } = usePage<SharedData>().props;
     const firstName = auth.user.name.split(',')[0].split(' ')[0];
 
@@ -182,6 +203,7 @@ export default function StafDashboard({ greeting, todayLabel, kpis, collection, 
                 ))}
             </div>
 
+            <PresenceToday presence={presence} />
             <CollectionByType collection={collection} todayLabel={todayLabel} />
             <CollectionGrowth growth={growth} todayLabel={todayLabel} />
 
@@ -508,6 +530,63 @@ function CollectionGrowth({ growth, todayLabel }: { growth: DashboardProps['grow
                     </table>
                 </div>
             </details>
+        </Panel>
+    );
+}
+
+function PresenceToday({ presence }: { presence: DashboardProps['presence'] }) {
+    const tiles: [string, string, string][] = [
+        ['Rata-rata durasi', presence.completed ? duration(presence.averageMinutes) : '—', `dari ${num(presence.completed)} kunjungan selesai`],
+        ['Total waktu kunjungan', presence.completed ? duration(presence.totalMinutes) : '—', 'semua kunjungan selesai hari ini'],
+        ['Kunjungan terlama', presence.completed ? duration(presence.longestMinutes) : '—', 'hari ini'],
+        ['Tidak pindai keluar', num(presence.missedCheckout), '7 hari terakhir · durasinya tidak terhitung'],
+    ];
+
+    return (
+        <Panel gap="gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <PanelTitle>Durasi kunjungan hari ini</PanelTitle>
+                    <div className="text-fg-3 text-[13px]">Dari pindaian masuk dan keluar di meja presensi</div>
+                </div>
+                <Link href={route('staf.kunjungan.desk')} className="text-[13px] font-semibold text-teal-700 hover:underline">
+                    Buka meja presensi
+                </Link>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
+                {tiles.map(([label, value, sub]) => (
+                    <div key={label} className="flex flex-col gap-1 rounded-md bg-slate-50 px-3.5 py-3 dark:bg-slate-900">
+                        <span className="text-fg-2 text-[13px] font-semibold">{label}</span>
+                        <span className="font-display text-[22px] font-extrabold">{value}</span>
+                        <span className="text-fg-3 text-xs">{sub}</span>
+                    </div>
+                ))}
+            </div>
+            <div className="flex flex-col">
+                <span className="text-fg-3 border-b border-slate-200 pb-2 text-xs font-semibold tracking-[.06em] uppercase dark:border-slate-700">
+                    Sedang di perpustakaan ({num(presence.insideTotal)})
+                </span>
+                {presence.inside.map((v) => (
+                    <div
+                        key={v.id}
+                        className="flex items-center justify-between gap-3 border-b border-slate-200 py-2 text-sm last:border-0 dark:border-slate-700"
+                    >
+                        <span className="min-w-0 truncate font-semibold">{v.name}</span>
+                        <span className="text-fg-3 flex-none text-[13px]">
+                            sejak <span className="font-mono">{v.since}</span> · {duration(v.minutes)}
+                        </span>
+                    </div>
+                ))}
+                {presence.inside.length === 0 && <p className="text-fg-3 py-4 text-sm">Belum ada pengunjung di dalam.</p>}
+                {presence.insideTotal > presence.inside.length && (
+                    <Link
+                        href={route('staf.kunjungan', { status: 'dalam' })}
+                        className="pt-2 text-[13px] font-semibold text-teal-700 hover:underline"
+                    >
+                        Lihat semua
+                    </Link>
+                )}
+            </div>
         </Panel>
     );
 }

@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\ClearanceRequest;
 use App\Models\EbookLoan;
 use App\Models\Loan;
+use App\Models\Member;
 use App\Models\NewsPost;
 use App\Models\Visit;
 use App\Services\Circulation;
+use App\Support\PresenceCode;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -29,15 +32,10 @@ class HomeController extends Controller
         }
 
         $member = $this->member($request);
-        $last = $member->visits()->today()->latest('checked_in_at')->first();
         $loans = $member->loans()->open()->with('copy.book')->orderBy('due_at')->get();
 
         return Inertia::render('pemustaka/beranda', [
-            'presence' => $last ? [
-                'inside' => $last->checked_out_at === null,
-                'kind' => $last->checked_out_at ? 'Keluar' : 'Masuk',
-                'time' => ($last->checked_out_at ?? $last->checked_in_at)->format('H.i'),
-            ] : null,
+            'qr' => $this->qr($member, 0),
             'purposes' => Visit::PURPOSES,
             'stats' => [
                 'loans' => $loans->count(),
@@ -47,6 +45,34 @@ class HomeController extends Controller
             'loans' => $loans->map(fn (Loan $l) => $this->loanRow($l)),
             'notifications' => $this->notifications($member, $loans),
         ]);
+    }
+
+    /** The member's current QR and whether the desk has recorded them; the page asks every few seconds. */
+    public function presenceCode(Request $request): JsonResponse
+    {
+        $purpose = $request->integer('keperluan');
+
+        return response()->json($this->qr($this->member($request), array_key_exists($purpose, Visit::PURPOSES) ? $purpose : 0));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function qr(Member $member, int $purpose): array
+    {
+        $last = $member->visits()->today()->latest('checked_in_at')->first();
+
+        return [
+            'code' => PresenceCode::make($member, $purpose),
+            'secondsLeft' => PresenceCode::secondsLeft(),
+            'period' => PresenceCode::PERIOD,
+            'presence' => $last ? [
+                'inside' => $last->checked_out_at === null,
+                'kind' => $last->checked_out_at ? 'Keluar' : 'Masuk',
+                'time' => ($last->checked_out_at ?? $last->checked_in_at)->format('H.i'),
+                'minutes' => $last->minutes(),
+            ] : null,
+        ];
     }
 
     public function extend(Request $request, Loan $loan): RedirectResponse

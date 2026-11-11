@@ -1,9 +1,7 @@
-import { Button, Card, CardTitle, initials, inputClass } from '@/components/staf/ui';
-import { type KioskQr, useKioskQr } from '@/hooks/use-kiosk-qr';
+import { Button, Card, CardTitle, duration, initials, inputClass } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { Link, router, useForm } from '@inertiajs/react';
-import { LogOut, Monitor, UserPlus } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { LogOut, ScanLine, UserPlus } from 'lucide-react';
 import { type FormEvent } from 'react';
 
 interface VisitRow {
@@ -14,18 +12,17 @@ interface VisitRow {
     method: string;
     in: string;
     out: string | null;
+    minutes: number;
 }
 
 interface KunjunganProps {
-    stats: { total: number; inside: number; out: number; purposes: { label: string; total: number }[] };
+    stats: { total: number; inside: number; out: number; averageMinutes: number; purposes: { label: string; total: number }[] };
     visits: VisitRow[];
     filter: '' | 'dalam' | 'keluar';
     purposes: string[];
-    qr: KioskQr;
 }
 
-export default function Kunjungan({ stats, visits, filter, purposes, qr }: KunjunganProps) {
-    const left = useKioskQr(qr);
+export default function Kunjungan({ stats, visits, filter, purposes }: KunjunganProps) {
     const form = useForm({ mode: 'anggota', member_number: '', guest_name: '', guest_org: '', purpose: purposes[0] });
 
     const submit = (e: FormEvent) => {
@@ -41,7 +38,11 @@ export default function Kunjungan({ stats, visits, filter, purposes, qr }: Kunju
             <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-4">
                 <Stat label="Total pengunjung hari ini" value={stats.total} sub="semua yang masuk sejak buka" />
                 <Stat label="Sedang di perpustakaan" value={stats.inside} sub="sudah masuk, belum keluar" accent />
-                <Stat label="Sudah pulang" value={stats.out} sub="sudah tercatat keluar" />
+                <Stat
+                    label="Sudah pulang"
+                    value={stats.out}
+                    sub={stats.out ? `rata-rata ${duration(stats.averageMinutes)} di perpustakaan` : 'sudah tercatat keluar'}
+                />
                 <div className="flex flex-col gap-1.5 rounded-lg bg-white px-[18px] py-4 shadow-sm dark:bg-slate-800">
                     <span className="text-fg-3 text-[13px]">Per keperluan</span>
                     {stats.purposes.map((p) => (
@@ -56,44 +57,18 @@ export default function Kunjungan({ stats, visits, filter, purposes, qr }: Kunju
             <div className="flex flex-wrap items-start gap-4">
                 <div className="flex min-w-0 flex-[45_1_340px] flex-col gap-4">
                     <Card>
-                        <CardTitle
-                            aside={
-                                <span className="text-success flex items-center gap-1.5 text-xs font-semibold">
-                                    <span className="bg-success size-2 rounded-full" />
-                                    Kios aktif · pintu masuk
-                                </span>
-                            }
-                        >
-                            QR presensi
-                        </CardTitle>
+                        <CardTitle>Meja presensi</CardTitle>
                         <p className="text-fg-3 -mt-2 text-[13px] leading-relaxed">
-                            Pemustaka memindai QR ini dengan kamera HP untuk mencatat masuk dan keluar. Kode berganti tiap {qr.period} detik.
+                            Pemustaka menunjukkan QR di aplikasinya ke alat pemindai saat masuk dan keluar, sehingga durasi kunjungan terhitung. Buka
+                            halaman ini di laptop yang tersambung ke alat pemindai.
                         </p>
-                        <div className="flex flex-col items-center gap-3 rounded-lg bg-teal-50 p-6 dark:bg-teal-900">
-                            <div className="rounded-lg bg-white p-4 shadow-md">
-                                <QRCodeSVG value={qr.url} size={200} marginSize={0} fgColor="#0F0E0A" />
-                            </div>
-                            <div className="flex w-[232px] flex-col gap-1.5">
-                                <div className="h-1.5 overflow-hidden rounded-full bg-white">
-                                    <div
-                                        className="h-full rounded-full bg-teal-400 transition-[width] duration-1000 ease-linear"
-                                        style={{ width: `${(left / qr.period) * 100}%` }}
-                                    />
-                                </div>
-                                <span className="text-center text-xs font-semibold text-teal-700 dark:text-teal-200">
-                                    Kode baru dalam {left} detik
-                                </span>
-                            </div>
-                        </div>
-                        <a
-                            href={route('staf.kunjungan.kiosk')}
-                            target="_blank"
-                            rel="noreferrer"
+                        <Link
+                            href={route('staf.kunjungan.desk')}
                             className="shadow-teal flex h-[46px] items-center justify-center gap-2 rounded-md bg-teal-400 text-[15px] font-semibold text-white hover:bg-teal-500"
                         >
-                            <Monitor className="size-4" />
-                            Tampilkan di layar kios
-                        </a>
+                            <ScanLine className="size-4" />
+                            Buka meja presensi
+                        </Link>
                     </Card>
 
                     <Card className="gap-3 md:p-5">
@@ -191,19 +166,20 @@ export default function Kunjungan({ stats, visits, filter, purposes, qr }: Kunju
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <div className="text-fg-3 grid min-w-[520px] grid-cols-[36px_minmax(0,1.6fr)_minmax(0,1.1fr)_44px_44px_64px_28px] gap-2.5 border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900">
+                        <div className="text-fg-3 grid min-w-[600px] grid-cols-[36px_minmax(0,1.6fr)_minmax(0,1.1fr)_44px_44px_64px_64px_28px] gap-2.5 border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-semibold tracking-[.06em] uppercase dark:border-slate-700 dark:bg-slate-900">
                             <span />
                             <span>Pengunjung</span>
                             <span>Keperluan</span>
                             <span>Masuk</span>
                             <span>Keluar</span>
+                            <span>Durasi</span>
                             <span>Cara</span>
                             <span />
                         </div>
                         {visits.map((v) => (
                             <div
                                 key={v.id}
-                                className="grid min-w-[520px] grid-cols-[36px_minmax(0,1.6fr)_minmax(0,1.1fr)_44px_44px_64px_28px] items-center gap-2.5 border-b border-slate-200 px-4 py-2.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
+                                className="grid min-w-[600px] grid-cols-[36px_minmax(0,1.6fr)_minmax(0,1.1fr)_44px_44px_64px_64px_28px] items-center gap-2.5 border-b border-slate-200 px-4 py-2.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
                             >
                                 <span className="font-display grid size-9 place-items-center rounded-full bg-teal-100 text-[13px] font-bold text-teal-800">
                                     {initials(v.name)}
@@ -215,6 +191,7 @@ export default function Kunjungan({ stats, visits, filter, purposes, qr }: Kunju
                                 <span className="text-fg-2 text-[13px]">{v.purpose}</span>
                                 <span className="font-mono text-[13px]">{v.in}</span>
                                 <span className={`font-mono text-[13px] ${v.out ? '' : 'text-fg-4'}`}>{v.out ?? '—'}</span>
+                                <span className={`text-[13px] ${v.out ? '' : 'text-fg-3'}`}>{duration(v.minutes)}</span>
                                 <span
                                     className={`justify-self-start rounded-full px-2 py-0.5 text-[11px] font-semibold ${v.method === 'QR' ? 'bg-teal-50 text-teal-700' : 'text-fg-2 bg-slate-100 dark:bg-slate-700'}`}
                                 >

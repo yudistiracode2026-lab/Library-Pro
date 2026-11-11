@@ -1,13 +1,13 @@
-import { QrScanner } from '@/components/pemustaka/qr-scanner';
+import { PresenceQr, type PresenceQrData } from '@/components/pemustaka/presence-qr';
 import { DDC_COLORS } from '@/components/staf/master/cells';
 import PemustakaLayout from '@/layouts/pemustaka-layout';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BadgeCheck, CircleAlert, Clock, Megaphone, ScanQrCode, TabletSmartphone } from 'lucide-react';
-import { type ComponentType, useState } from 'react';
+import { BadgeCheck, CircleAlert, Clock, Megaphone, TabletSmartphone } from 'lucide-react';
+import { type ComponentType } from 'react';
 
 interface BerandaProps {
-    presence: { inside: boolean; kind: string; time: string } | null;
+    qr: PresenceQrData;
     purposes: string[];
     stats: { loans: number; history: number; ebooks: number };
     loans: { id: number; title: string; ddc_class: string; due: string; daysLeft: number; extensions: number; extendProblem: string | null }[];
@@ -29,42 +29,16 @@ const TONES: Record<string, string> = {
     slate: 'text-fg-2 bg-slate-100 dark:bg-slate-700',
 };
 
-export default function Beranda({ presence, purposes, stats, loans, notifications }: BerandaProps) {
+export default function Beranda({ qr, purposes, stats, loans, notifications }: BerandaProps) {
     const { member, auth } = usePage<SharedData>().props;
     const first = (member?.name ?? auth.user.name).split(' ')[0];
-    const [scanning, setScanning] = useState(false);
-    const inside = !!presence?.inside;
 
     return (
         <PemustakaLayout title="Beranda">
             <h1 className="font-display text-[28px] font-bold">Haloo, {first}</h1>
 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] items-start gap-5">
-                <section className="bg-grad-leaf flex flex-col gap-4 rounded-xl p-6 text-white shadow-lg">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-[11px] font-semibold tracking-[.08em] text-teal-50 uppercase">Presensi perpustakaan</span>
-                            <span className="font-display text-xl font-extrabold">
-                                {inside ? 'Kamu sedang di perpustakaan' : 'Belum presensi hari ini'}
-                            </span>
-                            <span className="text-[13px] text-teal-50">
-                                {presence ? `${presence.kind} pukul ${presence.time}` : 'Scan QR saat masuk dan keluar perpustakaan.'}
-                            </span>
-                        </div>
-                        <span className="flex-none rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
-                            {inside ? 'Di dalam' : 'Di luar'}
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setScanning(true)}
-                        className="flex h-[52px] cursor-pointer items-center justify-center gap-2.5 rounded-[14px] bg-white text-base font-bold text-teal-700 hover:bg-teal-50 active:scale-[.98]"
-                    >
-                        <ScanQrCode className="size-5" />
-                        {inside ? 'Scan presensi keluar' : 'Scan presensi masuk'}
-                    </button>
-                    <span className="text-xs">Arahkan kamera HP ke QR code di layar kios dekat pintu masuk.</span>
-                </section>
+                <PresenceQr initial={qr} purposes={purposes} />
 
                 <div className="grid grid-cols-3 gap-3">
                     {[
@@ -140,8 +114,6 @@ export default function Beranda({ presence, purposes, stats, loans, notification
                     {notifications.length === 0 && <p className="text-fg-3 text-sm">Belum ada notifikasi.</p>}
                 </section>
             </div>
-
-            {scanning && <QrScanner entering={!inside} purposes={purposes} firstName={first} onClose={() => setScanning(false)} />}
         </PemustakaLayout>
     );
 }

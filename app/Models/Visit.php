@@ -40,6 +40,12 @@ class Visit extends Model
         $query->whereNull('checked_out_at');
     }
 
+    /** Minutes spent inside: up to now while still inside. */
+    public function minutes(): int
+    {
+        return (int) $this->checked_in_at->diffInMinutes($this->checked_out_at ?? now());
+    }
+
     /**
      * Check a member out if they are inside today, otherwise check them in.
      *

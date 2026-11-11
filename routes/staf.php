@@ -15,6 +15,7 @@ use App\Http\Controllers\Staf\Master\MemberController;
 use App\Http\Controllers\Staf\OpnameController;
 use App\Http\Controllers\Staf\OvertimeController;
 use App\Http\Controllers\Staf\PokController;
+use App\Http\Controllers\Staf\PresenceDeskController;
 use App\Http\Controllers\Staf\ProcurementController;
 use App\Http\Controllers\Staf\ReportController;
 use App\Http\Controllers\Staf\SearchMapController;
@@ -68,10 +69,13 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
 
         Route::controller(VisitController::class)->prefix('kunjungan')->name('kunjungan')->group(function () {
             Route::get('/', 'index')->name('');
-            Route::get('kios', 'kiosk')->name('.kiosk');
             Route::post('/', 'store')->name('.store');
             Route::post('{visit}/keluar', 'checkout')->name('.checkout');
         });
+
+        // The attendance desk: the USB scanner reads the QR in the member's app.
+        Route::get('kunjungan/meja', [PresenceDeskController::class, 'show'])->name('kunjungan.desk');
+        Route::post('kunjungan/pindai', [PresenceDeskController::class, 'scan'])->name('kunjungan.scan');
 
         Route::get('pencarian', SearchMapController::class)->name('pencarian');
 

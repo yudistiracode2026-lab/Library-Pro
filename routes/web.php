@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\CoverController;
-use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,11 +18,6 @@ Route::middleware(['auth'])->group(function () {
         return to_route('pemustaka.beranda');
     })->name('dashboard');
 });
-
-// Kiosk QR check-in. The GET checks the scanned code before login, so
-// only the POST requires an account.
-Route::get('presensi', [PresenceController::class, 'show'])->name('presensi');
-Route::post('presensi', [PresenceController::class, 'store'])->middleware('auth')->name('presensi.store');
 
 require __DIR__.'/staf.php';
 require __DIR__.'/pemustaka.php';

@@ -43,6 +43,7 @@ class DashboardController extends Controller
                 'titles' => Book::count(),
                 'copies' => BookCopy::count(),
             ],
+            'presence' => $this->presence(),
             'collection' => $this->collection(),
             'growth' => $this->growth(),
             'visits' => collect(range(13, 0))->map(function ($ago) use ($visitsPerDay) {
@@ -91,6 +92,34 @@ class DashboardController extends Controller
         $ebooks = ['label' => 'E-book', 'titles' => Book::where('type', Book::EBOOK)->count(), 'copies' => (int) Book::where('type', Book::EBOOK)->sum('license_count')];
 
         return $rows->splice(0, 1)->push($ebooks)->concat($rows)->values()->all();
+    }
+
+    /**
+     * How long members stay today. Someone who never scanned out has no
+     * known length of stay, so they are counted apart, not averaged in.
+     *
+     * @return array<string, mixed>
+     */
+    private function presence(): array
+    {
+        $today = Visit::today()->with('member')->orderBy('checked_in_at')->get();
+        $done = $today->whereNotNull('checked_out_at');
+        $minutes = $done->map(fn (Visit $v) => $v->minutes());
+
+        return [
+            'averageMinutes' => (int) round($minutes->avg() ?? 0),
+            'totalMinutes' => (int) $minutes->sum(),
+            'longestMinutes' => (int) ($minutes->max() ?? 0),
+            'completed' => $done->count(),
+            'missedCheckout' => Visit::whereNull('checked_out_at')->whereBetween('checked_in_at', [today()->subDays(7), today()])->where('checked_in_at', '<', today())->count(),
+            'inside' => $today->whereNull('checked_out_at')->take(8)->values()->map(fn (Visit $v) => [
+                'id' => $v->id,
+                'name' => $v->member?->name ?? $v->guest_name,
+                'since' => $v->checked_in_at->format('H.i'),
+                'minutes' => $v->minutes(),
+            ]),
+            'insideTotal' => $today->whereNull('checked_out_at')->count(),
+        ];
     }
 
     /**
