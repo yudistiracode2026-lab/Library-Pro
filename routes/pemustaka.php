@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'role:pemustaka'])->prefix('pemustaka')->name('pemustaka.')->group(function () {
     Route::get('/', HomeController::class)->name('beranda');
     Route::get('presensi/kode', [HomeController::class, 'presenceCode'])->name('presensi.code');
+    Route::post('presensi/perangkat', [HomeController::class, 'registerDevice'])->name('presensi.device');
+    Route::delete('presensi/perangkat', [HomeController::class, 'forgetDevice'])->name('presensi.device.forget');
     Route::get('kata-sandi', [PasswordController::class, 'edit'])->name('sandi');
     Route::put('kata-sandi', [PasswordController::class, 'update'])->name('sandi.update');
     Route::post('pinjaman/{loan}/perpanjang', [HomeController::class, 'extend'])->name('loan.extend');

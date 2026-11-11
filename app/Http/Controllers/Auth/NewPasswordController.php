@@ -51,6 +51,9 @@ class NewPasswordController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
+                // A reset means the account may have been lost: its phone no longer counts.
+                $user->member?->device()->delete();
+
                 event(new PasswordReset($user));
             }
         );

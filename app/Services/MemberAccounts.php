@@ -36,6 +36,7 @@ class MemberAccounts
                 $member->update(['user_id' => $user->id]);
             }
             DB::table('sessions')->where('user_id', $user->id)->delete();
+            $member->device()->delete();
 
             return $user;
         });

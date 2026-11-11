@@ -1,5 +1,5 @@
 import { QRCodeSVG } from 'qrcode.react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 export interface Presence {
     inside: boolean;
@@ -29,26 +29,48 @@ function spent(minutes: number): string {
  * The member's own rotating QR, shown to the scanner at the attendance desk.
  * It refreshes before it expires and notices when the desk has recorded them.
  */
-export function PresenceQr({ initial, purposes }: { initial: PresenceQrData; purposes: string[] }) {
+export function PresenceQr({
+    initial,
+    purposes,
+    url,
+    name,
+    footer,
+}: {
+    initial: PresenceQrData;
+    purposes: string[];
+    /** Where the fresh code comes from: the portal, or the sign-in page of a registered phone. */
+    url: string;
+    /** Whose QR this is, on a page that does not otherwise say. */
+    name?: string;
+    footer?: ReactNode;
+}) {
     const [data, setData] = useState(initial);
     const [left, setLeft] = useState(initial.secondsLeft);
     const [purpose, setPurpose] = useState(0);
     const [offline, setOffline] = useState(false);
     const expiresAt = useRef(Date.now() + initial.secondsLeft * 1000);
 
-    const refresh = useCallback(async (keperluan: number) => {
-        try {
-            const response = await fetch(`${route('pemustaka.presensi.code')}?keperluan=${keperluan}`, { headers: { Accept: 'application/json' } });
-            if (!response.ok) throw new Error(String(response.status));
-            const next: PresenceQrData = await response.json();
-            expiresAt.current = Date.now() + next.secondsLeft * 1000;
-            setData(next);
-            setLeft(next.secondsLeft);
-            setOffline(false);
-        } catch {
-            setOffline(true);
-        }
-    }, []);
+    const refresh = useCallback(
+        async (keperluan: number) => {
+            try {
+                const response = await fetch(`${url}?keperluan=${keperluan}`, { headers: { Accept: 'application/json' } });
+                // This phone was released or replaced: the page no longer has a QR to show.
+                if (response.status === 410) {
+                    window.location.reload();
+                    return;
+                }
+                if (!response.ok) throw new Error(String(response.status));
+                const next: PresenceQrData = await response.json();
+                expiresAt.current = Date.now() + next.secondsLeft * 1000;
+                setData(next);
+                setLeft(next.secondsLeft);
+                setOffline(false);
+            } catch {
+                setOffline(true);
+            }
+        },
+        [url],
+    );
 
     useEffect(() => {
         // Only while the page is on screen: a phone in a pocket should not keep asking.
@@ -77,6 +99,7 @@ export function PresenceQr({ initial, purposes }: { initial: PresenceQrData; pur
             <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-1">
                     <span className="text-[11px] font-semibold tracking-[.08em] text-teal-50 uppercase">Presensi perpustakaan</span>
+                    {name && <span className="text-[15px] font-semibold">{name}</span>}
                     <span className="font-display text-xl font-extrabold">
                         {inside ? 'Kamu sedang di perpustakaan' : presence ? 'Kamu sudah keluar' : 'Belum presensi hari ini'}
                     </span>
@@ -129,6 +152,7 @@ export function PresenceQr({ initial, purposes }: { initial: PresenceQrData; pur
                 </label>
             )}
             <span className="text-xs">Naikkan kecerahan layar HP supaya QR mudah terbaca.</span>
+            {footer}
         </section>
     );
 }

@@ -1,6 +1,7 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import InputError from '@/components/input-error';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { PresenceQr, type PresenceQrData } from '@/components/pemustaka/presence-qr';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useState, type FormEventHandler } from 'react';
 
@@ -8,6 +9,7 @@ type LoginForm = {
     email: string;
     password: string;
     remember: boolean;
+    device: boolean;
 };
 
 interface LoginProps {
@@ -15,6 +17,8 @@ interface LoginProps {
     portal: 'pemustaka' | 'staf';
     status?: string;
     canResetPassword: boolean;
+    /** The QR of a phone registered for attendance, shown without signing in. */
+    attendance: { name: string; qr: PresenceQrData; purposes: string[] } | null;
 }
 
 const field =
@@ -44,9 +48,9 @@ const COPY = {
 } as const;
 
 /** Split-screen login from Portal Pemustaka.dc.html, in a member and a staff version. */
-export default function Login({ portal, status, canResetPassword }: LoginProps) {
+export default function Login({ portal, status, canResetPassword, attendance }: LoginProps) {
     const copy = COPY[portal];
-    const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({ email: '', password: '', remember: false });
+    const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({ email: '', password: '', remember: false, device: false });
     const [showPassword, setShowPassword] = useState(false);
     // Read-only until touched: browsers do not autofill read-only fields when the page
     // loads, so a saved login (say the admin's, on the members' page) does not appear by
@@ -62,7 +66,9 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
     return (
         <div className="text-fg-1 grid min-h-screen bg-slate-50 md:grid-cols-[repeat(auto-fit,minmax(360px,1fr))] dark:bg-slate-900">
             <Head title={copy.title} />
-            <div className={`flex flex-col justify-between gap-8 p-8 text-white md:p-14 ${portal === 'staf' ? 'bg-teal-900' : 'bg-grad-leaf'}`}>
+            <div
+                className={`flex-col justify-between gap-8 p-8 text-white md:flex md:p-14 ${portal === 'staf' ? 'bg-teal-900' : 'bg-grad-leaf'} ${attendance ? 'hidden' : 'flex'}`}
+            >
                 <Link href={route('home')} className="flex items-center gap-3 text-white">
                     <AppLogoIcon className="size-[46px] flex-none rounded-full bg-white" />
                     <span className="font-display font-extrabold">Perpustakaan Politeknik Agraria</span>
@@ -74,9 +80,28 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
                 <span className="text-[13px] text-teal-50">{copy.aside}</span>
             </div>
 
-            <div className="grid place-items-center px-6 py-10">
+            <div className="flex flex-col items-center justify-center gap-8 px-6 py-10">
+                {attendance && (
+                    <div className="w-[min(380px,100%)]">
+                        <PresenceQr
+                            initial={attendance.qr}
+                            purposes={attendance.purposes}
+                            url={route('presensi.code')}
+                            name={attendance.name}
+                            footer={
+                                <button
+                                    type="button"
+                                    onClick={() => router.post(route('presensi.forget'))}
+                                    className="cursor-pointer self-start text-xs font-semibold underline"
+                                >
+                                    Bukan HP Anda? Lepas dari presensi
+                                </button>
+                            }
+                        />
+                    </div>
+                )}
                 <form onSubmit={submit} className="flex w-[min(380px,100%)] flex-col gap-4">
-                    <h2 className="font-display text-[26px] font-bold">{copy.greeting}</h2>
+                    <h2 className="font-display text-[26px] font-bold">{attendance ? 'Masuk ke portal' : copy.greeting}</h2>
                     {status && <div className="bg-success-soft text-success rounded-md px-3.5 py-2.5 text-sm">{status}</div>}
                     <label htmlFor="email" className="flex flex-col gap-1.5 text-[13px] font-semibold">
                         {copy.login}
@@ -136,6 +161,22 @@ export default function Login({ portal, status, canResetPassword }: LoginProps) 
                         />
                         Ingat saya
                     </label>
+                    {portal === 'pemustaka' && !attendance && (
+                        <label className="text-fg-2 flex items-start gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                checked={data.device}
+                                onChange={(e) => setData('device', e.target.checked)}
+                                className="mt-0.5 size-[18px] flex-none accent-teal-500"
+                            />
+                            <span>
+                                Gunakan HP ini untuk presensi
+                                <span className="text-fg-3 block text-xs">
+                                    QR tampil di halaman ini tanpa perlu login. Jangan centang di komputer bersama.
+                                </span>
+                            </span>
+                        </label>
+                    )}
                     <button
                         type="submit"
                         disabled={processing}

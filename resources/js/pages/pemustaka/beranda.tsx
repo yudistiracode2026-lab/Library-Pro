@@ -8,6 +8,8 @@ import { type ComponentType } from 'react';
 
 interface BerandaProps {
     qr: PresenceQrData;
+    deviceHere: boolean;
+    deviceElsewhere: boolean;
     purposes: string[];
     stats: { loans: number; history: number; ebooks: number };
     loans: { id: number; title: string; ddc_class: string; due: string; daysLeft: number; extensions: number; extendProblem: string | null }[];
@@ -29,7 +31,7 @@ const TONES: Record<string, string> = {
     slate: 'text-fg-2 bg-slate-100 dark:bg-slate-700',
 };
 
-export default function Beranda({ qr, purposes, stats, loans, notifications }: BerandaProps) {
+export default function Beranda({ qr, deviceHere, deviceElsewhere, purposes, stats, loans, notifications }: BerandaProps) {
     const { member, auth } = usePage<SharedData>().props;
     const first = (member?.name ?? auth.user.name).split(' ')[0];
 
@@ -38,7 +40,33 @@ export default function Beranda({ qr, purposes, stats, loans, notifications }: B
             <h1 className="font-display text-[28px] font-bold">Haloo, {first}</h1>
 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] items-start gap-5">
-                <PresenceQr initial={qr} purposes={purposes} />
+                <PresenceQr
+                    initial={qr}
+                    purposes={purposes}
+                    url={route('pemustaka.presensi.code')}
+                    footer={
+                        deviceHere ? (
+                            <span className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                                HP ini dipakai untuk presensi: QR tampil di halaman login.
+                                <button
+                                    type="button"
+                                    onClick={() => router.delete(route('pemustaka.presensi.device.forget'), { preserveScroll: true })}
+                                    className="cursor-pointer font-semibold underline"
+                                >
+                                    Lepas
+                                </button>
+                            </span>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => router.post(route('pemustaka.presensi.device'), {}, { preserveScroll: true })}
+                                className="h-10 cursor-pointer rounded-[10px] border border-white/60 text-sm font-semibold hover:bg-white/10"
+                            >
+                                {deviceElsewhere ? 'Pindahkan presensi ke HP ini' : 'Gunakan HP ini untuk presensi tanpa login'}
+                            </button>
+                        )
+                    }
+                />
 
                 <div className="grid grid-cols-3 gap-3">
                     {[

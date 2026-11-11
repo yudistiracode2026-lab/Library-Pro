@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Member extends Model
 {
@@ -16,6 +17,14 @@ class Member extends Model
     public function isActive(): bool
     {
         return $this->status === 'Aktif';
+    }
+
+    /**
+     * @return HasOne<MemberDevice, $this>
+     */
+    public function device(): HasOne
+    {
+        return $this->hasOne(MemberDevice::class);
     }
 
     /**

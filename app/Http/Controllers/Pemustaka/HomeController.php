@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ClearanceRequest;
 use App\Models\EbookLoan;
 use App\Models\Loan;
-use App\Models\Member;
 use App\Models\NewsPost;
 use App\Models\Visit;
 use App\Services\Circulation;
+use App\Services\MemberDevices;
 use App\Support\PresenceCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +25,7 @@ class HomeController extends Controller
 
     public function __construct(private Circulation $circulation) {}
 
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, MemberDevices $devices): Response
     {
         if ($request->user()->member === null) {
             return Inertia::render('pemustaka/belum-terhubung');
@@ -35,7 +35,9 @@ class HomeController extends Controller
         $loans = $member->loans()->open()->with('copy.book')->orderBy('due_at')->get();
 
         return Inertia::render('pemustaka/beranda', [
-            'qr' => $this->qr($member, 0),
+            'qr' => PresenceCode::payload($member),
+            'deviceHere' => $devices->current($request)?->member_id === $member->id,
+            'deviceElsewhere' => $member->device()->exists() && $devices->current($request)?->member_id !== $member->id,
             'purposes' => Visit::PURPOSES,
             'stats' => [
                 'loans' => $loans->count(),
@@ -52,27 +54,22 @@ class HomeController extends Controller
     {
         $purpose = $request->integer('keperluan');
 
-        return response()->json($this->qr($this->member($request), array_key_exists($purpose, Visit::PURPOSES) ? $purpose : 0));
+        return response()->json(PresenceCode::payload($this->member($request), array_key_exists($purpose, Visit::PURPOSES) ? $purpose : 0));
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function qr(Member $member, int $purpose): array
+    /** Lets this phone show the member's QR on the sign-in page. */
+    public function registerDevice(Request $request, MemberDevices $devices): RedirectResponse
     {
-        $last = $member->visits()->today()->latest('checked_in_at')->first();
+        $devices->register($this->member($request));
 
-        return [
-            'code' => PresenceCode::make($member, $purpose),
-            'secondsLeft' => PresenceCode::secondsLeft(),
-            'period' => PresenceCode::PERIOD,
-            'presence' => $last ? [
-                'inside' => $last->checked_out_at === null,
-                'kind' => $last->checked_out_at ? 'Keluar' : 'Masuk',
-                'time' => ($last->checked_out_at ?? $last->checked_in_at)->format('H.i'),
-                'minutes' => $last->minutes(),
-            ] : null,
-        ];
+        return back()->with('success', 'HP ini dipakai untuk presensi. QR akan tampil di halaman login tanpa perlu masuk.');
+    }
+
+    public function forgetDevice(Request $request, MemberDevices $devices): RedirectResponse
+    {
+        $devices->revoke($this->member($request));
+
+        return back()->with('success', 'HP tidak lagi dipakai untuk presensi.');
     }
 
     public function extend(Request $request, Loan $loan): RedirectResponse

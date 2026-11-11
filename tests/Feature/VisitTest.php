@@ -3,11 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\Member;
+use App\Models\MemberDevice;
 use App\Models\User;
 use App\Models\Visit;
+use App\Services\MemberAccounts;
+use App\Services\MemberDevices;
 use App\Support\PresenceCode;
+use Illuminate\Cookie\CookieValuePrefix;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -138,6 +143,90 @@ class VisitTest extends TestCase
         $this->actingAs(User::factory()->pustakawan()->create());
 
         $this->scan(' '.strtolower(PresenceCode::make($this->member))."\n")->assertJsonPath('status', 'masuk');
+    }
+
+    private function registeredPhone(): array
+    {
+        $user = User::factory()->create(['password' => 'kebun-raya-99']);
+        $this->member->update(['user_id' => $user->id]);
+        $response = $this->post('/login', ['email' => '20220311', 'password' => 'kebun-raya-99', 'device' => true]);
+        $cookie = collect($response->headers->getCookies())->first(fn ($c) => $c->getName() === 'pustagra_perangkat');
+        $this->assertNotNull($cookie);
+        $this->post('/logout');
+        $this->assertGuest();
+
+        return [$user, $cookie->getValue()];
+    }
+
+    public function test_a_registered_phone_shows_the_qr_on_the_sign_in_page_without_signing_in()
+    {
+        [, $token] = $this->registeredPhone();
+        $plain = CookieValuePrefix::remove(Crypt::decrypt($token, false));
+        $this->assertSame(hash('sha256', $plain), MemberDevice::sole()->token_hash, 'only a hash is stored');
+
+        $this->withUnencryptedCookie('pustagra_perangkat', $token)->get('/login')->assertInertia(fn (Assert $page) => $page
+            ->where('attendance.name', 'Annisa Putri Lestari')
+            ->where('attendance.qr.code', PresenceCode::make($this->member)));
+        $this->assertGuest();
+
+        $this->withCredentials()->withUnencryptedCookie('pustagra_perangkat', $token)->getJson('/presensi/kode?keperluan=1')->assertOk()
+            ->assertJsonPath('code', PresenceCode::make($this->member, 1));
+
+        // It opens attendance only: the portal still needs an account.
+        $this->withUnencryptedCookie('pustagra_perangkat', $token)->get('/pemustaka')->assertRedirect('/login');
+    }
+
+    public function test_without_a_registered_phone_there_is_no_qr()
+    {
+        $this->get('/login')->assertInertia(fn (Assert $page) => $page->where('attendance', null));
+        $this->getJson('/presensi/kode')->assertStatus(410);
+        $this->withCredentials()->withUnencryptedCookie('pustagra_perangkat', 'tebakan')->getJson('/presensi/kode')->assertStatus(410);
+
+        // Not ticking the box registers nothing.
+        $user = User::factory()->create(['password' => 'kebun-raya-99']);
+        $this->member->update(['user_id' => $user->id]);
+        $this->post('/login', ['email' => '20220311', 'password' => 'kebun-raya-99']);
+        $this->assertSame(0, MemberDevice::count());
+    }
+
+    public function test_a_member_has_one_phone_and_a_new_one_replaces_it()
+    {
+        [$user, $first] = $this->registeredPhone();
+
+        $this->actingAs($user)->post('/pemustaka/presensi/perangkat')->assertSessionHas('success');
+        $this->assertSame(1, MemberDevice::count());
+        $this->post('/logout');
+
+        $this->withCredentials()->withUnencryptedCookie('pustagra_perangkat', $first)->getJson('/presensi/kode')->assertStatus(410);
+    }
+
+    public function test_a_phone_can_be_released_from_the_sign_in_page()
+    {
+        [, $token] = $this->registeredPhone();
+
+        $this->withUnencryptedCookie('pustagra_perangkat', $token)->post('/presensi/lepas')->assertSessionHas('status');
+        $this->assertSame(0, MemberDevice::count());
+    }
+
+    public function test_changing_or_resetting_the_password_drops_other_phones_but_not_the_one_in_hand()
+    {
+        [$user, $token] = $this->registeredPhone();
+        $change = ['current_password' => 'kebun-raya-99', 'password' => 'sawah-hijau-77', 'password_confirmation' => 'sawah-hijau-77'];
+
+        // Changed on the registered phone itself: it stays.
+        $this->actingAs($user)->withUnencryptedCookie('pustagra_perangkat', $token)->put('/pemustaka/kata-sandi', $change)->assertSessionHasNoErrors();
+        $this->assertSame(1, MemberDevice::count());
+
+        // Changed from another browser: the phone no longer counts.
+        $this->unencryptedCookies = [];
+        $this->put('/pemustaka/kata-sandi', ['current_password' => 'sawah-hijau-77', 'password' => 'kebun-raya-88', 'password_confirmation' => 'kebun-raya-88'])->assertSessionHasNoErrors();
+        $this->assertSame(0, MemberDevice::count());
+
+        // A reset by staff drops it too.
+        app(MemberDevices::class)->register($this->member->fresh());
+        $this->assertSame(1, MemberDevice::count());
+        app(MemberAccounts::class)->resetToNumber($this->member->fresh());
+        $this->assertSame(0, MemberDevice::count());
     }
 
     public function test_only_staff_use_the_desk()

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CoverController;
+use App\Http\Controllers\DevicePresenceController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,10 @@ Route::middleware(['auth'])->group(function () {
         return to_route('pemustaka.beranda');
     })->name('dashboard');
 });
+
+// The QR on the sign-in page of a member's registered phone: no account session.
+Route::get('presensi/kode', [DevicePresenceController::class, 'code'])->name('presensi.code');
+Route::post('presensi/lepas', [DevicePresenceController::class, 'forget'])->name('presensi.forget');
 
 require __DIR__.'/staf.php';
 require __DIR__.'/pemustaka.php';

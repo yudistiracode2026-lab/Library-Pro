@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pemustaka;
 
 use App\Http\Controllers\Controller;
+use App\Services\MemberDevices;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,7 +24,7 @@ class PasswordController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request, MemberDevices $devices): RedirectResponse
     {
         $user = $request->user();
         $number = (string) $user->member?->member_number;
@@ -43,6 +44,10 @@ class PasswordController extends Controller
             'password' => Hash::make($request->string('password')->toString()),
             'must_change_password' => false,
         ])->save();
+
+        if ($user->member) {
+            $devices->revokeOthers($user->member, $request);
+        }
 
         return to_route('pemustaka.beranda')->with('success', 'Kata sandi diganti. Pakai kata sandi baru ini saat masuk berikutnya.');
     }

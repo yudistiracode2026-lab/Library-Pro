@@ -28,6 +28,28 @@ class PresenceCode
         return self::build($member->id, self::window(), $purpose);
     }
 
+    /**
+     * What a page needs to show the QR and whether the desk has recorded the member.
+     *
+     * @return array<string, mixed>
+     */
+    public static function payload(Member $member, int $purpose = 0): array
+    {
+        $last = $member->visits()->today()->latest('checked_in_at')->first();
+
+        return [
+            'code' => self::make($member, $purpose),
+            'secondsLeft' => self::secondsLeft(),
+            'period' => self::PERIOD,
+            'presence' => $last ? [
+                'inside' => $last->checked_out_at === null,
+                'kind' => $last->checked_out_at ? 'Keluar' : 'Masuk',
+                'time' => ($last->checked_out_at ?? $last->checked_in_at)->format('H.i'),
+                'minutes' => $last->minutes(),
+            ] : null,
+        ];
+    }
+
     public static function secondsLeft(): int
     {
         return self::PERIOD - now()->getTimestamp() % self::PERIOD;

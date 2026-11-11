@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Visit;
+use App\Services\MemberDevices;
+use App\Support\PresenceCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +19,15 @@ class AuthenticatedSessionController extends Controller
     /**
      * The members' sign-in page (NIM/NIP), linked from the website.
      */
-    public function create(Request $request): Response
+    public function create(Request $request, MemberDevices $devices): Response
     {
-        return $this->page($request, 'pemustaka');
+        $member = $devices->memberFor($request);
+
+        return $this->page($request, 'pemustaka', $member ? [
+            'name' => $member->name,
+            'qr' => PresenceCode::payload($member),
+            'purposes' => Visit::PURPOSES,
+        ] : null);
     }
 
     /**
@@ -32,10 +41,15 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle a member signing in.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, MemberDevices $devices): RedirectResponse
     {
         $request->authenticate('pemustaka');
         $request->session()->regenerate();
+
+        $member = $request->user()->member;
+        if ($request->boolean('device') && $member) {
+            $devices->register($member);
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -53,11 +67,13 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * @param  'pemustaka'|'staf'  $portal
+     * @param  array<string, mixed>|null  $attendance  the QR of this browser's registered phone
      */
-    private function page(Request $request, string $portal): Response
+    private function page(Request $request, string $portal, ?array $attendance = null): Response
     {
         return Inertia::render('auth/login', [
             'portal' => $portal,
+            'attendance' => $attendance,
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
         ]);
