@@ -10,6 +10,7 @@ interface Recent {
     in: string;
     out: string | null;
     minutes: number | null;
+    stays: number;
 }
 
 interface MejaProps {
@@ -232,21 +233,38 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                         <span className="font-display text-4xl font-extrabold text-teal-600">{inside}</span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-fg-3 border-b border-slate-200 pb-2 text-xs font-semibold tracking-[.06em] uppercase">
-                            Terakhir tercatat
-                        </span>
-                        {recent.map((r) => (
-                            <div
-                                key={r.id}
-                                className="flex items-center justify-between gap-3 border-b border-slate-200 py-2.5 text-sm last:border-0"
-                            >
-                                <span className="min-w-0 truncate font-semibold">{r.name}</span>
-                                <span className="text-fg-3 flex-none font-mono text-xs">
-                                    {r.in}–{r.out ?? '…'}
-                                    {r.minutes !== null && ` · ${duration(r.minutes)}`}
-                                </span>
-                            </div>
-                        ))}
+                        <span className="text-fg-3 pb-2 text-xs font-semibold tracking-[.06em] uppercase">Terakhir tercatat</span>
+                        <table className="w-full table-fixed text-sm">
+                            <thead>
+                                <tr className="text-fg-3 border-y border-slate-200 text-left text-xs">
+                                    <th className="py-2 font-semibold">Nama</th>
+                                    <th className="w-14 py-2 font-semibold">Masuk</th>
+                                    <th className="w-14 py-2 font-semibold">Keluar</th>
+                                    <th className="w-[72px] py-2 text-right font-semibold">Durasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recent.map((r) => (
+                                    <tr key={r.id} className="border-b border-slate-200 last:border-0">
+                                        <td className="py-2.5 pr-2">
+                                            <span className="block truncate font-semibold">{r.name}</span>
+                                            {r.stays > 1 && <span className="text-fg-3 block text-xs">{r.stays}× kunjungan</span>}
+                                        </td>
+                                        <td className="py-2.5 font-mono text-xs">{r.in}</td>
+                                        <td className="py-2.5 font-mono text-xs">{r.out ?? '–'}</td>
+                                        <td className="py-2.5 text-right font-mono text-xs">
+                                            {r.minutes === null ? (
+                                                <span className="font-sans font-semibold text-teal-700">Di dalam</span>
+                                            ) : r.minutes === 0 ? (
+                                                '< 1 m'
+                                            ) : (
+                                                duration(r.minutes)
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                         {recent.length === 0 && <p className="text-fg-3 py-6 text-center text-sm">Belum ada pindaian hari ini.</p>}
                     </div>
                     <Link

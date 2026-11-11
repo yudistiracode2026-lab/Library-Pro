@@ -89,17 +89,28 @@ class PresenceDeskController extends Controller
     }
 
     /**
+     * One row per member for today: first entry, latest exit, and the time
+     * spent inside across their visits.
+     *
      * @return list<array<string, mixed>>
      */
     private function recent(): array
     {
-        return Visit::today()->whereNotNull('member_id')->with('member')->latest('updated_at')->latest('id')->limit(8)->get()
-            ->map(fn (Visit $v) => [
-                'id' => $v->id,
-                'name' => $v->member?->name,
-                'in' => $v->checked_in_at->format('H.i'),
-                'out' => $v->checked_out_at?->format('H.i'),
-                'minutes' => $v->checked_out_at ? $v->minutes() : null,
-            ])->all();
+        return Visit::today()->whereNotNull('member_id')->with('member')->orderBy('checked_in_at')->get()
+            ->groupBy('member_id')
+            ->sortByDesc(fn ($stays) => $stays->max(fn (Visit $v) => $v->updated_at->getTimestamp()))
+            ->take(8)
+            ->map(function ($stays) {
+                $last = $stays->last();
+
+                return [
+                    'id' => $last->member_id,
+                    'name' => $last->member?->name,
+                    'in' => $stays->first()->checked_in_at->format('H.i'),
+                    'out' => $last->checked_out_at?->format('H.i'),
+                    'minutes' => $last->checked_out_at ? $stays->sum(fn (Visit $v) => $v->minutes()) : null,
+                    'stays' => $stays->count(),
+                ];
+            })->values()->all();
     }
 }

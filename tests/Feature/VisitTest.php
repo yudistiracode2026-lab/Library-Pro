@@ -123,6 +123,29 @@ class VisitTest extends TestCase
         $this->assertSame(1, Visit::count());
     }
 
+    public function test_the_desk_lists_a_member_once_however_many_times_they_come_and_go()
+    {
+        $this->actingAs(User::factory()->pustakawan()->create());
+        $this->scan(PresenceCode::make($this->member));
+
+        Carbon::setTestNow('2026-10-15 08:30:00');
+        $this->scan(PresenceCode::make($this->member))->assertJsonCount(1, 'recent')
+            ->assertJsonPath('recent.0.in', '08.00')->assertJsonPath('recent.0.out', '08.30')->assertJsonPath('recent.0.minutes', 30);
+
+        // Back in: the row shows them inside, with no exit yet.
+        Carbon::setTestNow('2026-10-15 09:00:00');
+        $this->scan(PresenceCode::make($this->member))->assertJsonCount(1, 'recent')
+            ->assertJsonPath('recent.0.out', null)->assertJsonPath('recent.0.minutes', null);
+
+        // The time away between visits does not count.
+        Carbon::setTestNow('2026-10-15 09:20:00');
+        $this->scan(PresenceCode::make($this->member))->assertJsonCount(1, 'recent')
+            ->assertJsonPath('recent.0.id', $this->member->id)
+            ->assertJsonPath('recent.0.in', '08.00')->assertJsonPath('recent.0.out', '09.20')
+            ->assertJsonPath('recent.0.minutes', 50)->assertJsonPath('recent.0.stays', 2);
+        $this->assertSame(2, Visit::count());
+    }
+
     public function test_a_code_records_one_entry_and_one_exit_at_most()
     {
         $this->actingAs(User::factory()->pustakawan()->create());
