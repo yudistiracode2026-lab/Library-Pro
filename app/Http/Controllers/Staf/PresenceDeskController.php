@@ -20,8 +20,8 @@ use Inertia\Response;
  */
 class PresenceDeskController extends Controller
 {
-    /** Time before the same member can be recorded again. */
-    private const MIN_GAP_SECONDS = 60;
+    /** How long the scanner must stop reading a member before the next read counts. */
+    private const REST_SECONDS = 10;
 
     public function show(): Response
     {
@@ -54,10 +54,17 @@ class PresenceDeskController extends Controller
             // One scan at a time per member, even if two arrive together.
             Member::whereKey($member->id)->lockForUpdate()->first();
             $last = $member->visits()->today()->latest('checked_in_at')->first();
-            $changedAt = $last?->checked_out_at ?? $last?->checked_in_at;
+            $inside = $last && $last->checked_out_at === null;
 
-            if (($changedAt && $changedAt->diffInSeconds(now()) < self::MIN_GAP_SECONDS) || ! Cache::add("presensi.kode.{$code}", true, PresenceCode::PERIOD * 4)) {
-                return $this->reply('ulang', 'Sudah tercatat. Tidak perlu dipindai lagi.', $member, $last);
+            // Every read restarts the wait, so a phone left on the scanner never flips.
+            $held = Cache::has("presensi.baca.{$member->id}");
+            Cache::put("presensi.baca.{$member->id}", true, self::REST_SECONDS);
+
+            // A code records one entry and one exit at most, so a screenshot gains little.
+            if ($held || ! Cache::add("presensi.kode.{$code}.".($inside ? 'keluar' : 'masuk'), true, PresenceCode::PERIOD * 4)) {
+                $wait = 'jauhkan HP, lalu pindai lagi setelah '.self::REST_SECONDS.' detik.';
+
+                return $this->reply('ulang', $inside ? "Sudah tercatat masuk. Untuk keluar, {$wait}" : "Sudah tercatat. Untuk masuk lagi, {$wait}", $member, $last);
             }
 
             $purpose = Visit::PURPOSES[$read['purpose']] ?? Visit::PURPOSES[0];

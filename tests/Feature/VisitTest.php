@@ -100,26 +100,41 @@ class VisitTest extends TestCase
         $this->scan($code)->assertJsonPath('status', 'masuk');
         $this->scan($code)->assertJsonPath('status', 'ulang');
 
-        // A new code straight after is still within the minimum gap.
-        Carbon::setTestNow('2026-10-15 08:00:31');
-        $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'ulang');
+        // A phone left on the scanner keeps being read, across a new code too.
+        foreach (['08:00:08', '08:00:16', '08:00:24', '08:00:32'] as $time) {
+            Carbon::setTestNow("2026-10-15 {$time}");
+            $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'ulang');
+        }
         $this->assertNull(Visit::sole()->checked_out_at);
 
-        Carbon::setTestNow('2026-10-15 08:01:30');
+        // Taken away, then shown again: that is the exit.
+        Carbon::setTestNow('2026-10-15 08:00:45');
         $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'keluar');
+        $this->assertNotNull(Visit::sole()->checked_out_at);
     }
 
-    public function test_a_code_used_once_cannot_be_used_again_after_the_gap()
+    public function test_the_second_scan_soon_after_the_first_records_the_exit()
     {
         $this->actingAs(User::factory()->pustakawan()->create());
-        Carbon::setTestNow('2026-10-15 08:00:29');
+        $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'masuk');
+
+        Carbon::setTestNow('2026-10-15 08:00:15');
+        $this->scan(PresenceCode::make($this->member))->assertJsonPath('status', 'keluar');
+        $this->assertSame(1, Visit::count());
+    }
+
+    public function test_a_code_records_one_entry_and_one_exit_at_most()
+    {
+        $this->actingAs(User::factory()->pustakawan()->create());
         $code = PresenceCode::make($this->member);
         $this->scan($code)->assertJsonPath('status', 'masuk');
 
-        // Still inside its grace window, past the gap only if the visit is backdated.
-        Visit::sole()->update(['checked_in_at' => now()->subMinutes(5)]);
+        Carbon::setTestNow('2026-10-15 08:00:11');
+        $this->scan($code)->assertJsonPath('status', 'keluar');
+
+        Carbon::setTestNow('2026-10-15 08:00:22');
         $this->scan($code)->assertJsonPath('status', 'ulang');
-        $this->assertNull(Visit::sole()->checked_out_at);
+        $this->assertSame(1, Visit::count());
     }
 
     public function test_expired_forged_and_foreign_codes_are_rejected()
