@@ -11,7 +11,6 @@ interface Recent {
     in: string;
     out: string | null;
     minutes: number | null;
-    stays: number;
 }
 
 interface Column {
@@ -283,40 +282,46 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                         <span className="text-fg-2 font-semibold">Sedang di perpustakaan</span>
                         <span className="font-display text-4xl font-extrabold text-teal-600">{inside}</span>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-fg-3 pb-2 text-xs font-semibold tracking-[.06em] uppercase">Terakhir tercatat</span>
-                        <table className="w-full table-fixed text-sm">
-                            <thead>
-                                <tr className="text-fg-3 border-y border-slate-200 text-left text-xs">
-                                    <th className="py-2 font-semibold">Nama</th>
-                                    <th className="w-14 py-2 font-semibold">Masuk</th>
-                                    <th className="w-14 py-2 font-semibold">Keluar</th>
-                                    <th className="w-[72px] py-2 text-right font-semibold">Durasi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recent.map((r) => (
-                                    <tr key={r.id} className="border-b border-slate-200 last:border-0">
-                                        <td className="py-2.5 pr-2">
-                                            <span className="block truncate font-semibold">{r.name}</span>
-                                            {r.stays > 1 && <span className="text-fg-3 block text-xs">{r.stays}× kunjungan</span>}
-                                        </td>
-                                        <td className="py-2.5 font-mono text-xs">{r.in}</td>
-                                        <td className="py-2.5 font-mono text-xs">{r.out ?? '–'}</td>
-                                        <td className="py-2.5 text-right font-mono text-xs">
-                                            {r.minutes === null ? (
-                                                <span className="font-sans font-semibold text-teal-700">Di dalam</span>
-                                            ) : r.minutes === 0 ? (
-                                                '< 1 m'
-                                            ) : (
-                                                duration(r.minutes)
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {recent.length === 0 && <p className="text-fg-3 py-6 text-center text-sm">Belum ada pindaian hari ini.</p>}
+                    <div className="flex min-h-[240px] flex-1 flex-col">
+                        <span className="text-fg-3 pb-2 text-xs font-semibold tracking-[.06em] uppercase">
+                            Catatan hari ini{recent.length > 0 && ` · ${recent.length}`}
+                        </span>
+                        {/* On wide screens the list takes no height of its own: it fills what the left column leaves and scrolls. */}
+                        <div className="relative flex-1">
+                            <div className="max-h-[60vh] overflow-y-auto lg:absolute lg:inset-0 lg:max-h-none">
+                                <table className="w-full table-fixed text-sm">
+                                    <thead className="sticky top-0 bg-white">
+                                        <tr className="text-fg-3 border-y border-slate-200 text-left text-xs">
+                                            <th className="py-2 font-semibold">Nama</th>
+                                            <th className="w-14 py-2 font-semibold">Masuk</th>
+                                            <th className="w-14 py-2 font-semibold">Keluar</th>
+                                            <th className="w-[72px] py-2 text-right font-semibold">Durasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recent.map((r) => (
+                                            <tr key={r.id} className="border-b border-slate-200 last:border-0">
+                                                <td className="py-2.5 pr-2">
+                                                    <span className="block truncate font-semibold">{r.name}</span>
+                                                </td>
+                                                <td className="py-2.5 font-mono text-xs">{r.in}</td>
+                                                <td className="py-2.5 font-mono text-xs">{r.out ?? '–'}</td>
+                                                <td className="py-2.5 text-right font-mono text-xs">
+                                                    {r.minutes === null ? (
+                                                        <span className="font-sans font-semibold text-teal-700">Di dalam</span>
+                                                    ) : r.minutes === 0 ? (
+                                                        '< 1 m'
+                                                    ) : (
+                                                        duration(r.minutes)
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {recent.length === 0 && <p className="text-fg-3 py-6 text-center text-sm">Belum ada pindaian hari ini.</p>}
+                            </div>
+                        </div>
                     </div>
                     <Link
                         href={route('staf.kunjungan')}

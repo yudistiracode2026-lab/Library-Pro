@@ -123,7 +123,7 @@ class VisitTest extends TestCase
         $this->assertSame(1, Visit::count());
     }
 
-    public function test_the_desk_lists_a_member_once_however_many_times_they_come_and_go()
+    public function test_the_desk_lists_every_visit_of_the_day_even_for_the_same_member()
     {
         $this->actingAs(User::factory()->pustakawan()->create());
         $this->scan(PresenceCode::make($this->member));
@@ -132,18 +132,16 @@ class VisitTest extends TestCase
         $this->scan(PresenceCode::make($this->member))->assertJsonCount(1, 'recent')
             ->assertJsonPath('recent.0.in', '08.00')->assertJsonPath('recent.0.out', '08.30')->assertJsonPath('recent.0.minutes', 30);
 
-        // Back in: the row shows them inside, with no exit yet.
+        // Back in: a new row on top, inside with no exit yet.
         Carbon::setTestNow('2026-10-15 09:00:00');
-        $this->scan(PresenceCode::make($this->member))->assertJsonCount(1, 'recent')
-            ->assertJsonPath('recent.0.out', null)->assertJsonPath('recent.0.minutes', null);
+        $this->scan(PresenceCode::make($this->member))->assertJsonCount(2, 'recent')
+            ->assertJsonPath('recent.0.in', '09.00')->assertJsonPath('recent.0.out', null)->assertJsonPath('recent.0.minutes', null)
+            ->assertJsonPath('recent.1.out', '08.30');
 
-        // The time away between visits does not count.
         Carbon::setTestNow('2026-10-15 09:20:00');
-        $this->scan(PresenceCode::make($this->member))->assertJsonCount(1, 'recent')
-            ->assertJsonPath('recent.0.id', $this->member->id)
-            ->assertJsonPath('recent.0.in', '08.00')->assertJsonPath('recent.0.out', '09.20')
-            ->assertJsonPath('recent.0.minutes', 50)->assertJsonPath('recent.0.stays', 2);
-        $this->assertSame(2, Visit::count());
+        $this->scan(PresenceCode::make($this->member))->assertJsonCount(2, 'recent')
+            ->assertJsonPath('recent.0.out', '09.20')->assertJsonPath('recent.0.minutes', 20)
+            ->assertJsonPath('recent.1.minutes', 30);
     }
 
     public function test_the_desk_charts_visits_by_day_of_this_week_and_by_month_of_this_year()
