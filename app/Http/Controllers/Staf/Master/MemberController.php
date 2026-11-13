@@ -71,7 +71,7 @@ class MemberController extends Controller
         $data = $request->validate([
             'file' => ['required', 'file', 'max:5120', 'extensions:xlsx,csv'],
             'default_type' => ['required', Rule::in(MasterOptions::MEMBER_TYPES)],
-            'default_program' => ['required', Rule::in(['D4 Pertanahan', 'D1 Pengukuran dan Pemetaan Kadastral'])],
+            'default_program' => ['required', Rule::in(MasterOptions::STUDENT_PROGRAMS)],
         ], ['file.extensions' => 'Unggah berkas Excel (.xlsx) atau CSV.'], ['file' => 'berkas']);
 
         $file = $data['file'];
@@ -113,7 +113,7 @@ class MemberController extends Controller
             'Isi lembar "Pemustaka" mulai baris 2. Satu baris untuk satu orang. Jangan ubah judul kolom di baris 1.',
             'NIM/NIP dan Nama wajib diisi. Kolom NIM/NIP sudah berformat Teks supaya angka nol di depan dan 18 digit NIP tidak berubah.',
             'Jenis: Mahasiswa, Dosen, Tendik, atau Umum. Pustakawan dan tenaga kependidikan diisi Tendik (kata "Pustakawan" juga diterima).',
-            'Program studi hanya untuk Mahasiswa: D4 Pertanahan atau D1 Pengukuran dan Pemetaan Kadastral.',
+            'Program studi hanya untuk Mahasiswa: '.implode(', ', MasterOptions::STUDENT_PROGRAMS).'. "Diploma IV Pertanahan" dan "D1" juga diterima.',
             'Kolom yang dikosongkan memakai pilihan bawaan di jendela impor. Email boleh kosong. Status kosong berarti Aktif.',
             'NIM/NIP yang sudah terdaftar dilewati, jadi berkas yang sama aman diunggah ulang setelah memperbaiki baris yang dilaporkan.',
             'Setiap pemustaka baru langsung punya akun portal: nama pengguna dan kata sandinya sama dengan NIM/NIP.',

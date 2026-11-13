@@ -113,7 +113,10 @@ class MasterOptions
 
     public const MEMBER_STATUSES = ['Aktif', 'Nonaktif', 'Diblokir'];
 
-    public const STUDY_PROGRAMS = ['D4 Pertanahan', 'D1 Pengukuran dan Pemetaan Kadastral', 'Dosen', 'Tendik', 'Umum'];
+    /** Programmes a student can be enrolled in. */
+    public const STUDENT_PROGRAMS = ['D4 Pertanahan', 'D1 Pengukuran dan Pemetaan Kadastral', 'Sarjana Terapan KMPT', 'Sarjana Terapan MPRP', 'Sarjana Terapan SPIP'];
+
+    public const STUDY_PROGRAMS = [...self::STUDENT_PROGRAMS, 'Dosen', 'Tendik', 'Umum'];
 
     public const EMPLOYEE_STATUSES = ['Aktif', 'Cuti'];
 

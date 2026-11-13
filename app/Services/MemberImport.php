@@ -23,7 +23,7 @@ class MemberImport
 
     /** Header words, lower-cased, for each field. */
     private const HEADERS = [
-        'member_number' => ['nim/nip', 'nim / nip', 'nim', 'nip', 'nomor anggota', 'no anggota', 'nomor induk', 'nomor'],
+        'member_number' => ['nim/nip', 'nim / nip', 'nim', 'nip', 'nit', 'nomor anggota', 'no anggota', 'nomor induk', 'nomor'],
         'name' => ['nama lengkap', 'nama'],
         'type' => ['jenis anggota', 'jenis', 'tipe', 'kategori'],
         'study_program' => ['program studi', 'prodi', 'jurusan'],
@@ -96,7 +96,7 @@ class MemberImport
                 $programText = trim((string) $get('study_program'));
                 $program = $programText === '' ? $defaultProgram : $this->program($programText);
                 if ($program === null) {
-                    $problems[] = "Baris {$line}: program studi \"{$programText}\" tidak dikenal. Pakai D4 Pertanahan atau D1 Pengukuran dan Pemetaan Kadastral.";
+                    $problems[] = "Baris {$line}: program studi \"{$programText}\" tidak dikenal. Pakai ".implode(', ', MasterOptions::STUDENT_PROGRAMS).'.';
 
                     continue;
                 }
@@ -225,9 +225,12 @@ class MemberImport
         $text = Str::lower($text);
 
         return match (true) {
+            str_contains($text, 'kmpt') => 'Sarjana Terapan KMPT',
+            str_contains($text, 'mprp') => 'Sarjana Terapan MPRP',
+            str_contains($text, 'spip') => 'Sarjana Terapan SPIP',
             in_array($text, ['d4', 'd-iv', 'd iv', 'div'], true), str_contains($text, 'd4 pertanahan'), str_contains($text, 'diploma iv') => 'D4 Pertanahan',
             in_array($text, ['d1', 'd-i', 'd i'], true), str_contains($text, 'd1 pengukuran'), str_contains($text, 'diploma i '), str_contains($text, 'pengukuran') => 'D1 Pengukuran dan Pemetaan Kadastral',
-            default => collect(MasterOptions::STUDY_PROGRAMS)->first(fn ($p) => Str::lower($p) === $text),
+            default => collect(MasterOptions::STUDENT_PROGRAMS)->first(fn ($p) => Str::lower($p) === $text),
         };
     }
 }

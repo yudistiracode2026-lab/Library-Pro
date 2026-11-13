@@ -209,7 +209,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                             Prodi mahasiswa bila kosong
                             <select value={defaultProgram} onChange={(e) => setDefaultProgram(e.target.value)} className={select}>
                                 {options.studyPrograms
-                                    .filter((o) => o.value.startsWith('D'))
+                                    .filter((o) => !['Dosen', 'Tendik', 'Umum'].includes(o.value))
                                     .map((o) => (
                                         <option key={o.value} value={o.value}>
                                             {o.label}

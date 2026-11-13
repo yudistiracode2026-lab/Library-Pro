@@ -68,6 +68,22 @@ class MemberImportTest extends TestCase
         $this->get(route('staf.pemustaka'))->assertInertia(fn (Assert $page) => $page->where('importReport', null));
     }
 
+    public function test_the_applied_bachelor_programmes_are_recognised()
+    {
+        $this->upload($this->csv(implode("\n", [
+            'NO;NIT;NAMA;PROGRAM STUDI;KELAS',
+            '1;2604020066;ABDIEL JABBAR SYADID;Sarjana Terapan KMPT;I/A',
+            '2;2603020067;AGISNA RAHMA;Sarjana Terapan MPRP;I/A',
+            '3;2601355998;A. ATHIRAH RAMADHANI AMRI;Diploma IV Pertanahan;I/A',
+            '4;2602020146;ABIGAIL DIMOMONMAU;Sarjana Terapan SPIP;I/A',
+        ])))->assertSessionHas('importReport', fn ($r) => $r['added'] === 4 && $r['problems'] === []);
+
+        $this->assertSame(
+            ['Sarjana Terapan KMPT', 'Sarjana Terapan MPRP', 'Sarjana Terapan SPIP', 'D4 Pertanahan'],
+            Member::whereIn('member_number', ['2604020066', '2603020067', '2601355998', '2602020146'])->orderBy('member_number', 'desc')->pluck('study_program')->all(),
+        );
+    }
+
     public function test_a_file_without_the_required_headers_adds_nothing()
     {
         $this->upload($this->csv("Nomor Induk Mahasiswa,Nama Taruna\n2602020500,Fajar"))
