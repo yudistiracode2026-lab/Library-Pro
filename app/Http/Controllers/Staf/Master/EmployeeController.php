@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staf\Master;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Staf\Master\Concerns\SortsRecords;
 use App\Models\Employee;
+use App\Services\MemberAccounts;
 use App\Support\CsvExport;
 use App\Support\MasterOptions;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,24 +47,29 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, MemberAccounts $accounts): RedirectResponse
     {
         $data = $this->validated($request);
 
-        DB::transaction(fn () => $this->clearOtherHeads(Employee::create([...$data, 'kind' => $this->kind($request)])));
+        DB::transaction(function () use ($request, $data, $accounts) {
+            $employee = Employee::create([...$data, 'kind' => $this->kind($request)]);
+            $this->clearOtherHeads($employee);
+            $accounts->forEmployee($employee);
+        });
 
-        return back()->with('success', 'Data pegawai ditambahkan.');
+        return back()->with('success', 'Data pegawai ditambahkan, sekaligus terdaftar sebagai pemustaka (NIP sebagai nama pengguna dan kata sandi portal).');
     }
 
-    public function update(Request $request, Employee $record): RedirectResponse
+    public function update(Request $request, Employee $record, MemberAccounts $accounts): RedirectResponse
     {
         abort_unless($record->kind === $this->kind($request), 404);
 
         $data = $this->validated($request, $record);
 
-        DB::transaction(function () use ($record, $data) {
+        DB::transaction(function () use ($record, $data, $accounts) {
             $record->update($data);
             $this->clearOtherHeads($record);
+            $accounts->forEmployee($record);
         });
 
         return back()->with('success', 'Perubahan disimpan.');

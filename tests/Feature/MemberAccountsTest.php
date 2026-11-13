@@ -55,6 +55,23 @@ class MemberAccountsTest extends TestCase
         $this->get('/pemustaka/kata-sandi')->assertNotFound();
     }
 
+    public function test_library_staff_become_members_with_their_nip()
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $employee = ['name' => 'Dewi Anggraini', 'nip' => '198206242003122002', 'golongan' => 'III/a', 'position' => 'Pustakawan Ahli Pertama', 'status' => 'Aktif'];
+
+        $this->post(route('staf.pustakawan.store'), $employee)->assertSessionHasNoErrors();
+        $member = Member::where('member_number', '198206242003122002')->sole();
+        $this->assertSame(['Tendik', 'Tendik', 'Aktif'], [$member->type, $member->study_program, $member->status]);
+        $this->assertTrue(Hash::check('198206242003122002', $member->user->password));
+
+        // Already a member but marked inactive, as many SLiMS records are: made active.
+        $this->member('199001012015031001')->update(['type' => 'Tendik', 'study_program' => 'Tendik', 'status' => 'Nonaktif']);
+        $this->post(route('staf.tendik.store'), ['name' => 'Indra Kusuma', 'nip' => '199001012015031001', 'golongan' => 'III/b', 'position' => 'Pengelola Arsip', 'status' => 'Aktif'])->assertSessionHasNoErrors();
+        $this->assertSame('Aktif', Member::where('member_number', '199001012015031001')->value('status'));
+        $this->assertSame(2, Member::count());
+    }
+
     public function test_staff_reset_a_password_to_the_nim_and_new_members_get_an_account()
     {
         $this->actingAs(User::factory()->pustakawan()->create());

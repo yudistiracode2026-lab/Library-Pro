@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserRole;
+use App\Models\Employee;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,28 @@ class MemberAccounts
 
             return $user;
         });
+    }
+
+    /**
+     * Library staff are members too, with their NIP as the member number. A
+     * member record marked inactive is made active again, a blocked one is
+     * left as it is.
+     */
+    public function forEmployee(Employee $employee): Member
+    {
+        $member = Member::firstOrNew(['member_number' => $employee->nip]);
+
+        if (! $member->exists) {
+            $member->fill(['name' => $employee->name, 'type' => 'Tendik', 'study_program' => 'Tendik', 'status' => 'Aktif'])->save();
+        } elseif ($member->status === 'Nonaktif') {
+            $member->update(['status' => 'Aktif']);
+        }
+
+        if ($member->user_id === null) {
+            $this->resetToNumber($member);
+        }
+
+        return $member;
     }
 
     /**

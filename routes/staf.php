@@ -58,6 +58,9 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
 
         // Member portal password back to the NIM/NIP (also makes the account).
         Route::post('pemustaka/{record}/reset-sandi', [MemberController::class, 'resetPassword'])->name('pemustaka.reset-password');
+        // A new intake or the staff list from an Excel/CSV file.
+        Route::get('pemustaka/impor/templat', [MemberController::class, 'importTemplate'])->name('pemustaka.import-template');
+        Route::post('pemustaka/impor', [MemberController::class, 'import'])->name('pemustaka.import');
 
         Route::controller(CirculationController::class)->prefix('sirkulasi')->name('sirkulasi')->group(function () {
             Route::get('/', 'index')->name('');
