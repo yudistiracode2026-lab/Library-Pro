@@ -242,7 +242,7 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                             <>
                                 <span className="font-display flex items-center gap-3 text-4xl font-extrabold">
                                     <ScanLine className="size-11 text-teal-500" />
-                                    Tunjukkan QR Anda
+                                    Petunjuk Presensi Perpustakaan
                                 </span>
                                 <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
                                     <figure className="flex shrink-0 flex-col items-center gap-2">
@@ -262,7 +262,10 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                                             Centang <b className="text-fg-1">Ingat saya</b> dan{' '}
                                             <b className="text-fg-1">Gunakan HP ini untuk presensi</b>.
                                         </li>
-                                        <li>Tunjukkan QR code di HP ke alat pemindai sebagai tanda masuk dan keluar.</li>
+                                        <li>
+                                            Tunjukkan QR code di HP ke alat pemindai sebagai tanda <b className="text-fg-1">masuk</b> dan{' '}
+                                            <b className="text-fg-1">keluar</b>.
+                                        </li>
                                     </ol>
                                 </div>
                                 <span className="text-fg-2 text-base font-semibold">
