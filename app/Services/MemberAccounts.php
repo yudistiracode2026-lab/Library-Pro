@@ -10,13 +10,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Member portal accounts. A member signs in with their NIM/NIP; a new or
- * reset account has that NIM/NIP as its password and must change it on the
- * first sign-in.
+ * Member portal accounts. A member signs in with their NIM/NIP as both the
+ * login and the password; members cannot change it.
  */
 class MemberAccounts
 {
-    /** Cost for the starting passwords; the hash is upgraded on the first sign-in. */
+    /** Cost for the NIM/NIP passwords; the hash is upgraded on the first sign-in. */
     private const STARTING_ROUNDS = 10;
 
     /** Creates the member's account, or gives an existing one its NIM/NIP back as the password. */
@@ -29,7 +28,6 @@ class MemberAccounts
                 'email' => $user->exists ? $user->email : $this->emailFor($member),
                 'role' => UserRole::Pemustaka,
                 'password' => $this->startingHash($member),
-                'must_change_password' => true,
             ])->saveQuietly();
 
             if ($member->user_id !== $user->id) {
@@ -65,7 +63,6 @@ class MemberAccounts
                     'email' => $this->emailFor($m, $taken->has($m->email ?? '')),
                     'role' => UserRole::Pemustaka->value,
                     'password' => $this->startingHash($m),
-                    'must_change_password' => true,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]]);

@@ -7,7 +7,6 @@ use App\Models\MemberDevice;
 use App\Models\User;
 use App\Models\Visit;
 use App\Services\MemberAccounts;
-use App\Services\MemberDevices;
 use App\Support\PresenceCode;
 use Illuminate\Cookie\CookieValuePrefix;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -273,23 +272,10 @@ class VisitTest extends TestCase
         $this->assertSame(0, MemberDevice::count());
     }
 
-    public function test_changing_or_resetting_the_password_drops_other_phones_but_not_the_one_in_hand()
+    public function test_a_password_reset_by_staff_drops_the_phone()
     {
-        [$user, $token] = $this->registeredPhone();
-        $change = ['current_password' => 'kebun-raya-99', 'password' => 'sawah-hijau-77', 'password_confirmation' => 'sawah-hijau-77'];
+        $this->registeredPhone();
 
-        // Changed on the registered phone itself: it stays.
-        $this->actingAs($user)->withUnencryptedCookie('pustagra_perangkat', $token)->put('/pemustaka/kata-sandi', $change)->assertSessionHasNoErrors();
-        $this->assertSame(1, MemberDevice::count());
-
-        // Changed from another browser: the phone no longer counts.
-        $this->unencryptedCookies = [];
-        $this->put('/pemustaka/kata-sandi', ['current_password' => 'sawah-hijau-77', 'password' => 'kebun-raya-88', 'password_confirmation' => 'kebun-raya-88'])->assertSessionHasNoErrors();
-        $this->assertSame(0, MemberDevice::count());
-
-        // A reset by staff drops it too.
-        app(MemberDevices::class)->register($this->member->fresh());
-        $this->assertSame(1, MemberDevice::count());
         app(MemberAccounts::class)->resetToNumber($this->member->fresh());
         $this->assertSame(0, MemberDevice::count());
     }

@@ -94,7 +94,7 @@ export default function Pemustaka({ records, filters, options }: PemustakaProps)
                     <DialogTitle className="font-display text-xl font-bold">Reset kata sandi portal?</DialogTitle>
                     <DialogDescription className="text-fg-2 text-[15px] leading-relaxed">
                         Kata sandi portal <b>{resetting?.name}</b> dikembalikan ke NIM/NIP-nya (
-                        <span className="font-mono">{resetting?.member_number}</span>). Pemustaka wajib menggantinya saat masuk berikutnya.
+                        <span className="font-mono">{resetting?.member_number}</span>).
                         {resetting && !resetting.has_account && ' Akun portalnya juga dibuat sekarang.'}
                     </DialogDescription>
                     <div className="mt-2 flex justify-end gap-2">

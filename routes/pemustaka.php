@@ -4,7 +4,6 @@ use App\Http\Controllers\Pemustaka\CatalogController;
 use App\Http\Controllers\Pemustaka\ClearanceController;
 use App\Http\Controllers\Pemustaka\HomeController;
 use App\Http\Controllers\Pemustaka\LoansController;
-use App\Http\Controllers\Pemustaka\PasswordController;
 use App\Http\Controllers\Pemustaka\ReadingController;
 use App\Http\Controllers\Pemustaka\SuggestionController;
 use App\Http\Controllers\Pemustaka\TitleCheckController;
@@ -19,8 +18,6 @@ Route::middleware(['auth', 'role:pemustaka'])->prefix('pemustaka')->name('pemust
     Route::get('presensi/kode', [HomeController::class, 'presenceCode'])->name('presensi.code');
     Route::post('presensi/perangkat', [HomeController::class, 'registerDevice'])->name('presensi.device');
     Route::delete('presensi/perangkat', [HomeController::class, 'forgetDevice'])->name('presensi.device.forget');
-    Route::get('kata-sandi', [PasswordController::class, 'edit'])->name('sandi');
-    Route::put('kata-sandi', [PasswordController::class, 'update'])->name('sandi.update');
     Route::post('pinjaman/{loan}/perpanjang', [HomeController::class, 'extend'])->name('loan.extend');
 
     Route::get('cari', [CatalogController::class, 'index'])->name('cari');

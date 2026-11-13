@@ -34,7 +34,6 @@ class MemberAccountsTest extends TestCase
         foreach ([$a, $b, $c] as $m) {
             $user = $m->fresh()->user;
             $this->assertSame(UserRole::Pemustaka, $user->role);
-            $this->assertTrue($user->must_change_password);
             $this->assertTrue(Hash::check($m->member_number, $user->password));
         }
         $this->assertSame('annisa@example.com', $a->fresh()->user->email);
@@ -44,31 +43,16 @@ class MemberAccountsTest extends TestCase
         $this->artisan('pemustaka:aktifkan-akun')->expectsOutputToContain('Dibuat: 0 akun.');
     }
 
-    public function test_first_sign_in_requires_a_new_password_before_anything_else()
+    public function test_members_sign_in_with_the_nim_as_password_and_go_straight_to_the_portal()
     {
-        $member = $this->member('20220311');
+        $this->member('20220311');
         $this->artisan('pemustaka:aktifkan-akun');
 
         $this->post('/login', ['email' => '20220311', 'password' => '20220311'])->assertRedirect('/dashboard');
-        $this->get('/dashboard')->assertRedirect(route('pemustaka.sandi'));
-        $this->get(route('pemustaka.beranda'))->assertRedirect(route('pemustaka.sandi'));
-        $this->get(route('pemustaka.sandi'))->assertInertia(fn ($page) => $page->component('pemustaka/sandi')->where('required', true));
-
-        // The NIM/NIP again, or a mismatch, is refused.
-        $this->put(route('pemustaka.sandi.update'), ['password' => '20220311', 'password_confirmation' => '20220311'])->assertSessionHasErrors('password');
-        $this->put(route('pemustaka.sandi.update'), ['password' => 'kebun-raya-99', 'password_confirmation' => 'lain'])->assertSessionHasErrors('password');
-
-        $this->put(route('pemustaka.sandi.update'), ['password' => 'kebun-raya-99', 'password_confirmation' => 'kebun-raya-99'])
-            ->assertRedirect(route('pemustaka.beranda'));
-        $user = $member->fresh()->user;
-        $this->assertFalse($user->must_change_password);
-        $this->assertTrue(Hash::check('kebun-raya-99', $user->password));
         $this->get(route('pemustaka.beranda'))->assertOk();
 
-        // Later changes ask for the current password.
-        $this->put(route('pemustaka.sandi.update'), ['password' => 'sawah-hijau-77', 'password_confirmation' => 'sawah-hijau-77'])->assertSessionHasErrors('current_password');
-        $this->put(route('pemustaka.sandi.update'), ['current_password' => 'kebun-raya-99', 'password' => 'sawah-hijau-77', 'password_confirmation' => 'sawah-hijau-77'])
-            ->assertSessionHasNoErrors();
+        // There is no page to change it.
+        $this->get('/pemustaka/kata-sandi')->assertNotFound();
     }
 
     public function test_staff_reset_a_password_to_the_nim_and_new_members_get_an_account()
@@ -81,11 +65,10 @@ class MemberAccountsTest extends TestCase
         $member = Member::where('member_number', '20230001')->sole();
         $this->assertTrue(Hash::check('20230001', $member->user->password));
 
-        $member->user->forceFill(['password' => Hash::make('lupa-lagi'), 'must_change_password' => false])->save();
+        $member->user->forceFill(['password' => Hash::make('lupa-lagi')])->save();
         $this->post(route('staf.pemustaka.reset-password', $member))->assertSessionHas('success');
         $user = $member->fresh()->user;
         $this->assertTrue(Hash::check('20230001', $user->password));
-        $this->assertTrue($user->must_change_password);
 
         // Deleting the member removes the portal account too.
         $this->delete(route('staf.pemustaka.destroy', $member));

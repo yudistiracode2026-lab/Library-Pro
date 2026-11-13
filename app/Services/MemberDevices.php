@@ -54,14 +54,6 @@ class MemberDevices
         Cookie::queue(Cookie::forget(self::COOKIE));
     }
 
-    /** After a password change: a phone other than the one in hand no longer counts. */
-    public function revokeOthers(Member $member, Request $request): void
-    {
-        if ($this->current($request)?->member_id !== $member->id) {
-            $this->revoke($member);
-        }
-    }
-
     public function revoke(Member $member): void
     {
         MemberDevice::where('member_id', $member->id)->delete();

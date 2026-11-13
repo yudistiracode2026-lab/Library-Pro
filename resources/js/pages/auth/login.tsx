@@ -122,7 +122,7 @@ export default function Login({ portal, status, canResetPassword, attendance }: 
                     <label htmlFor="password" className="flex flex-col gap-1.5 text-[13px] font-semibold">
                         <span className="flex items-center justify-between">
                             Kata sandi
-                            {canResetPassword && (
+                            {canResetPassword && portal === 'staf' && (
                                 <Link href={route('password.request')} className="text-xs font-semibold text-teal-600">
                                     Lupa kata sandi?
                                 </Link>
