@@ -251,12 +251,17 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                                         </div>
                                         <figcaption className="text-fg-3 text-sm font-semibold">{SITE_URL.replace('https://', '')}</figcaption>
                                     </figure>
-                                    <ol className="text-fg-2 flex max-w-lg list-decimal flex-col gap-1.5 pl-6 text-left text-lg leading-snug text-pretty">
+                                    <ol className="text-fg-2 flex max-w-xl list-decimal flex-col gap-1.5 pl-6 text-left text-[17px] leading-snug text-pretty">
+                                        <li>Scan QR code berikut dengan kamera HP.</li>
                                         <li>
-                                            Scan QR code berikut dengan kamera HP, lalu klik <b className="text-fg-1">Masuk</b>.
+                                            Pasang di layar utama HP. Android (Chrome): ketuk <b className="text-fg-1">⋮</b> di kanan atas, pilih{' '}
+                                            <b className="text-fg-1">Tambahkan ke layar utama</b> atau <b className="text-fg-1">Instal aplikasi</b>.
+                                            iPhone (Safari): ketuk <b className="text-fg-1">Bagikan</b>, pilih{' '}
+                                            <b className="text-fg-1">Tambahkan ke Layar Utama</b>.
                                         </li>
                                         <li>
-                                            Masukkan <b className="text-fg-1">NIM</b> sebagai nama pengguna dan kata sandi.
+                                            Buka ikon <b className="text-fg-1">PUSTAGRA</b>, masukkan <b className="text-fg-1">NIM</b> sebagai nama
+                                            pengguna dan kata sandi.
                                         </li>
                                         <li>
                                             Centang <b className="text-fg-1">Ingat saya</b> dan{' '}
@@ -269,7 +274,7 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                                     </ol>
                                 </div>
                                 <span className="text-fg-2 text-base font-semibold">
-                                    Ke depan tidak perlu login lagi, QR code langsung tampil saat situs dibuka.
+                                    Ke depan cukup buka ikon PUSTAGRA di HP, QR code langsung tampil tanpa scan dan login lagi.
                                 </span>
                             </>
                         )}

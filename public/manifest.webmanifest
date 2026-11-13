@@ -1,0 +1,15 @@
+{
+    "name": "PUSTAGRA – Perpustakaan Politeknik Agraria STPN",
+    "short_name": "PUSTAGRA",
+    "description": "Presensi, pinjaman, dan koleksi perpustakaan Politeknik Agraria STPN.",
+    "lang": "id",
+    "start_url": "/login",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2a9d8f",
+    "icons": [
+        { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    ]
+}
