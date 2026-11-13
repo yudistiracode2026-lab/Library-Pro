@@ -253,20 +253,20 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                                     </figure>
                                     <ol className="text-fg-2 flex max-w-lg list-decimal flex-col gap-1.5 pl-6 text-left text-lg leading-snug text-pretty">
                                         <li>
-                                            Pindai QR ini dengan kamera HP untuk membuka situs, lalu klik <b className="text-fg-1">Masuk</b>.
+                                            Scan QR code berikut dengan kamera HP, lalu klik <b className="text-fg-1">Masuk</b>.
                                         </li>
                                         <li>
-                                            Isi <b className="text-fg-1">NIM</b> sebagai nama pengguna dan kata sandi.
+                                            Masukkan <b className="text-fg-1">NIM</b> sebagai nama pengguna dan kata sandi.
                                         </li>
                                         <li>
                                             Centang <b className="text-fg-1">Ingat saya</b> dan{' '}
                                             <b className="text-fg-1">Gunakan HP ini untuk presensi</b>.
                                         </li>
-                                        <li>Tunjukkan QR presensi di layar HP ke alat pemindai saat masuk dan saat keluar.</li>
+                                        <li>Tunjukkan QR code di HP ke alat pemindai sebagai tanda masuk dan keluar.</li>
                                     </ol>
                                 </div>
-                                <span className="text-fg-3 text-sm">
-                                    Langkah 1–3 cukup sekali. Berikutnya QR presensi langsung tampil saat situs dibuka.
+                                <span className="text-fg-2 text-base font-semibold">
+                                    Ke depan tidak perlu login lagi, QR code langsung tampil saat situs dibuka.
                                 </span>
                             </>
                         )}
