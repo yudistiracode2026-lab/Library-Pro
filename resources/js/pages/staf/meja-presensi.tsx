@@ -238,9 +238,20 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                             <>
                                 <ScanLine className="size-20 text-teal-500" />
                                 <span className="font-display text-4xl font-extrabold">Tunjukkan QR Anda</span>
-                                <span className="text-fg-2 max-w-md text-xl leading-relaxed text-pretty">
-                                    Buka aplikasi pemustaka, lalu arahkan QR di layar HP ke alat pemindai saat masuk dan keluar.
-                                </span>
+                                <ol className="text-fg-2 flex max-w-lg list-decimal flex-col gap-1.5 pl-6 text-left text-lg leading-snug text-pretty">
+                                    <li>
+                                        Buka <b className="text-fg-1">pustagra.unrest.pro</b> di HP, lalu klik <b className="text-fg-1">Masuk</b>.
+                                    </li>
+                                    <li>
+                                        Isi <b className="text-fg-1">NIM</b> sebagai nama pengguna dan kata sandi.
+                                    </li>
+                                    <li>
+                                        Centang <b className="text-fg-1">Ingat saya</b> dan <b className="text-fg-1">Gunakan HP ini untuk presensi</b>
+                                        .
+                                    </li>
+                                    <li>Tunjukkan QR di layar HP ke alat pemindai saat masuk dan saat keluar.</li>
+                                </ol>
+                                <span className="text-fg-3 text-sm">Cukup sekali. Berikutnya QR langsung tampil saat situs dibuka.</span>
                             </>
                         )}
                     </section>
