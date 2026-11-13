@@ -3,7 +3,11 @@ import { ColumnChart } from '@/components/charts';
 import { duration } from '@/components/staf/ui';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, CircleAlert, CircleCheck, LogIn, LogOut, ScanLine } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { type ComponentType, useCallback, useEffect, useRef, useState } from 'react';
+
+/** Where members sign in, shown as a QR to open on their phone. */
+const SITE_URL = 'https://pustagra.unrest.pro';
 
 interface Recent {
     id: number;
@@ -236,22 +240,34 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                             </>
                         ) : (
                             <>
-                                <ScanLine className="size-20 text-teal-500" />
-                                <span className="font-display text-4xl font-extrabold">Tunjukkan QR Anda</span>
-                                <ol className="text-fg-2 flex max-w-lg list-decimal flex-col gap-1.5 pl-6 text-left text-lg leading-snug text-pretty">
-                                    <li>
-                                        Buka <b className="text-fg-1">pustagra.unrest.pro</b> di HP, lalu klik <b className="text-fg-1">Masuk</b>.
-                                    </li>
-                                    <li>
-                                        Isi <b className="text-fg-1">NIM</b> sebagai nama pengguna dan kata sandi.
-                                    </li>
-                                    <li>
-                                        Centang <b className="text-fg-1">Ingat saya</b> dan <b className="text-fg-1">Gunakan HP ini untuk presensi</b>
-                                        .
-                                    </li>
-                                    <li>Tunjukkan QR di layar HP ke alat pemindai saat masuk dan saat keluar.</li>
-                                </ol>
-                                <span className="text-fg-3 text-sm">Cukup sekali. Berikutnya QR langsung tampil saat situs dibuka.</span>
+                                <span className="font-display flex items-center gap-3 text-4xl font-extrabold">
+                                    <ScanLine className="size-11 text-teal-500" />
+                                    Tunjukkan QR Anda
+                                </span>
+                                <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                                    <figure className="flex shrink-0 flex-col items-center gap-2">
+                                        <div className="rounded-xl border border-slate-200 bg-white p-3">
+                                            <QRCodeSVG value={SITE_URL} size={156} marginSize={0} title={SITE_URL} />
+                                        </div>
+                                        <figcaption className="text-fg-3 text-sm font-semibold">{SITE_URL.replace('https://', '')}</figcaption>
+                                    </figure>
+                                    <ol className="text-fg-2 flex max-w-lg list-decimal flex-col gap-1.5 pl-6 text-left text-lg leading-snug text-pretty">
+                                        <li>
+                                            Pindai QR ini dengan kamera HP untuk membuka situs, lalu klik <b className="text-fg-1">Masuk</b>.
+                                        </li>
+                                        <li>
+                                            Isi <b className="text-fg-1">NIM</b> sebagai nama pengguna dan kata sandi.
+                                        </li>
+                                        <li>
+                                            Centang <b className="text-fg-1">Ingat saya</b> dan{' '}
+                                            <b className="text-fg-1">Gunakan HP ini untuk presensi</b>.
+                                        </li>
+                                        <li>Tunjukkan QR presensi di layar HP ke alat pemindai saat masuk dan saat keluar.</li>
+                                    </ol>
+                                </div>
+                                <span className="text-fg-3 text-sm">
+                                    Langkah 1–3 cukup sekali. Berikutnya QR presensi langsung tampil saat situs dibuka.
+                                </span>
                             </>
                         )}
                     </section>
