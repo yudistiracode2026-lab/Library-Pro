@@ -260,7 +260,7 @@ export default function MejaPresensi({ codeLength, inside: startInside, recent: 
                                             <b className="text-fg-1">Tambahkan ke Layar Utama</b>.
                                         </li>
                                         <li>
-                                            Buka ikon <b className="text-fg-1">PUSTAGRA</b>, masukkan <b className="text-fg-1">NIM</b> sebagai nama
+                                            Buka ikon <b className="text-fg-1">PUSTAGRA</b>, masukkan <b className="text-fg-1">NIT</b> sebagai nama
                                             pengguna dan kata sandi.
                                         </li>
                                         <li>
