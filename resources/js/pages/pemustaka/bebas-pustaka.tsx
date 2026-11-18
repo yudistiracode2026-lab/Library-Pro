@@ -450,7 +450,7 @@ function Letter({ request, member, head }: { request: Request; member: BebasProp
                 <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-3 gap-y-1">
                     <span>Nama</span>
                     <span>: {member.name}</span>
-                    <span>NIM</span>
+                    <span>NIT</span>
                     <span>: {member.member_number}</span>
                     <span>Program studi</span>
                     <span>: {member.study_program}</span>

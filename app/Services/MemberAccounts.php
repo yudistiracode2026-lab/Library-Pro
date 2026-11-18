@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Member portal accounts. A member signs in with their NIM/NIP as both the
+ * Member portal accounts. A member signs in with their NIT/NIP as both the
  * login and the password; members cannot change it.
  */
 class MemberAccounts
 {
-    /** Cost for the NIM/NIP passwords; the hash is upgraded on the first sign-in. */
+    /** Cost for the NIT/NIP passwords; the hash is upgraded on the first sign-in. */
     private const STARTING_ROUNDS = 10;
 
-    /** Creates the member's account, or gives an existing one its NIM/NIP back as the password. */
+    /** Creates the member's account, or gives an existing one its NIT/NIP back as the password. */
     public function resetToNumber(Member $member): User
     {
         return DB::transaction(function () use ($member) {

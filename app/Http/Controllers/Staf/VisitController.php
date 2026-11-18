@@ -51,7 +51,7 @@ class VisitController extends Controller
             'guest_name' => ['required_if:mode,tamu', 'nullable', 'string', 'max:255'],
             'guest_org' => ['nullable', 'string', 'max:255'],
             'purpose' => ['required', Rule::in(Visit::PURPOSES)],
-        ], ['required_if' => ':attribute wajib diisi.'], ['member_number' => 'NIM / NIP', 'guest_name' => 'nama tamu']);
+        ], ['required_if' => ':attribute wajib diisi.'], ['member_number' => 'NIT / NIP', 'guest_name' => 'nama tamu']);
 
         if ($data['mode'] === 'tamu') {
             Visit::create([

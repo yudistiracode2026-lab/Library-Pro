@@ -17,7 +17,7 @@ use Inertia\Response;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * The members' sign-in page (NIM/NIP), linked from the website.
+     * The members' sign-in page (NIT/NIP), linked from the website.
      */
     public function create(Request $request, MemberDevices $devices): Response
     {

@@ -13,7 +13,7 @@ use OpenSpout\Reader\XLSX\Reader as XlsxReader;
 
 /**
  * Adds members from an Excel or CSV file, such as a new intake or the staff
- * list, and gives each a portal account with the NIM/NIP as the password.
+ * list, and gives each a portal account with the NIT/NIP as the password.
  * Numbers already registered are left alone, so the same file can be
  * uploaded again after fixing the rows it reported.
  */
@@ -23,7 +23,7 @@ class MemberImport
 
     /** Header words, lower-cased, for each field. */
     private const HEADERS = [
-        'member_number' => ['nim/nip', 'nim / nip', 'nim', 'nip', 'nit', 'nomor anggota', 'no anggota', 'nomor induk', 'nomor'],
+        'member_number' => ['nim/nip', 'nim / nip', 'nit/nip', 'nit / nip', 'nim', 'nit', 'nip', 'nomor anggota', 'no anggota', 'nomor induk', 'nomor'],
         'name' => ['nama lengkap', 'nama'],
         'type' => ['jenis anggota', 'jenis', 'tipe', 'kategori'],
         'study_program' => ['program studi', 'prodi', 'jurusan'],
@@ -52,7 +52,7 @@ class MemberImport
         $columns = $this->columns(array_shift($rows) ?? []);
 
         if (! isset($columns['member_number'], $columns['name'])) {
-            return ['added' => 0, 'existing' => 0, 'problems' => ['Baris pertama harus berisi judul kolom, minimal "NIM/NIP" dan "Nama". Unduh templatnya untuk contoh.']];
+            return ['added' => 0, 'existing' => 0, 'problems' => ['Baris pertama harus berisi judul kolom, minimal "NIT/NIP" dan "Nama". Unduh templatnya untuk contoh.']];
         }
         if (count($rows) > self::MAX_ROWS) {
             return ['added' => 0, 'existing' => 0, 'problems' => ['Paling banyak '.number_format(self::MAX_ROWS, 0, ',', '.').' baris sekali unggah. Bagi filenya menjadi beberapa bagian.']];
@@ -72,12 +72,12 @@ class MemberImport
             [$number, $problem] = $this->number($get('member_number'));
             $name = trim((string) $get('name'));
             if ($problem || $number === '' || $name === '') {
-                $problems[] = "Baris {$line}: ".($problem ?? ($number === '' ? 'NIM/NIP kosong.' : 'nama kosong.'));
+                $problems[] = "Baris {$line}: ".($problem ?? ($number === '' ? 'NIT/NIP kosong.' : 'nama kosong.'));
 
                 continue;
             }
             if (isset($seen[$number])) {
-                $problems[] = "Baris {$line}: NIM/NIP {$number} sudah ada di baris {$seen[$number]}.";
+                $problems[] = "Baris {$line}: NIT/NIP {$number} sudah ada di baris {$seen[$number]}.";
 
                 continue;
             }
@@ -127,7 +127,7 @@ class MemberImport
         $usedEmails = [];
         foreach ($new as $number => $row) {
             if ($row['email'] && ($takenEmails->has($row['email']) || isset($usedEmails[$row['email']]))) {
-                $problems[] = "NIM/NIP {$number}: email {$row['email']} sudah dipakai anggota lain, jadi dikosongkan.";
+                $problems[] = "NIT/NIP {$number}: email {$row['email']} sudah dipakai anggota lain, jadi dikosongkan.";
                 $new[$number]['email'] = null;
             }
             $usedEmails[$row['email'] ?? ''] = true;
@@ -197,7 +197,7 @@ class MemberImport
     }
 
     /**
-     * The NIM/NIP as text. Excel keeps a long number typed into a number
+     * The NIT/NIP as text. Excel keeps a long number typed into a number
      * cell only to 15 digits, so an 18-digit NIP there is already wrong.
      *
      * @return array{0: string, 1: string|null}
@@ -207,14 +207,14 @@ class MemberImport
         // A number cell, whichever way the reader returns it.
         if (is_int($value) || is_float($value)) {
             if ($value >= 1e15 || floor($value) != $value) {
-                return ['', 'NIM/NIP tersimpan sebagai angka di Excel sehingga digitnya berubah. Ubah format kolom menjadi Teks, ketik ulang, lalu unggah lagi.'];
+                return ['', 'NIT/NIP tersimpan sebagai angka di Excel sehingga digitnya berubah. Ubah format kolom menjadi Teks, ketik ulang, lalu unggah lagi.'];
             }
             $value = (int) $value;
         }
         $number = preg_replace('/\s+/', '', ltrim(trim((string) $value), "'"));
 
         if (mb_strlen($number) > 30) {
-            return ['', 'NIM/NIP lebih dari 30 karakter.'];
+            return ['', 'NIT/NIP lebih dari 30 karakter.'];
         }
 
         return [$number, null];

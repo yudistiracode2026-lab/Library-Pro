@@ -94,13 +94,13 @@ export default function Kunjungan({ stats, visits, filter, purposes }: Kunjungan
                             {form.data.mode === 'anggota' ? (
                                 <>
                                     <p className="text-fg-3 text-[13px]">
-                                        Untuk anggota yang tidak membawa HP. Ketik NIM/NIP untuk mencatat masuk atau keluar.
+                                        Untuk anggota yang tidak membawa HP. Ketik NIT/NIP untuk mencatat masuk atau keluar.
                                     </p>
                                     <input
                                         value={form.data.member_number}
                                         onChange={(e) => form.setData('member_number', e.target.value)}
-                                        placeholder="NIM / NIP, mis. 20220145"
-                                        aria-label="NIM / NIP"
+                                        placeholder="NIT / NIP, mis. 20220145"
+                                        aria-label="NIT / NIP"
                                         aria-invalid={!!form.errors.member_number}
                                         className={inputClass}
                                     />

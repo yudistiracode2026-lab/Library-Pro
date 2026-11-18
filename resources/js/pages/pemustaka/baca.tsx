@@ -334,7 +334,7 @@ function Detail({ work, open, minutes, onClose }: { work: Work; open: boolean; m
                         {!work.hasFile
                             ? 'Berkas teks lengkap belum tersedia di repositori.'
                             : open
-                              ? `Sesi baca ${minutes} menit. Teks diberi tanda air nama dan NIM kamu, dan tidak bisa diunduh, dicetak, atau disalin.`
+                              ? `Sesi baca ${minutes} menit. Teks diberi tanda air nama dan NIT kamu, dan tidak bisa diunduh, dicetak, atau disalin.`
                               : 'Datang ke perpustakaan, sambungkan ke Wi-Fi perpustakaan, dan lakukan presensi masuk untuk membuka teks lengkap.'}
                     </span>
                 </div>

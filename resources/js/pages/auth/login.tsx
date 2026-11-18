@@ -13,7 +13,7 @@ type LoginForm = {
 };
 
 interface LoginProps {
-    /** Members sign in at /login with their NIM/NIP, staff at /staf/masuk with their email. */
+    /** Members sign in at /login with their NIT/NIP, staff at /staf/masuk with their email. */
     portal: 'pemustaka' | 'staf';
     status?: string;
     canResetPassword: boolean;
@@ -31,7 +31,7 @@ const COPY = {
         pitch: 'Lihat pinjaman, perpanjang buku, baca e-book, dan urus bebas pustaka tanpa antre di meja sirkulasi.',
         aside: 'Untuk mahasiswa, dosen, dan anggota perpustakaan.',
         greeting: 'Haloo, silakan masuk',
-        login: 'NIM / NIP',
+        login: 'NIT / NIP',
         placeholder: 'mis. 20220311',
         footer: 'Belum terdaftar? Datang ke meja sirkulasi dengan KTM, ya.',
     },

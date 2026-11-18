@@ -10,7 +10,7 @@ class ActivateMemberAccounts extends Command
 {
     protected $signature = 'pemustaka:aktifkan-akun {--coba : Hitung saja, tanpa membuat akun}';
 
-    protected $description = 'Membuat akun portal untuk semua pemustaka yang belum punya; kata sandi = NIM/NIP';
+    protected $description = 'Membuat akun portal untuk semua pemustaka yang belum punya; kata sandi = NIT/NIP';
 
     public function handle(MemberAccounts $accounts): int
     {
@@ -25,7 +25,7 @@ class ActivateMemberAccounts extends Command
         $made = $accounts->activateAll(progress: fn (int $done) => $bar->setProgress($done));
         $bar->finish();
         $this->newLine();
-        $this->info("Dibuat: {$made} akun. Kata sandi = NIM/NIP masing-masing.");
+        $this->info("Dibuat: {$made} akun. Kata sandi = NIT/NIP masing-masing.");
 
         return self::SUCCESS;
     }

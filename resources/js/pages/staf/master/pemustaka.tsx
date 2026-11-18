@@ -106,7 +106,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                             </Cell>
                         ),
                     },
-                    { label: 'NIM / NIP', sort: 'nim', render: (m) => <Cell mono>{m.member_number}</Cell> },
+                    { label: 'NIT / NIP', sort: 'nim', render: (m) => <Cell mono>{m.member_number}</Cell> },
                     { label: 'Program studi', sort: 'prodi', render: (m) => <Cell>{m.study_program}</Cell> },
                     { label: 'Jenis', sort: 'jenis', render: (m) => <Cell>{m.type}</Cell> },
                     { label: 'Pinjaman', sort: 'pinjaman', render: (m) => <Cell>{`${m.open_loans} aktif`}</Cell> },
@@ -125,7 +125,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                     }),
                     fields: [
                         { name: 'name', label: 'Nama lengkap', span: 2, required: true },
-                        { name: 'member_number', label: 'NIM / NIP', required: true },
+                        { name: 'member_number', label: 'NIT / NIP', required: true },
                         { name: 'study_program', label: 'Program studi', type: 'select', options: options.studyPrograms, required: true },
                         { name: 'type', label: 'Jenis', type: 'select', options: options.types, required: true },
                         { name: 'email', label: 'Email', type: 'email' },
@@ -138,7 +138,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                 <DialogContent className="rounded-xl p-7 sm:max-w-[460px]">
                     <DialogTitle className="font-display text-xl font-bold">Reset kata sandi portal?</DialogTitle>
                     <DialogDescription className="text-fg-2 text-[15px] leading-relaxed">
-                        Kata sandi portal <b>{resetting?.name}</b> dikembalikan ke NIM/NIP-nya (
+                        Kata sandi portal <b>{resetting?.name}</b> dikembalikan ke NIT/NIP-nya (
                         <span className="font-mono">{resetting?.member_number}</span>).
                         {resetting && !resetting.has_account && ' Akun portalnya juga dibuat sekarang.'}
                     </DialogDescription>
@@ -176,7 +176,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                     <DialogTitle className="font-display text-xl font-bold">Impor pemustaka</DialogTitle>
                     <DialogDescription className="text-fg-2 text-[15px] leading-relaxed">
                         Tambahkan banyak pemustaka sekaligus dari berkas Excel (.xlsx) atau CSV, misalnya taruna angkatan baru atau daftar pustakawan
-                        dan tenaga kependidikan. Masing-masing langsung punya akun portal dengan NIM/NIP sebagai nama pengguna dan kata sandi.
+                        dan tenaga kependidikan. Masing-masing langsung punya akun portal dengan NIT/NIP sebagai nama pengguna dan kata sandi.
                     </DialogDescription>
                     <a
                         href={route('staf.pemustaka.import-template')}
@@ -219,7 +219,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                         </label>
                     </div>
                     <p className="text-fg-3 text-xs leading-relaxed">
-                        Baris pertama berisi judul kolom: NIM/NIP dan Nama wajib, Jenis, Program studi, Email, dan Status boleh ada. NIM/NIP yang
+                        Baris pertama berisi judul kolom: NIT/NIP dan Nama wajib, Jenis, Program studi, Email, dan Status boleh ada. NIT/NIP yang
                         sudah terdaftar dilewati.
                     </p>
                     <div className="mt-1 flex justify-end gap-2">
@@ -247,7 +247,7 @@ export default function Pemustaka({ records, filters, options, importReport }: P
                 <DialogContent className="rounded-xl p-7 sm:max-w-[560px]">
                     <DialogTitle className="font-display text-xl font-bold">Hasil impor</DialogTitle>
                     <DialogDescription className="text-fg-2 text-[15px] leading-relaxed">
-                        <b>{report?.added ?? 0}</b> pemustaka baru ditambahkan, <b>{report?.existing ?? 0}</b> dilewati karena NIM/NIP-nya sudah
+                        <b>{report?.added ?? 0}</b> pemustaka baru ditambahkan, <b>{report?.existing ?? 0}</b> dilewati karena NIT/NIP-nya sudah
                         terdaftar.
                     </DialogDescription>
                     {report && report.problems.length > 0 && (

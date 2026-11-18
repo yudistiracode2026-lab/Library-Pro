@@ -29,7 +29,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // An email address, or a member's NIM/NIP as in the member portal.
+            // An email address, or a member's NIT/NIP as in the member portal.
             'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ];
@@ -73,7 +73,7 @@ class LoginRequest extends FormRequest
 
     /**
      * The account email for the given login: the input itself, or the email
-     * of the account linked to the member with that NIM/NIP.
+     * of the account linked to the member with that NIT/NIP.
      */
     private function loginEmail(): string
     {

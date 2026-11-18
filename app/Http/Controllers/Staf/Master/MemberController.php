@@ -54,15 +54,15 @@ class MemberController extends Controller
     {
         $accounts->resetToNumber(Member::create($this->validated($request)));
 
-        return back()->with('success', 'Pemustaka ditambahkan. Masuk portal dengan NIM/NIP sebagai nama pengguna dan kata sandi.');
+        return back()->with('success', 'Pemustaka ditambahkan. Masuk portal dengan NIT/NIP sebagai nama pengguna dan kata sandi.');
     }
 
-    /** Gives the member their NIM/NIP back as the portal password, for one who forgot it. */
+    /** Gives the member their NIT/NIP back as the portal password, for one who forgot it. */
     public function resetPassword(Member $record, MemberAccounts $accounts): RedirectResponse
     {
         $accounts->resetToNumber($record);
 
-        return back()->with('success', "Kata sandi portal {$record->name} kembali ke NIM/NIP ({$record->member_number}).");
+        return back()->with('success', "Kata sandi portal {$record->name} kembali ke NIT/NIP ({$record->member_number}).");
     }
 
     /** Adds members from an Excel or CSV file, each with a portal account. */
@@ -83,12 +83,12 @@ class MemberController extends Controller
 
         return back()
             ->with($report['added'] > 0 ? 'success' : 'error', $report['added'] > 0
-                ? "{$report['added']} pemustaka ditambahkan. Masing-masing masuk portal dengan NIM/NIP sebagai nama pengguna dan kata sandi."
+                ? "{$report['added']} pemustaka ditambahkan. Masing-masing masuk portal dengan NIT/NIP sebagai nama pengguna dan kata sandi."
                 : 'Tidak ada pemustaka baru yang ditambahkan.')
             ->with('importReport', $report);
     }
 
-    /** An empty Excel sheet to fill in, its NIM/NIP column already set to text. */
+    /** An empty Excel sheet to fill in, its NIT/NIP column already set to text. */
     public function importTemplate(): BinaryFileResponse
     {
         $path = tempnam(sys_get_temp_dir(), 'templat').'.xlsx';
@@ -99,7 +99,7 @@ class MemberController extends Controller
         $writer->openToFile($path);
         $writer->getCurrentSheet()->setName('Pemustaka');
 
-        $writer->addRow(Row::fromValues(['NIM/NIP', 'Nama', 'Jenis', 'Program studi', 'Email', 'Status'], (new Style)->setFontBold()));
+        $writer->addRow(Row::fromValues(['NIT/NIP', 'Nama', 'Jenis', 'Program studi', 'Email', 'Status'], (new Style)->setFontBold()));
         // Excel keeps leading zeros and all 18 digits of a NIP only in text cells.
         $text = (new Style)->setFormat('@');
         for ($i = 0; $i < 3000; $i++) {
@@ -111,12 +111,12 @@ class MemberController extends Controller
         $writer->getOptions()->setColumnWidth(110, 1);
         foreach ([
             'Isi lembar "Pemustaka" mulai baris 2. Satu baris untuk satu orang. Jangan ubah judul kolom di baris 1.',
-            'NIM/NIP dan Nama wajib diisi. Kolom NIM/NIP sudah berformat Teks supaya angka nol di depan dan 18 digit NIP tidak berubah.',
+            'NIT/NIP dan Nama wajib diisi. Kolom NIT/NIP sudah berformat Teks supaya angka nol di depan dan 18 digit NIP tidak berubah.',
             'Jenis: Mahasiswa, Dosen, Tendik, atau Umum. Pustakawan dan tenaga kependidikan diisi Tendik (kata "Pustakawan" juga diterima).',
             'Program studi hanya untuk Mahasiswa: '.implode(', ', MasterOptions::STUDENT_PROGRAMS).'. "Diploma IV Pertanahan" dan "D1" juga diterima.',
             'Kolom yang dikosongkan memakai pilihan bawaan di jendela impor. Email boleh kosong. Status kosong berarti Aktif.',
-            'NIM/NIP yang sudah terdaftar dilewati, jadi berkas yang sama aman diunggah ulang setelah memperbaiki baris yang dilaporkan.',
-            'Setiap pemustaka baru langsung punya akun portal: nama pengguna dan kata sandinya sama dengan NIM/NIP.',
+            'NIT/NIP yang sudah terdaftar dilewati, jadi berkas yang sama aman diunggah ulang setelah memperbaiki baris yang dilaporkan.',
+            'Setiap pemustaka baru langsung punya akun portal: nama pengguna dan kata sandinya sama dengan NIT/NIP.',
         ] as $line) {
             $writer->addRow(Row::fromValues([$line]));
         }
@@ -152,11 +152,11 @@ class MemberController extends Controller
         $rows = $this->query($request)->orderBy('name')->lazy()
             ->map(fn (Member $m) => [$m->name, $m->member_number, $m->study_program, $m->type, $m->email, $m->status]);
 
-        return CsvExport::download('pemustaka', ['Nama', 'NIM / NIP', 'Program studi', 'Jenis', 'Email', 'Status'], $rows);
+        return CsvExport::download('pemustaka', ['Nama', 'NIT / NIP', 'Program studi', 'Jenis', 'Email', 'Status'], $rows);
     }
 
     /**
-     * Columns of the list that can be sorted by their header. NIM/NIP sort
+     * Columns of the list that can be sorted by their header. NIT/NIP sort
      * as numbers: "9182415" comes before "20220311".
      *
      * @return array<string, mixed>
@@ -199,7 +199,7 @@ class MemberController extends Controller
             'type' => ['required', Rule::in(MasterOptions::MEMBER_TYPES)],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('members')->ignore($member)],
             'status' => ['required', Rule::in(MasterOptions::MEMBER_STATUSES)],
-        ], [], ['name' => 'nama lengkap', 'member_number' => 'NIM / NIP', 'study_program' => 'program studi', 'type' => 'jenis']);
+        ], [], ['name' => 'nama lengkap', 'member_number' => 'NIT / NIP', 'study_program' => 'program studi', 'type' => 'jenis']);
 
         return ['name' => AuthorName::person($data['name'])] + $data;
     }

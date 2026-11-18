@@ -115,7 +115,7 @@ class MemberImportTest extends TestCase
         $reader->open($response->getFile()->getPathname());
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $row) {
-                $this->assertSame(['NIM/NIP', 'Nama', 'Jenis', 'Program studi', 'Email', 'Status'], $row->toArray());
+                $this->assertSame(['NIT/NIP', 'Nama', 'Jenis', 'Program studi', 'Email', 'Status'], $row->toArray());
                 break;
             }
             break;

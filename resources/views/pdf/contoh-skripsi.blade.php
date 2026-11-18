@@ -21,13 +21,13 @@
         <p><b>SKRIPSI</b></p>
         <p>Diajukan sebagai salah satu syarat untuk memperoleh gelar<br>Sarjana Terapan Pertanahan</p>
         <p style="margin:50px 0;"><img src="{{ $logo }}" width="110" height="110" alt=""></p>
-        <p>Disusun oleh:<br><b>{{ $name }}</b><br>NIM. {{ $nim }}</p>
+        <p>Disusun oleh:<br><b>{{ $name }}</b><br>NIT. {{ $nim }}</p>
         <p style="margin-top:50px;">PROGRAM STUDI DIPLOMA IV PERTANAHAN<br>POLITEKNIK AGRARIA STPN<br>YOGYAKARTA<br>{{ now()->year }}</p>
     </div>
 
     <div class="page">
         <h2>LEMBAR PENGESAHAN</h2>
-        <p>Skripsi berjudul <b>{{ $title }}</b> yang disusun oleh {{ $name }} (NIM {{ $nim }}) telah diuji dan dinyatakan lulus di hadapan dewan penguji.</p>
+        <p>Skripsi berjudul <b>{{ $title }}</b> yang disusun oleh {{ $name }} (NIT {{ $nim }}) telah diuji dan dinyatakan lulus di hadapan dewan penguji.</p>
         <div class="sign">Penguji I<br><br><br>(ttd)</div>
         <div class="sign">Penguji II<br><br><br>(ttd)</div>
         <div class="sign">Pembimbing<br><br><br>(ttd)</div>

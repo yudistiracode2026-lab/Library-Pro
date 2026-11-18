@@ -42,7 +42,7 @@
 
     <table class="data">
         <tr><td>Nama</td><td>:</td><td><b>{{ $clearance->member->name }}</b></td></tr>
-        <tr><td>NIM</td><td>:</td><td>{{ $clearance->member->member_number }}</td></tr>
+        <tr><td>NIT</td><td>:</td><td>{{ $clearance->member->member_number }}</td></tr>
         <tr><td>Program studi</td><td>:</td><td>{{ $clearance->member->study_program }}</td></tr>
         <tr><td>Judul skripsi</td><td>:</td><td>{{ $clearance->thesis_title }}</td></tr>
     </table>

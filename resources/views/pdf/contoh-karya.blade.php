@@ -22,7 +22,7 @@
         <h1>{{ $title }}</h1>
         <p class="center"><b>{{ mb_strtoupper($type) }}</b></p>
         <p class="center" style="margin:50px 0;"><img src="{{ $logo }}" width="110" height="110" alt=""></p>
-        <p class="center">Disusun oleh:<br><b>{{ $author }}</b>@if ($nim)<br>NIM. {{ $nim }}@endif</p>
+        <p class="center">Disusun oleh:<br><b>{{ $author }}</b>@if ($nim)<br>NIT. {{ $nim }}@endif</p>
         <p class="center" style="margin-top:50px;">{{ mb_strtoupper($program) }}<br>{{ $year }}</p>
     </div>
 

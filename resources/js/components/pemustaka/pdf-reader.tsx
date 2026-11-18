@@ -12,7 +12,7 @@ interface PdfReaderProps {
     progressUrl?: string;
     onClose: () => void;
     closeLabel?: string;
-    /** Text tiled over each page (name, NIM, time) for on-site reading. */
+    /** Text tiled over each page (name, NIT, time) for on-site reading. */
     watermark?: string;
     /** Session end (ms timestamp); the reader closes itself then. */
     endsAt?: number;

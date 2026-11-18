@@ -109,7 +109,7 @@ class Reports
 
         return [
             'period' => 'Per '.today()->translatedFormat('j F Y'),
-            'columns' => ['No', 'Eksemplar', 'Judul', 'Peminjam', 'NIM / NIP', 'Tgl. pinjam', 'Jatuh tempo', 'Terlambat'],
+            'columns' => ['No', 'Eksemplar', 'Judul', 'Peminjam', 'NIT / NIP', 'Tgl. pinjam', 'Jatuh tempo', 'Terlambat'],
             // For the PDF: a wide title column, dates and day counts on one line.
             'widths' => ['4%', '9%', '34%', '18%', '13%', '8%', '8%', '6%'],
             'nowrap' => [1, 4, 5, 6, 7],
@@ -240,7 +240,7 @@ class Reports
         $approved = ClearanceRequest::with('member')->whereBetween('approved_at', [$from, $to])->orderBy('approved_at')->get();
 
         return [
-            'columns' => ['No. surat', 'Tanggal', 'Nama', 'NIM', 'Judul skripsi'],
+            'columns' => ['No. surat', 'Tanggal', 'Nama', 'NIT', 'Judul skripsi'],
             'rows' => $approved->map(fn (ClearanceRequest $c) => [
                 $c->letter_number, $c->approved_at->translatedFormat('j M Y'), $c->member->name, $c->member->member_number, $c->thesis_title,
             ])->all(),

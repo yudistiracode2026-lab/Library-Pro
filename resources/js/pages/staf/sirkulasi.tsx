@@ -135,8 +135,8 @@ function Lend({ borrower, rules, hints }: SirkulasiProps) {
                     <input
                         value={memberQ}
                         onChange={(e) => setMemberQ(e.target.value)}
-                        placeholder="Scan kartu atau ketik NIM"
-                        aria-label="NIM / NIP anggota"
+                        placeholder="Scan kartu atau ketik NIT"
+                        aria-label="NIT / NIP anggota"
                         className={scanInput}
                     />
                     <button type="submit" className={scanButton}>
