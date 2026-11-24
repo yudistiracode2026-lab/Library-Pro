@@ -11,6 +11,7 @@ import {
     ChevronDown,
     ChevronUp,
     FileCheck2,
+    FileText,
     GraduationCap,
     History,
     House,
@@ -32,6 +33,7 @@ const TABS: [string, string, Icon][] = [
     ['pemustaka.cek-judul', 'Cek judul skripsi', ScanSearch],
     ['pemustaka.pinjaman', 'Pinjaman', BookOpen],
     ['pemustaka.bebas-pustaka', 'Bebas pustaka', FileCheck2],
+    ['pemustaka.surat-keterangan', 'Surat keterangan', FileText],
     ['pemustaka.usulan', 'Usulan', Lightbulb],
 ];
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Pemustaka\CatalogController;
+use App\Http\Controllers\Pemustaka\CertificateController;
 use App\Http\Controllers\Pemustaka\ClearanceController;
 use App\Http\Controllers\Pemustaka\HomeController;
 use App\Http\Controllers\Pemustaka\LoansController;
@@ -34,6 +35,9 @@ Route::middleware(['auth', 'role:pemustaka'])->prefix('pemustaka')->name('pemust
     Route::post('bebas-pustaka/skripsi', [ClearanceController::class, 'thesis'])->name('bebas-pustaka.thesis');
     Route::post('bebas-pustaka/hardcopy', [ClearanceController::class, 'hardcopy'])->name('bebas-pustaka.hardcopy');
     Route::get('bebas-pustaka/surat', [ClearanceController::class, 'letter'])->name('bebas-pustaka.surat');
+
+    Route::get('surat-keterangan', [CertificateController::class, 'show'])->name('surat-keterangan');
+    Route::get('surat-keterangan/unduh', [CertificateController::class, 'download'])->name('surat-keterangan.download');
 
     Route::get('usulan', [SuggestionController::class, 'index'])->name('usulan');
     Route::post('usulan', [SuggestionController::class, 'store'])->name('usulan.store');
