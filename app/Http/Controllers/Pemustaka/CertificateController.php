@@ -70,7 +70,8 @@ class CertificateController extends Controller
             'date' => now()->translatedFormat('j F Y'),
             'head' => Employee::where('is_head', true)->first(),
             'logo' => public_path('images/logo-stpn.png'),
-        ])->setPaper('a4')->download('surat-keterangan-perpustakaan-'.$member->member_number.'.pdf');
+            // Only the glyphs used are embedded, so the file stays small enough for a phone.
+        ])->setOption('enable_font_subsetting', true)->setPaper('a4')->download('surat-keterangan-perpustakaan-'.$member->member_number.'.pdf');
     }
 
     /** Visits recorded by the desk scanner, not typed in by staff. */
