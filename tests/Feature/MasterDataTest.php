@@ -293,12 +293,12 @@ class MasterDataTest extends TestCase
         $this->assertSame(1, Publisher::count());
     }
 
-    public function test_pustakawan_cannot_manage_staff_records()
+    public function test_desk_staff_open_the_staff_records()
     {
         $this->asPustakawan();
 
-        $this->get('/staf/pustakawan')->assertForbidden();
-        $this->post('/staf/tendik', [])->assertForbidden();
+        $this->get('/staf/pustakawan')->assertOk();
+        $this->post('/staf/tendik', [])->assertSessionHasErrors('nip');
     }
 
     public function test_employee_pages_are_isolated_by_kind()

@@ -50,7 +50,7 @@ class StafPortalTest extends TestCase
         $this->get('/staf/sirkulasi')->assertOk();
         $this->get('/staf/aset/ruang')->assertOk();
 
-        foreach (['pustakawan', 'tendik', 'cms', 'pengaturan'] as $path) {
+        foreach (['akreditasi/dasbor', 'pok', 'cms', 'laporan', 'pengaturan'] as $path) {
             $this->get("/staf/{$path}")->assertForbidden();
         }
     }
@@ -76,7 +76,8 @@ class StafPortalTest extends TestCase
                 ->pluck('key');
 
             $this->assertContains('sirkulasi', $keys);
-            $this->assertNotContains('pustakawan', $keys);
+            $this->assertContains('pustakawan', $keys);
+            $this->assertNotContains('akreditasi', $keys);
             $this->assertNotContains('pengaturan', $keys);
         });
     }

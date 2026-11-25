@@ -53,6 +53,22 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function kepala(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Kepala,
+            'title' => 'Kepala Perpustakaan',
+        ]);
+    }
+
+    public function sirkulasi(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Sirkulasi,
+            'title' => 'Sirkulasi',
+        ]);
+    }
+
     public function pustakawan(): static
     {
         return $this->state(fn (array $attributes) => [

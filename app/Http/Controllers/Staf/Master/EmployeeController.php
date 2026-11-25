@@ -33,6 +33,7 @@ class EmployeeController extends Controller
 
         return Inertia::render('staf/master/pegawai', [
             'kind' => $kind,
+            'canSetHead' => $request->user()->canManage(),
             'records' => $employees->through(fn (Employee $e) => [
                 ...$e->only(['id', 'nip', 'name', 'golongan', 'position', 'status', 'is_head']),
                 'pangkat' => $e->pangkat(),
@@ -150,7 +151,7 @@ class EmployeeController extends Controller
     {
         $librarian = $this->kind($request) === 'pustakawan';
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nip' => ['required', 'digits:18', Rule::unique('employees')->ignore($employee)],
             'golongan' => ['required', Rule::in(array_keys(MasterOptions::GOLONGAN))],
@@ -158,5 +159,12 @@ class EmployeeController extends Controller
             'status' => ['required', Rule::in(MasterOptions::EMPLOYEE_STATUSES)],
             'is_head' => ['boolean'],
         ], [], ['name' => 'nama lengkap', 'nip' => 'NIP', 'position' => 'jabatan']);
+
+        // Only the superadmin and the head choose who heads the library.
+        if (! $request->user()->canManage()) {
+            unset($data['is_head']);
+        }
+
+        return $data;
     }
 }

@@ -18,6 +18,7 @@ interface EmployeeRow {
 
 interface PegawaiProps {
     kind: 'pustakawan' | 'tendik';
+    canSetHead: boolean;
     records: Paginated<EmployeeRow>;
     filters: { q: string; urut?: string; arah?: string };
     options: { golongan: SelectOption[]; positions: SelectOption[] | null; statuses: SelectOption[] };
@@ -38,7 +39,7 @@ const COPY = {
     },
 };
 
-export default function Pegawai({ kind, records, filters, options }: PegawaiProps) {
+export default function Pegawai({ kind, canSetHead, records, filters, options }: PegawaiProps) {
     const copy = COPY[kind];
 
     const fields: FieldDef[] = [
@@ -49,7 +50,7 @@ export default function Pegawai({ kind, records, filters, options }: PegawaiProp
             ? { name: 'position', label: 'Jabatan', type: 'select', options: options.positions, required: true }
             : { name: 'position', label: 'Jabatan', required: true },
         { name: 'status', label: 'Status', type: 'select', options: options.statuses, required: true },
-        { name: 'is_head', label: 'Kepala perpustakaan', type: 'checkbox', span: 2, hint: 'hanya satu orang' },
+        ...(canSetHead ? [{ name: 'is_head', label: 'Kepala perpustakaan', type: 'checkbox', span: 2, hint: 'hanya satu orang' } as FieldDef] : []),
     ];
 
     return (

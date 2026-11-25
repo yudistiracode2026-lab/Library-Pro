@@ -103,7 +103,7 @@ class AccreditationTest extends TestCase
 
     public function test_manual_scores_need_a_note_and_cannot_override_computed_ones()
     {
-        $this->actingAs(User::factory()->pustakawan()->create());
+        $this->actingAs(User::factory()->kepala()->create());
         $manual = Indicator::where('number', '4.1')->sole();
         $computed = Indicator::where('number', '2.8')->sole();
 
@@ -118,11 +118,10 @@ class AccreditationTest extends TestCase
     public function test_evidence_upload_is_a_draft_until_the_head_approves()
     {
         $evidence = Evidence::first();
-        $librarian = User::factory()->pustakawan()->create();
-        $head = User::factory()->pustakawan()->create();
+        $head = User::factory()->kepala()->create();
         Employee::create(['kind' => 'pustakawan', 'nip' => '196807251991031002', 'name' => 'Kepala', 'golongan' => 'IV/a', 'position' => 'P', 'is_head' => true, 'user_id' => $head->id]);
 
-        $this->actingAs($librarian)
+        $this->actingAs($head)
             ->post("/staf/akreditasi/bukti/{$evidence->id}/unggah", ['file' => UploadedFile::fake()->create('sk.pdf', 200, 'application/pdf')])
             ->assertSessionHas('success');
         $this->post("/staf/akreditasi/bukti/{$evidence->id}/unggah", ['file' => UploadedFile::fake()->create('virus.exe', 10)])->assertSessionHasErrors('file');
@@ -131,7 +130,8 @@ class AccreditationTest extends TestCase
         $this->assertSame(Evidence::DRAFT, $evidence->status);
         Storage::disk('local')->assertExists($evidence->file_path);
 
-        $this->post("/staf/akreditasi/bukti/{$evidence->id}/sahkan")->assertForbidden();
+        // Desk staff do not open the accreditation pages at all.
+        $this->actingAs(User::factory()->sirkulasi()->create())->post("/staf/akreditasi/bukti/{$evidence->id}/sahkan")->assertForbidden();
         $this->actingAs($head)->post("/staf/akreditasi/bukti/{$evidence->id}/sahkan")->assertSessionHas('success');
         $this->assertSame(Evidence::APPROVED, $evidence->fresh()->status);
     }
@@ -147,7 +147,7 @@ class AccreditationTest extends TestCase
     public function test_gap_lists_indicators_below_a_by_gain()
     {
         Indicator::query()->update(['manual_score' => 3]);
-        $this->actingAs(User::factory()->pustakawan()->create());
+        $this->actingAs(User::factory()->kepala()->create());
 
         $this->get('/staf/akreditasi/gap')->assertInertia(fn (Assert $page) => $page
             ->component('staf/akreditasi/gap')
@@ -158,7 +158,7 @@ class AccreditationTest extends TestCase
 
     public function test_only_the_head_approves_a_submission_once_every_check_passes()
     {
-        $this->actingAs(User::factory()->pustakawan()->create())->post('/staf/akreditasi/berkas/setujui')->assertForbidden();
+        $this->actingAs(User::factory()->sirkulasi()->create())->post('/staf/akreditasi/berkas/setujui')->assertForbidden();
 
         $this->actingAs(User::factory()->admin()->create());
         $this->post('/staf/akreditasi/berkas/setujui')->assertSessionHas('error');

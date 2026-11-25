@@ -15,13 +15,19 @@ class UserLevelsTest extends TestCase
     use RefreshDatabase;
 
     /** Management pages: superadmin and head. */
-    private const MANAGEMENT = ['staf.pustakawan', 'staf.tendik', 'staf.pok', 'staf.aset.denah'];
+    private const MANAGEMENT = ['staf.akreditasi.dasbor', 'staf.akreditasi.bukti', 'staf.pok', 'staf.aset.denah'];
 
     /** The Sistem group: superadmin only. */
     private const SYSTEM = ['staf.cms', 'staf.laporan', 'staf.pengaturan'];
 
     /** Pages every staff level opens. */
-    private const DESK = ['staf.dashboard', 'staf.sirkulasi', 'staf.kunjungan', 'staf.buku', 'staf.pemustaka', 'staf.opname', 'staf.pengadaan', 'staf.bebas-pustaka', 'staf.akreditasi.dasbor', 'staf.lembur', 'staf.kegiatan'];
+    private const DESK = [
+        'staf.dashboard',
+        // Master data
+        'staf.buku', 'staf.pengarang', 'staf.penerbit', 'staf.penyedia', 'staf.pemustaka', 'staf.pustakawan', 'staf.tendik', 'staf.aset.ruang', 'staf.aset.inventaris',
+        // Layanan, Koleksi, Kepegawaian, Akademik
+        'staf.kunjungan', 'staf.sirkulasi', 'staf.pencarian', 'staf.cctv', 'staf.opname', 'staf.pengadaan', 'staf.kegiatan', 'staf.lembur', 'staf.bebas-pustaka',
+    ];
 
     private function as(UserRole $role): User
     {
@@ -61,7 +67,7 @@ class UserLevelsTest extends TestCase
 
         $menu = $this->menu();
         $this->assertContains('pok', $menu);
-        $this->assertContains('pustakawan', $menu);
+        $this->assertContains('akreditasi.dasbor', $menu);
         $this->assertEmpty(array_intersect(['cms', 'laporan', 'pengaturan'], $menu));
         $this->get(route('staf.lembur'))->assertInertia(fn (Assert $page) => $page->where('canManage', true));
     }
@@ -77,7 +83,24 @@ class UserLevelsTest extends TestCase
             foreach ([...self::MANAGEMENT, ...self::SYSTEM] as $route) {
                 $this->get(route($route))->assertForbidden();
             }
+            $this->assertEmpty(array_intersect(['akreditasi.dasbor', 'pok', 'cms', 'laporan', 'pengaturan'], $this->menu()));
+            $this->assertContains('pustakawan', $this->menu());
         }
+    }
+
+    public function test_only_the_superadmin_and_head_choose_the_head_of_library()
+    {
+        $employee = ['name' => 'Pustakawan Contoh', 'nip' => '199001012020121002', 'golongan' => 'III/a', 'position' => 'Pustakawan Ahli Pertama', 'status' => 'Aktif', 'is_head' => true];
+
+        $this->as(UserRole::Sirkulasi);
+        $this->get(route('staf.pustakawan'))->assertInertia(fn (Assert $page) => $page->where('canSetHead', false));
+        $this->post(route('staf.pustakawan.store'), $employee)->assertSessionHasNoErrors();
+        $this->assertFalse(Employee::where('nip', '199001012020121002')->value('is_head'));
+
+        $this->as(UserRole::Kepala);
+        $record = Employee::where('nip', '199001012020121002')->sole();
+        $this->put(route('staf.pustakawan.update', $record), $employee)->assertSessionHasNoErrors();
+        $this->assertTrue($record->fresh()->is_head);
     }
 
     public function test_staff_sign_in_with_their_nip_on_the_staff_page()

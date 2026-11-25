@@ -36,8 +36,8 @@ class StafMenu
             ['key' => 'penerbit', 'controller' => Master\PublisherController::class, 'label' => 'Penerbit', 'title' => 'Master penerbit', 'icon' => 'building-2'],
             ['key' => 'penyedia', 'controller' => Master\SupplierController::class, 'label' => 'Penyedia buku', 'title' => 'Master penyedia buku', 'icon' => 'truck'],
             ['key' => 'pemustaka', 'controller' => Master\MemberController::class, 'label' => 'Pemustaka', 'title' => 'Master pemustaka', 'icon' => 'id-card'],
-            ['key' => 'pustakawan', 'controller' => Master\EmployeeController::class, 'label' => 'Pustakawan', 'title' => 'Master pustakawan', 'icon' => 'user-cog', 'admin_only' => true],
-            ['key' => 'tendik', 'controller' => Master\EmployeeController::class, 'label' => 'Tendik', 'title' => 'Master tendik', 'icon' => 'briefcase', 'admin_only' => true],
+            ['key' => 'pustakawan', 'controller' => Master\EmployeeController::class, 'label' => 'Pustakawan', 'title' => 'Master pustakawan', 'icon' => 'user-cog'],
+            ['key' => 'tendik', 'controller' => Master\EmployeeController::class, 'label' => 'Tendik', 'title' => 'Master tendik', 'icon' => 'briefcase'],
             ['key' => 'aset', 'label' => 'Manajemen aset', 'icon' => 'boxes', 'children' => [
                 ['key' => 'aset.ruang', 'custom' => true, 'label' => 'Ruang & denah', 'title' => 'Manajemen aset · ruang & denah', 'icon' => 'layout-grid'],
                 ['key' => 'aset.inventaris', 'custom' => true, 'label' => 'Inventaris & lisensi', 'title' => 'Manajemen aset · inventaris & lisensi', 'icon' => 'package'],
@@ -61,12 +61,12 @@ class StafMenu
             ['key' => 'bebas-pustaka', 'custom' => true, 'label' => 'Bebas pustaka', 'title' => 'Verifikasi bebas pustaka', 'icon' => 'file-check-2'],
         ]],
         ['label' => 'Akreditasi', 'items' => [
-            ['key' => 'akreditasi', 'label' => 'Akreditasi', 'icon' => 'award', 'children' => [
-                ['key' => 'akreditasi.dasbor', 'custom' => true, 'label' => 'Dasbor skor', 'title' => 'Akreditasi · dasbor skor', 'icon' => 'gauge'],
-                ['key' => 'akreditasi.indikator', 'custom' => true, 'label' => 'Indikator (56 IK)', 'title' => 'Akreditasi · indikator kunci', 'icon' => 'list-checks'],
-                ['key' => 'akreditasi.gap', 'custom' => true, 'label' => 'Analisis gap', 'title' => 'Akreditasi · analisis gap', 'icon' => 'trending-up'],
-                ['key' => 'akreditasi.bukti', 'custom' => true, 'label' => 'Bank bukti', 'title' => 'Akreditasi · bank bukti fisik', 'icon' => 'folder-check'],
-                ['key' => 'akreditasi.berkas', 'custom' => true, 'label' => 'Berkas pengajuan', 'title' => 'Akreditasi · berkas pengajuan SiPAPI', 'icon' => 'file-output'],
+            ['key' => 'akreditasi', 'label' => 'Akreditasi', 'icon' => 'award', 'admin_only' => true, 'children' => [
+                ['key' => 'akreditasi.dasbor', 'custom' => true, 'label' => 'Dasbor skor', 'title' => 'Akreditasi · dasbor skor', 'icon' => 'gauge', 'admin_only' => true],
+                ['key' => 'akreditasi.indikator', 'custom' => true, 'label' => 'Indikator (56 IK)', 'title' => 'Akreditasi · indikator kunci', 'icon' => 'list-checks', 'admin_only' => true],
+                ['key' => 'akreditasi.gap', 'custom' => true, 'label' => 'Analisis gap', 'title' => 'Akreditasi · analisis gap', 'icon' => 'trending-up', 'admin_only' => true],
+                ['key' => 'akreditasi.bukti', 'custom' => true, 'label' => 'Bank bukti', 'title' => 'Akreditasi · bank bukti fisik', 'icon' => 'folder-check', 'admin_only' => true],
+                ['key' => 'akreditasi.berkas', 'custom' => true, 'label' => 'Berkas pengajuan', 'title' => 'Akreditasi · berkas pengajuan SiPAPI', 'icon' => 'file-output', 'admin_only' => true],
             ]],
         ]],
         ['label' => 'Anggaran', 'items' => [

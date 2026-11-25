@@ -174,7 +174,7 @@ Route::middleware(['auth', 'role:staf'])
             Route::post('{camera}/sambungan', 'toggleOnline')->name('.online');
         });
 
-        Route::controller(AccreditationController::class)->prefix('akreditasi')->name('akreditasi.')->group(function () {
+        Route::middleware('role:admin,kepala')->controller(AccreditationController::class)->prefix('akreditasi')->name('akreditasi.')->group(function () {
             Route::get('dasbor', 'dashboard')->name('dasbor');
             Route::get('indikator', 'indicators')->name('indikator');
             Route::get('gap', 'gap')->name('gap');

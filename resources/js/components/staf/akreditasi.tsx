@@ -1,4 +1,5 @@
-import { Link, router } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
 import { type ReactNode, useRef } from 'react';
 
@@ -82,11 +83,12 @@ export interface IndicatorBrief {
 
 /** Compact IK card linking to its detail, as on the asset pages of the prototype. */
 export function IndicatorCard({ ik, compact }: { ik: IndicatorBrief; compact?: boolean }) {
-    return (
-        <Link
-            href={route('staf.akreditasi.indikator', { ik: ik.number })}
-            className={`flex items-center gap-3 bg-white text-left dark:bg-slate-800 ${compact ? 'rounded-[14px] p-3.5 shadow-sm hover:shadow-md' : 'rounded-md border border-slate-200 p-3 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900'}`}
-        >
+    const { auth } = usePage<SharedData>().props;
+    // The accreditation pages are for the superadmin and the head; others see the card without the link.
+    const linked = auth.user.role === 'admin' || auth.user.role === 'kepala';
+    const className = `flex items-center gap-3 bg-white text-left dark:bg-slate-800 ${compact ? 'rounded-[14px] p-3.5 shadow-sm' : 'rounded-md border border-slate-200 p-3 dark:border-slate-700'} ${linked ? (compact ? 'hover:shadow-md' : 'hover:bg-slate-50 dark:hover:bg-slate-900') : ''}`;
+    const content = (
+        <>
             <LetterBadge letter={ik.letter} />
             <div className="min-w-0 flex-1">
                 {compact ? (
@@ -104,6 +106,14 @@ export function IndicatorCard({ ik, compact }: { ik: IndicatorBrief; compact?: b
                     </>
                 )}
             </div>
+        </>
+    );
+
+    return linked ? (
+        <Link href={route('staf.akreditasi.indikator', { ik: ik.number })} className={className}>
+            {content}
         </Link>
+    ) : (
+        <div className={className}>{content}</div>
     );
 }
