@@ -45,14 +45,14 @@ class CctvController extends Controller
                     'description' => $e->description,
                 ]),
             'kinds' => CameraEvent::KINDS,
-            'canConfigure' => $request->user()->isAdmin(),
+            'canConfigure' => $request->user()->canManage(),
             'cameraAreas' => Camera::AREAS,
         ]);
     }
 
     public function update(Request $request, Camera $camera): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->canManage(), 403);
 
         $camera->update($request->validate([
             'name' => ['required', 'string', 'max:255'],

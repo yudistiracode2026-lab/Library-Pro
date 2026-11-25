@@ -27,7 +27,7 @@ class ActivityController extends Controller
         $date = $this->date($request);
         $month = $date->copy()->startOfMonth();
         $employee = $this->employee($request);
-        $isAdmin = $request->user()->isAdmin();
+        $isAdmin = $request->user()->canManage();
 
         $day = $employee
             ? ActivityLog::where('employee_id', $employee->id)->whereDate('date', $date)->orderBy('starts_at')->get()
@@ -87,7 +87,7 @@ class ActivityController extends Controller
 
     public function destroy(Request $request, ActivityLog $log): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin() || $log->employee->user_id === $request->user()->id, 403);
+        abort_unless($request->user()->canManage() || $log->employee->user_id === $request->user()->id, 403);
 
         $log->delete();
 
@@ -99,7 +99,7 @@ class ActivityController extends Controller
         $month = $this->date($request)->startOfMonth();
         $logs = ActivityLog::with('employee')
             ->whereBetween('date', [$month, $month->copy()->endOfMonth()])
-            ->when(! $request->user()->isAdmin(), fn ($q) => $q->where('employee_id', $this->employee($request)?->id))
+            ->when(! $request->user()->canManage(), fn ($q) => $q->where('employee_id', $this->employee($request)?->id))
             ->orderBy('date')->orderBy('starts_at')->get();
 
         return CsvExport::download('kegiatan-harian-'.$month->format('Y-m'), ['Tanggal', 'Petugas', 'Mulai', 'Selesai', 'Jenis', 'Uraian', 'Hasil', 'Status'],
@@ -118,11 +118,11 @@ class ActivityController extends Controller
 
     private function employee(Request $request): ?Employee
     {
-        if ($request->user()->isAdmin() && $request->filled('pegawai')) {
+        if ($request->user()->canManage() && $request->filled('pegawai')) {
             return Employee::find($request->integer('pegawai'));
         }
 
-        return $request->user()->employee ?? ($request->user()->isAdmin() ? Employee::orderBy('id')->first() : null);
+        return $request->user()->employee ?? ($request->user()->canManage() ? Employee::orderBy('id')->first() : null);
     }
 
     /**

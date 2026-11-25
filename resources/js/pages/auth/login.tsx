@@ -41,8 +41,8 @@ const COPY = {
         pitch: 'Sirkulasi, katalog, kunjungan, aset, dan akreditasi perpustakaan dalam satu tempat.',
         aside: 'Khusus pustakawan, tendik, dan administrator perpustakaan.',
         greeting: 'Masuk sebagai petugas',
-        login: 'Email',
-        placeholder: 'nama@kampus.ac.id',
+        login: 'NIP / Email',
+        placeholder: 'NIP atau nama@kampus.ac.id',
         footer: 'Belum punya akun? Minta administrator perpustakaan membuatkannya.',
     },
 } as const;
@@ -107,8 +107,8 @@ export default function Login({ portal, status, canResetPassword, attendance }: 
                         {copy.login}
                         <input
                             id="email"
-                            type={portal === 'staf' ? 'email' : 'text'}
-                            inputMode={portal === 'staf' ? 'email' : 'numeric'}
+                            type="text"
+                            inputMode={portal === 'staf' ? 'text' : 'numeric'}
                             required
                             {...unlock}
                             autoComplete="username"

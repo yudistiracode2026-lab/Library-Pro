@@ -75,7 +75,14 @@ class User extends Authenticatable
         return in_array($this->role, $roles, true);
     }
 
-    public function isAdmin(): bool
+    /** Superadmin and head of library: the management pages and actions. */
+    public function canManage(): bool
+    {
+        return $this->role?->manages() ?? false;
+    }
+
+    /** Superadmin only: the system pages (CMS, reports, settings). */
+    public function isSuperadmin(): bool
     {
         return $this->role === UserRole::Admin;
     }

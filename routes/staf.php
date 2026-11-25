@@ -24,7 +24,7 @@ use App\Http\Controllers\Staf\VisitController;
 use App\Support\StafMenu;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin,pustakawan'])
+Route::middleware(['auth', 'role:staf'])
     ->prefix('staf')
     ->name('staf.')
     ->group(function () {
@@ -45,7 +45,7 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
                 continue;
             }
 
-            Route::middleware($page['admin_only'] ? ['role:admin'] : [])->group(function () use ($page) {
+            Route::middleware($page['admin_only'] ? ['role:admin,kepala'] : [])->group(function () use ($page) {
                 ['key' => $key, 'path' => $path, 'controller' => $controller] = $page;
 
                 Route::get($path, [$controller, 'index'])->name($key);
@@ -102,7 +102,7 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
         });
 
         // The floor plan editor: rooms, racks and fixtures of each floor.
-        Route::middleware('role:admin')->controller(FloorPlanController::class)->prefix('aset/denah')->name('aset.denah')->group(function () {
+        Route::middleware('role:admin,kepala')->controller(FloorPlanController::class)->prefix('aset/denah')->name('aset.denah')->group(function () {
             Route::get('/', 'edit')->name('');
             Route::post('/', 'store')->name('.store');
             Route::put('{floor}', 'save')->name('.save');
@@ -159,7 +159,7 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
             Route::post('{assignment}/masuk', 'checkIn')->name('.check-in');
             Route::post('{assignment}/keluar', 'checkOut')->name('.check-out');
 
-            Route::middleware('role:admin')->group(function () {
+            Route::middleware('role:admin,kepala')->group(function () {
                 Route::post('/', 'store')->name('.store');
                 Route::put('{session}', 'update')->name('.update');
                 Route::delete('{session}', 'destroy')->name('.destroy');
@@ -190,13 +190,13 @@ Route::middleware(['auth', 'role:admin,pustakawan'])
             Route::get('berkas/{type}', 'document')->name('berkas.document');
         });
 
-        Route::controller(ReportController::class)->prefix('laporan')->name('laporan')->group(function () {
+        Route::middleware('role:admin')->controller(ReportController::class)->prefix('laporan')->name('laporan')->group(function () {
             Route::get('/', 'index')->name('');
             Route::get('unduh/{format}', 'download')->name('.download');
         });
 
         // Petunjuk Operasional Kegiatan: activity -> account -> detail line, per budget year.
-        Route::middleware('role:admin')->controller(PokController::class)->prefix('pok')->name('pok')->group(function () {
+        Route::middleware('role:admin,kepala')->controller(PokController::class)->prefix('pok')->name('pok')->group(function () {
             Route::get('/', 'index')->name('');
             Route::post('kegiatan', 'storeActivity')->name('.activity.store');
             Route::put('kegiatan/{activity}', 'updateActivity')->name('.activity.update');

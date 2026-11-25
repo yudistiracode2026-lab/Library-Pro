@@ -5,7 +5,15 @@ import { useInitials } from '@/hooks/use-initials';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 
-const ROLE_LABEL = { admin: 'Administrator', pustakawan: 'Pustakawan', pemustaka: 'Pemustaka' } as const;
+const ROLE_LABEL = {
+    admin: 'Superadmin',
+    kepala: 'Kepala Perpustakaan',
+    sirkulasi: 'Sirkulasi',
+    pengolah: 'Pengolah Data',
+    referensi: 'Referensi',
+    pustakawan: 'Pustakawan',
+    pemustaka: 'Pemustaka',
+} as const;
 
 export function StafHeader({ title, crumb }: { title: string; crumb: string }) {
     const { auth } = usePage<SharedData>().props;

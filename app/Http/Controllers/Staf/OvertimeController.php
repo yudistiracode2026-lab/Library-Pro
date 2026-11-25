@@ -35,7 +35,7 @@ class OvertimeController extends Controller
         return Inertia::render('staf/lembur', [
             'tab' => $tab,
             'filter' => $filter,
-            'canManage' => $user->isAdmin(),
+            'canManage' => $user->canManage(),
             'monthLabel' => $month->translatedFormat('F Y'),
             'kpis' => [
                 'sessions' => $monthSessions->count(),
@@ -47,7 +47,7 @@ class OvertimeController extends Controller
             'today' => $tab === 'presensi' ? $this->todayRows($user) : [],
             'history' => $tab === 'presensi' ? $this->history() : [],
             'report' => $tab === 'laporan' ? $this->report($monthSessions) : [],
-            'staff' => $user->isAdmin()
+            'staff' => $user->canManage()
                 ? Employee::where('status', 'Aktif')->orderBy('kind')->orderBy('name')->get()->map(fn (Employee $e) => ['id' => $e->id, 'name' => $e->name, 'kind' => $e->kind])
                 : [],
         ]);
@@ -151,7 +151,7 @@ class OvertimeController extends Controller
 
     private function authorizePresence(Request $request, OvertimeAssignment $assignment): void
     {
-        abort_unless($request->user()->isAdmin() || $assignment->employee->user_id === $request->user()->id, 403, 'Presensi lembur dilakukan oleh petugas yang bersangkutan.');
+        abort_unless($request->user()->canManage() || $assignment->employee->user_id === $request->user()->id, 403, 'Presensi lembur dilakukan oleh petugas yang bersangkutan.');
     }
 
     /**
@@ -217,7 +217,7 @@ class OvertimeController extends Controller
                 'out' => $a->checked_out_at?->format('H.i'),
                 'minutes' => $a->minutes(),
                 'late' => $a->isLate(),
-                'mine' => $user->isAdmin() || $a->employee->user_id === $user->id,
+                'mine' => $user->canManage() || $a->employee->user_id === $user->id,
             ]);
     }
 

@@ -133,7 +133,7 @@ class WebsiteAndReportsTest extends TestCase
 
     public function test_reports_preview_and_download()
     {
-        $this->actingAs(User::factory()->pustakawan()->create());
+        $this->actingAs(User::factory()->admin()->create());
         $member = Member::create(['member_number' => '1', 'name' => 'A', 'type' => 'Mahasiswa']);
         Visit::create(['member_id' => $member->id, 'purpose' => 'Membaca', 'method' => 'QR', 'checked_in_at' => now()]);
         Visit::create(['guest_name' => 'Tamu', 'purpose' => 'Membaca', 'method' => 'Tamu', 'checked_in_at' => now()]);
@@ -153,7 +153,7 @@ class WebsiteAndReportsTest extends TestCase
 
     public function test_overdue_loans_report_lists_the_oldest_first()
     {
-        $this->actingAs(User::factory()->pustakawan()->create());
+        $this->actingAs(User::factory()->admin()->create());
         $member = Member::create(['member_number' => '20220311', 'name' => 'Annisa', 'type' => 'Mahasiswa']);
         [$a, $b] = Book::first()->copies()->get();
         $c = Book::latest('id')->first()->copies()->first();

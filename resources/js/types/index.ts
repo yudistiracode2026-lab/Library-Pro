@@ -63,7 +63,7 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
-export type UserRole = 'admin' | 'pustakawan' | 'pemustaka';
+export type UserRole = 'admin' | 'kepala' | 'sirkulasi' | 'pengolah' | 'referensi' | 'pustakawan' | 'pemustaka';
 
 export interface User {
     id: number;

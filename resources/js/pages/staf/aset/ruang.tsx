@@ -112,7 +112,7 @@ export default function Ruang({ kpis, floor, floors, rooms, selected, options, i
                         <p className="text-fg-3 text-[13px]">
                             Luas ruang {nf(floorArea)} m² · klik ruang untuk detail · seret aset ke ruang untuk memindahkannya
                         </p>
-                        {auth.user.role === 'admin' && (
+                        {(auth.user.role === 'admin' || auth.user.role === 'kepala') && (
                             <Link
                                 href={route('staf.aset.denah', { lantai: floor })}
                                 className="text-fg-1 flex h-[34px] items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold hover:bg-slate-100 dark:bg-slate-800"

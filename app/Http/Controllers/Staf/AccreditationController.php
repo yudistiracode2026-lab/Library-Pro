@@ -311,7 +311,7 @@ class AccreditationController extends Controller
 
     private function canApprove(User $user): bool
     {
-        return $user->isAdmin() || (bool) $user->employee?->is_head;
+        return $user->canManage() || (bool) $user->employee?->is_head;
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Employee;
 use App\Models\Member;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -49,7 +50,7 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         $provider = Auth::getProvider();
-        $user = $provider->retrieveByCredentials(['email' => $this->loginEmail()]);
+        $user = $provider->retrieveByCredentials(['email' => $this->loginEmail($portal)]);
 
         if (! $user || ! $provider->validateCredentials($user, ['password' => $this->string('password')->toString()])) {
             RateLimiter::hit($this->throttleKey());
@@ -73,14 +74,21 @@ class LoginRequest extends FormRequest
 
     /**
      * The account email for the given login: the input itself, or the email
-     * of the account linked to the member with that NIT/NIP.
+     * of the account behind a number: the employee with that NIP on the
+     * staff page, the member with that NIT/NIP on the members' page.
+     *
+     * @param  'pemustaka'|'staf'  $portal
      */
-    private function loginEmail(): string
+    private function loginEmail(string $portal): string
     {
         $login = trim($this->string('email')->toString());
 
         if (str_contains($login, '@')) {
             return $login;
+        }
+
+        if ($portal === 'staf') {
+            return Employee::where('nip', $login)->whereNotNull('user_id')->first()?->user?->email ?? $login;
         }
 
         return Member::where('member_number', $login)->whereNotNull('user_id')->first()?->user?->email ?? $login;

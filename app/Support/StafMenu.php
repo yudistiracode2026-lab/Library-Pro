@@ -73,9 +73,9 @@ class StafMenu
             ['key' => 'pok', 'custom' => true, 'label' => 'POK kegiatan', 'title' => 'Petunjuk Operasional Kegiatan', 'icon' => 'wallet', 'admin_only' => true],
         ]],
         ['label' => 'Sistem', 'items' => [
-            ['key' => 'cms', 'custom' => true, 'label' => 'CMS website', 'icon' => 'layout-template', 'admin_only' => true],
-            ['key' => 'laporan', 'custom' => true, 'label' => 'Laporan', 'icon' => 'clipboard-list'],
-            ['key' => 'pengaturan', 'custom' => true, 'label' => 'Pengaturan', 'icon' => 'settings', 'admin_only' => true],
+            ['key' => 'cms', 'custom' => true, 'label' => 'CMS website', 'icon' => 'layout-template', 'superadmin_only' => true],
+            ['key' => 'laporan', 'custom' => true, 'label' => 'Laporan', 'icon' => 'clipboard-list', 'superadmin_only' => true],
+            ['key' => 'pengaturan', 'custom' => true, 'label' => 'Pengaturan', 'icon' => 'settings', 'superadmin_only' => true],
         ]],
     ];
 
@@ -93,6 +93,7 @@ class StafMenu
                 foreach ($item['children'] ?? [$item] as $page) {
                     $pages[] = [
                         'admin_only' => false,
+                        'superadmin_only' => false,
                         'controller' => null,
                         'custom' => false,
                         'title' => $page['label'],
@@ -144,7 +145,9 @@ class StafMenu
      */
     public static function for(User $user): array
     {
-        $visible = fn (array $item) => $user->isAdmin() || ! ($item['admin_only'] ?? false);
+        // Management pages for the superadmin and head; system pages for the superadmin only.
+        $visible = fn (array $item) => ($user->isSuperadmin() || ! ($item['superadmin_only'] ?? false))
+            && ($user->canManage() || ! ($item['admin_only'] ?? false));
         $badges = self::badges();
 
         $present = fn (array $item) => [
