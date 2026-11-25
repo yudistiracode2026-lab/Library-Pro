@@ -63,6 +63,20 @@ class CoverPhotoTest extends TestCase
             ->assertSessionHasErrors('cover');
     }
 
+    public function test_a_wrong_cover_can_be_removed()
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('sampul/keliru.jpg', 'jpeg');
+        $this->actingAs(User::factory()->create(['role' => UserRole::PengolahData]));
+        $book = $this->book(['cover_path' => 'sampul/keliru.jpg']);
+
+        $this->delete(route('staf.sampul.destroy', $book))->assertRedirect()->assertSessionHas('success');
+
+        $this->assertNull($book->fresh()->cover_path);
+        Storage::disk('local')->assertMissing('sampul/keliru.jpg');
+        $this->get(route('staf.sampul'))->assertInertia(fn (Assert $page) => $page->where('missing', 1));
+    }
+
     public function test_members_cannot_upload_covers()
     {
         $this->actingAs(User::factory()->create(['role' => UserRole::Pemustaka]));
@@ -70,5 +84,6 @@ class CoverPhotoTest extends TestCase
 
         $this->get(route('staf.sampul'))->assertForbidden();
         $this->post(route('staf.sampul.store', $book), ['cover' => UploadedFile::fake()->image('x.jpg')])->assertForbidden();
+        $this->delete(route('staf.sampul.destroy', $book))->assertForbidden();
     }
 }

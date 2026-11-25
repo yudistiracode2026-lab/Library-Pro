@@ -1,6 +1,21 @@
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { LoaderCircle, RotateCcw, RotateCw } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { LoaderCircle, RotateCcw, RotateCw, Trash2 } from 'lucide-react';
 import { type ReactNode, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
+
+/** Asks first, then removes a book's cover (for a wrong photo). */
+export function removeCover(id: number, title: string, onFinish?: () => void) {
+    if (!window.confirm(`Hapus sampul "${title}"? Buku akan kembali ke daftar belum bersampul.`)) return;
+    router.delete(route('staf.sampul.destroy', id), { preserveScroll: true, preserveState: true, onFinish });
+}
+
+export function RemoveCoverButton({ id, title, className }: { id: number; title: string; className: string }) {
+    return (
+        <button type="button" onClick={() => removeCover(id, title)} title="Hapus sampul" aria-label={`Hapus sampul ${title}`} className={className}>
+            <Trash2 className="size-4" />
+        </button>
+    );
+}
 
 type Point = { x: number; y: number };
 /** Top-left, top-right, bottom-right, bottom-left, in source pixels. */

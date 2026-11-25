@@ -57,4 +57,12 @@ class CoverController extends Controller
 
         return back()->with('success', "Sampul {$book->title} tersimpan.");
     }
+
+    /** For a wrong photo: the book goes back to the "no cover yet" list. */
+    public function destroy(Book $book): RedirectResponse
+    {
+        $book->removeCover();
+
+        return back()->with('success', "Sampul {$book->title} dihapus.");
+    }
 }

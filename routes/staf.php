@@ -128,6 +128,7 @@ Route::middleware(['auth', 'role:staf'])
         // Cover photos taken on a phone, for books entered on a PC.
         Route::get('sampul', [CoverController::class, 'index'])->name('sampul');
         Route::post('sampul/{book}', [CoverController::class, 'store'])->name('sampul.store');
+        Route::delete('sampul/{book}', [CoverController::class, 'destroy'])->name('sampul.destroy');
 
         Route::controller(OpnameController::class)->prefix('opname')->name('opname')->group(function () {
             Route::get('/', 'index')->name('');

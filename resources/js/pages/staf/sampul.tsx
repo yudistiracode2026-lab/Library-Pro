@@ -1,5 +1,5 @@
 import { BookCover } from '@/components/book-cover';
-import { CoverPicker } from '@/components/staf/cover-capture';
+import { CoverPicker, RemoveCoverButton } from '@/components/staf/cover-capture';
 import { Card, inputClass } from '@/components/staf/ui';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated } from '@/types';
@@ -153,6 +153,13 @@ function CoverRow({ book }: { book: CoverBook }) {
             <CoverPicker onPicked={upload}>
                 {(pick) => (
                     <div className="flex flex-none gap-1.5">
+                        {book.cover && (
+                            <RemoveCoverButton
+                                id={book.id}
+                                title={book.title}
+                                className="text-fg-2 grid size-11 cursor-pointer place-items-center rounded-[10px] border border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 dark:bg-slate-800"
+                            />
+                        )}
                         <button
                             type="button"
                             onClick={() => pick(false)}

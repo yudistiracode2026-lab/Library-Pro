@@ -157,6 +157,15 @@ class Book extends Model
         }
     }
 
+    /** Removes the cover image, back to the coloured placeholder. */
+    public function removeCover(): void
+    {
+        if ($this->cover_path) {
+            Storage::disk('local')->delete($this->cover_path);
+            $this->update(['cover_path' => null]);
+        }
+    }
+
     public function coverUrl(): ?string
     {
         return $this->cover_path ? route('cover', ['book' => $this->id, 'v' => substr(md5($this->cover_path), 0, 8)]) : null;
