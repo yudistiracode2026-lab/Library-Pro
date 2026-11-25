@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class Book extends Model
@@ -144,6 +146,17 @@ class Book extends Model
     }
 
     /** Cover image URL, versioned so a replaced image is not served from cache. */
+    /** Stores a new cover image and removes the old one. */
+    public function replaceCover(UploadedFile $file): void
+    {
+        $old = $this->cover_path;
+        $this->update(['cover_path' => $file->storeAs('sampul', "sampul-{$this->id}-".now()->format('YmdHis').'.'.$file->extension(), 'local')]);
+
+        if ($old && $old !== $this->cover_path) {
+            Storage::disk('local')->delete($old);
+        }
+    }
+
     public function coverUrl(): ?string
     {
         return $this->cover_path ? route('cover', ['book' => $this->id, 'v' => substr(md5($this->cover_path), 0, 8)]) : null;

@@ -1,7 +1,8 @@
+import { CoverPicker } from '@/components/staf/cover-capture';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { type SelectOption } from '@/types';
 import { useForm } from '@inertiajs/react';
-import { ImagePlus, LoaderCircle, X } from 'lucide-react';
+import { Camera, ImagePlus, LoaderCircle, X } from 'lucide-react';
 import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react';
 
 export type FormValues = Record<string, string | number | boolean | null | string[] | File>;
@@ -415,19 +416,28 @@ function ImageInput({
             <div className="grid h-[84px] w-[60px] flex-none place-items-center overflow-hidden rounded-[6px] border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
                 {shown ? <img src={shown} alt="" className="size-full object-cover" /> : <ImagePlus className="text-fg-4 size-5" />}
             </div>
-            <label
-                htmlFor={id}
-                className="text-fg-1 cursor-pointer rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] font-semibold hover:bg-slate-100 dark:bg-slate-800"
-            >
-                {shown ? 'Ganti gambar' : 'Pilih gambar'}
-                <input
-                    id={id}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="sr-only"
-                    onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-                />
-            </label>
+            <CoverPicker onPicked={onChange}>
+                {(pick) => (
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            id={id}
+                            type="button"
+                            onClick={() => pick(true)}
+                            className="flex cursor-pointer items-center gap-1.5 rounded-[10px] bg-teal-600 px-3 py-2 text-[13px] font-semibold text-white hover:bg-teal-700"
+                        >
+                            <Camera className="size-4" />
+                            Ambil foto
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => pick(false)}
+                            className="text-fg-1 cursor-pointer rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] font-semibold hover:bg-slate-100 dark:bg-slate-800"
+                        >
+                            {shown ? 'Ganti gambar' : 'Pilih gambar'}
+                        </button>
+                    </div>
+                )}
+            </CoverPicker>
             {file && (
                 <button type="button" onClick={() => onChange(null)} className="text-fg-3 cursor-pointer text-xs font-semibold hover:text-red-600">
                     Batal

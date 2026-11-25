@@ -1,4 +1,5 @@
 import { BookCover } from '@/components/book-cover';
+import { CoverPicker } from '@/components/staf/cover-capture';
 import { DdcAssist } from '@/components/staf/ddc-assist';
 import { Badge, Cell, COLLECTION_TONES, StatusBadge } from '@/components/staf/master/cells';
 import { MasterPage } from '@/components/staf/master/master-page';
@@ -6,7 +7,7 @@ import { type FormValues } from '@/components/staf/master/record-form';
 import StafLayout from '@/layouts/staf-layout';
 import { type Paginated, type SelectOption } from '@/types';
 import { router } from '@inertiajs/react';
-import { BookOpen, QrCode, Star, Tablet } from 'lucide-react';
+import { BookOpen, Camera, QrCode, Star, Tablet } from 'lucide-react';
 
 interface BookRow {
     id: number;
@@ -97,20 +98,23 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         Cetak label QR
                     </a>
                 }
-                rowActions={(b) =>
-                    b.type === 'fisik' && (
-                        <a
-                            href={route('staf.buku.labels', { buku: [b.id] })}
-                            target="_blank"
-                            rel="noopener"
-                            title="Cetak label QR"
-                            aria-label={`Cetak label QR ${b.title}`}
-                            className="text-fg-2 grid size-[34px] place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
-                        >
-                            <QrCode className="size-4" />
-                        </a>
-                    )
-                }
+                rowActions={(b) => (
+                    <>
+                        <CoverAction id={b.id} title={b.title} />
+                        {b.type === 'fisik' && (
+                            <a
+                                href={route('staf.buku.labels', { buku: [b.id] })}
+                                target="_blank"
+                                rel="noopener"
+                                title="Cetak label QR"
+                                aria-label={`Cetak label QR ${b.title}`}
+                                className="text-fg-2 grid size-[34px] place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
+                            >
+                                <QrCode className="size-4" />
+                            </a>
+                        )}
+                    </>
+                )}
                 columns={[
                     {
                         label: 'Cover',
@@ -344,7 +348,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             label: 'Gambar sampul',
                             type: 'image',
                             currentImage: (v) => (typeof v.cover_url === 'string' ? v.cover_url : null),
-                            hint: 'JPG, PNG, atau WebP, maks. 2 MB',
+                            hint: 'Foto langsung dari HP atau pilih berkas; gambar dirapikan sebelum disimpan',
                         },
                         { name: 'featured', label: 'Buku unggulan', type: 'checkbox', hint: 'tampil di website' },
                         {
@@ -372,6 +376,29 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 }}
             />
         </StafLayout>
+    );
+}
+
+/** Photographs (or picks) a cover, crops it, and saves it to the book straight away. */
+function CoverAction({ id, title }: { id: number; title: string }) {
+    return (
+        <CoverPicker
+            onPicked={(cover) =>
+                router.post(route('staf.sampul.store', id), { cover }, { forceFormData: true, preserveScroll: true, preserveState: true })
+            }
+        >
+            {(pick) => (
+                <button
+                    type="button"
+                    onClick={() => pick(true)}
+                    title="Foto sampul"
+                    aria-label={`Foto sampul ${title}`}
+                    className="text-fg-2 grid size-[34px] cursor-pointer place-items-center rounded-[9px] hover:bg-teal-50 hover:text-teal-700"
+                >
+                    <Camera className="size-4" />
+                </button>
+            )}
+        </CoverPicker>
     );
 }
 

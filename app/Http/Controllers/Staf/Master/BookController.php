@@ -386,13 +386,7 @@ class BookController extends Controller
         $book->syncSubjects($data['subjects'] ?? []);
 
         if ($request->hasFile('cover')) {
-            $old = $book->cover_path;
-            $file = $request->file('cover');
-            $book->update(['cover_path' => $file->storeAs('sampul', "sampul-{$book->id}-".now()->format('YmdHis').'.'.$file->extension(), 'local')]);
-
-            if ($old) {
-                Storage::disk('local')->delete($old);
-            }
+            $book->replaceCover($request->file('cover'));
         }
     }
 

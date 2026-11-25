@@ -9,6 +9,7 @@ use App\Http\Controllers\Staf\CctvController;
 use App\Http\Controllers\Staf\CirculationController;
 use App\Http\Controllers\Staf\ClearanceController;
 use App\Http\Controllers\Staf\CmsController;
+use App\Http\Controllers\Staf\CoverController;
 use App\Http\Controllers\Staf\DashboardController;
 use App\Http\Controllers\Staf\Master\BookController;
 use App\Http\Controllers\Staf\Master\MemberController;
@@ -123,6 +124,10 @@ Route::middleware(['auth', 'role:staf'])
             Route::patch('lisensi/{license}', 'updateLicense')->name('.licenses.update');
             Route::delete('lisensi/{license}', 'destroyLicense')->name('.licenses.destroy');
         });
+
+        // Cover photos taken on a phone, for books entered on a PC.
+        Route::get('sampul', [CoverController::class, 'index'])->name('sampul');
+        Route::post('sampul/{book}', [CoverController::class, 'store'])->name('sampul.store');
 
         Route::controller(OpnameController::class)->prefix('opname')->name('opname')->group(function () {
             Route::get('/', 'index')->name('');

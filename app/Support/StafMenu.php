@@ -52,6 +52,7 @@ class StafMenu
         ['label' => 'Koleksi', 'items' => [
             ['key' => 'opname', 'custom' => true, 'label' => 'Stock opname', 'icon' => 'clipboard-check'],
             ['key' => 'pengadaan', 'custom' => true, 'label' => 'Pengadaan buku', 'icon' => 'shopping-cart'],
+            ['key' => 'sampul', 'custom' => true, 'label' => 'Foto sampul', 'title' => 'Foto sampul buku', 'icon' => 'camera'],
         ]],
         ['label' => 'Kepegawaian', 'items' => [
             ['key' => 'kegiatan', 'custom' => true, 'label' => 'Kegiatan harian', 'icon' => 'notebook-pen'],

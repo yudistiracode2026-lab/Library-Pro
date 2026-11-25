@@ -26,7 +26,7 @@ class UserLevelsTest extends TestCase
         // Master data
         'staf.buku', 'staf.pengarang', 'staf.penerbit', 'staf.penyedia', 'staf.pemustaka', 'staf.pustakawan', 'staf.tendik', 'staf.aset.ruang', 'staf.aset.inventaris',
         // Layanan, Koleksi, Kepegawaian, Akademik
-        'staf.kunjungan', 'staf.sirkulasi', 'staf.pencarian', 'staf.cctv', 'staf.opname', 'staf.pengadaan', 'staf.kegiatan', 'staf.lembur', 'staf.bebas-pustaka',
+        'staf.kunjungan', 'staf.sirkulasi', 'staf.pencarian', 'staf.cctv', 'staf.opname', 'staf.pengadaan', 'staf.sampul', 'staf.kegiatan', 'staf.lembur', 'staf.bebas-pustaka',
     ];
 
     private function as(UserRole $role): User
