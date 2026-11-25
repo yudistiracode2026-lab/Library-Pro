@@ -2,7 +2,7 @@ import { CoverPicker } from '@/components/staf/cover-capture';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { type SelectOption } from '@/types';
 import { useForm } from '@inertiajs/react';
-import { Camera, ImagePlus, LoaderCircle, X } from 'lucide-react';
+import { Camera, ImagePlus, LoaderCircle, Trash2, X } from 'lucide-react';
 import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react';
 
 export type FormValues = Record<string, string | number | boolean | null | string[] | File>;
@@ -19,6 +19,8 @@ export interface FieldDef {
     suggestUrl?: string;
     /** "image": URL of the current image, shown until a new file is chosen. */
     currentImage?: (values: FormValues) => string | null;
+    /** "image": deletes the stored image straight away (and clears the field showing it). */
+    removeImage?: (form: { values: FormValues; set: (name: string, value: FormValues[string]) => void }) => void;
     /** Heading shown above this field, to group long forms. */
     section?: string;
     span?: 1 | 2;
@@ -114,6 +116,7 @@ export function RecordForm({ open, onOpenChange, title, fields, initial, method,
                                     values={form.data}
                                     error={fieldError(form.errors, field.name)}
                                     onChange={(value) => form.setData(field.name, value)}
+                                    set={(name, value) => form.setData(name, value)}
                                 />
                                 {field.assist && (
                                     <div className="sm:col-span-2">
@@ -173,12 +176,14 @@ function Field({
     values,
     error,
     onChange,
+    set,
 }: {
     field: FieldDef;
     value: FormValues[string];
     values: FormValues;
     error?: string;
     onChange: (value: string | boolean | string[] | File | null) => void;
+    set: (name: string, value: FormValues[string]) => void;
 }) {
     const id = `field-${field.name}`;
     const span = field.span === 2 ? 'sm:col-span-2' : '';
@@ -214,7 +219,13 @@ function Field({
         return (
             <div className={`flex flex-col gap-1.5 text-[13px] font-semibold ${span}`}>
                 {field.label}
-                <ImageInput id={id} file={value instanceof File ? value : null} current={field.currentImage?.(values) ?? null} onChange={onChange} />
+                <ImageInput
+                    id={id}
+                    file={value instanceof File ? value : null}
+                    current={field.currentImage?.(values) ?? null}
+                    onChange={onChange}
+                    onRemove={field.removeImage && (() => field.removeImage!({ values, set }))}
+                />
                 {field.hint && !error && <span className="text-fg-3 text-xs font-normal">{field.hint}</span>}
                 {error && <span className="text-danger text-xs font-normal">{error}</span>}
             </div>
@@ -390,11 +401,13 @@ function ImageInput({
     file,
     current,
     onChange,
+    onRemove,
 }: {
     id: string;
     file: File | null;
     current: string | null;
     onChange: (file: File | null) => void;
+    onRemove?: () => void;
 }) {
     const [preview, setPreview] = useState<string | null>(null);
 
@@ -418,7 +431,7 @@ function ImageInput({
             </div>
             <CoverPicker onPicked={onChange}>
                 {(pick) => (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <button
                             id={id}
                             type="button"
@@ -435,14 +448,28 @@ function ImageInput({
                         >
                             {shown ? 'Ganti gambar' : 'Pilih gambar'}
                         </button>
+                        {file && (
+                            <button
+                                type="button"
+                                onClick={() => onChange(null)}
+                                className="text-fg-3 cursor-pointer px-1 text-xs font-semibold hover:text-red-600"
+                            >
+                                Batal
+                            </button>
+                        )}
+                        {!file && current && onRemove && (
+                            <button
+                                type="button"
+                                onClick={onRemove}
+                                className="flex cursor-pointer items-center gap-1 rounded-[10px] px-2 py-2 text-[13px] font-semibold whitespace-nowrap text-red-600 hover:bg-red-50"
+                            >
+                                <Trash2 className="size-4" />
+                                Hapus sampul
+                            </button>
+                        )}
                     </div>
                 )}
             </CoverPicker>
-            {file && (
-                <button type="button" onClick={() => onChange(null)} className="text-fg-3 cursor-pointer text-xs font-semibold hover:text-red-600">
-                    Batal
-                </button>
-            )}
         </div>
     );
 }

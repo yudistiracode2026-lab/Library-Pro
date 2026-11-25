@@ -4,9 +4,9 @@ import { LoaderCircle, RotateCcw, RotateCw, Trash2 } from 'lucide-react';
 import { type ReactNode, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
 
 /** Asks first, then removes a book's cover (for a wrong photo). */
-export function removeCover(id: number, title: string, onFinish?: () => void) {
+export function removeCover(id: number, title: string, onSuccess?: () => void) {
     if (!window.confirm(`Hapus sampul "${title}"? Buku akan kembali ke daftar belum bersampul.`)) return;
-    router.delete(route('staf.sampul.destroy', id), { preserveScroll: true, preserveState: true, onFinish });
+    router.delete(route('staf.sampul.destroy', id), { preserveScroll: true, preserveState: true, onSuccess: () => onSuccess?.() });
 }
 
 export function RemoveCoverButton({ id, title, className }: { id: number; title: string; className: string }) {

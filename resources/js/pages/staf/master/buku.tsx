@@ -1,5 +1,5 @@
 import { BookCover } from '@/components/book-cover';
-import { CoverPicker, RemoveCoverButton } from '@/components/staf/cover-capture';
+import { CoverPicker, removeCover } from '@/components/staf/cover-capture';
 import { DdcAssist } from '@/components/staf/ddc-assist';
 import { Badge, Cell, COLLECTION_TONES, StatusBadge } from '@/components/staf/master/cells';
 import { MasterPage } from '@/components/staf/master/master-page';
@@ -101,13 +101,6 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                 rowActions={(b) => (
                     <>
                         <CoverAction id={b.id} title={b.title} />
-                        {b.cover && (
-                            <RemoveCoverButton
-                                id={b.id}
-                                title={b.title}
-                                className="text-fg-2 grid size-[34px] cursor-pointer place-items-center rounded-[9px] hover:bg-red-50 hover:text-red-600"
-                            />
-                        )}
                         {b.type === 'fisik' && (
                             <a
                                 href={route('staf.buku.labels', { buku: [b.id] })}
@@ -355,6 +348,7 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             label: 'Gambar sampul',
                             type: 'image',
                             currentImage: (v) => (typeof v.cover_url === 'string' ? v.cover_url : null),
+                            removeImage: ({ values: v, set }) => removeCover(Number(v._id), String(v.title), () => set('cover_url', null)),
                             hint: 'Foto langsung dari HP atau pilih berkas; gambar dirapikan sebelum disimpan',
                         },
                         { name: 'featured', label: 'Buku unggulan', type: 'checkbox', hint: 'tampil di website' },
