@@ -72,11 +72,43 @@ export function CoverPicker({ onPicked, children }: { onPicked: (file: File) => 
  * straightened (perspective corrected), so a cover photographed at a slant
  * still comes out as a flat rectangle.
  */
-export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null; onCancel: () => void; onDone: (file: File) => void }) {
+export interface CropText {
+    title: string;
+    description: string;
+    confirm: string;
+}
+
+const COVER_TEXT: CropText = {
+    title: 'Rapikan gambar sampul',
+    description: 'Geser keempat titik ke sudut sampul buku. Gambar akan diluruskan dan dipotong otomatis.',
+    confirm: 'Pakai gambar',
+};
+
+export function CoverCropDialog({
+    file,
+    onCancel,
+    onDone,
+    text = COVER_TEXT,
+    outputMax = OUTPUT_MAX,
+    frame = 'book',
+    busyLabel,
+}: {
+    file: File | null;
+    onCancel: () => void;
+    onDone: (file: File) => void;
+    text?: CropText;
+    /** Long side of the result: covers stay light, text for OCR stays sharp. */
+    outputMax?: number;
+    /** Starting frame: a book shape, or most of the photo (a block of text). */
+    frame?: 'book' | 'page';
+    /** Shown on the confirm button while the parent works on the result. */
+    busyLabel?: string | null;
+}) {
     const [source, setSource] = useState<HTMLCanvasElement | null>(null);
     const [quad, setQuad] = useState<Quad | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
+    const working = busy || !!busyLabel;
 
     useEffect(() => {
         setSource(null);
@@ -89,14 +121,14 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
             .then((canvas) => {
                 if (cancelled) return;
                 setSource(canvas);
-                setQuad(defaultQuad(canvas));
+                setQuad(frame === 'book' ? defaultQuad(canvas) : insetQuad(canvas, 0.06));
             })
             .catch(() => !cancelled && setError('Gambar tidak bisa dibuka. Coba foto ulang atau pilih berkas JPG/PNG.'));
 
         return () => {
             cancelled = true;
         };
-    }, [file]);
+    }, [file, frame]);
 
     const rotate = (clockwise: boolean) => {
         if (!source || !quad) return;
@@ -112,25 +144,23 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
         setBusy(true);
         // Let the spinner paint before the pixel work.
         setTimeout(() => {
-            warp(source, quad).toBlob(
+            warp(source, quad, outputMax).toBlob(
                 (blob) => {
                     setBusy(false);
-                    if (blob) onDone(new File([blob], 'sampul.jpg', { type: 'image/jpeg' }));
+                    if (blob) onDone(new File([blob], 'potongan.jpg', { type: 'image/jpeg' }));
                     else setError('Gagal menyimpan potongan gambar.');
                 },
                 'image/jpeg',
-                0.86,
+                0.9,
             );
         }, 30);
     };
 
     return (
-        <Dialog open={file !== null} onOpenChange={(open) => !open && !busy && onCancel()}>
+        <Dialog open={file !== null} onOpenChange={(open) => !open && !working && onCancel()}>
             <DialogContent className="max-h-[100dvh] w-full max-w-2xl gap-3 overflow-y-auto p-4 sm:p-5">
-                <DialogTitle className="text-fg-1 text-base">Rapikan gambar sampul</DialogTitle>
-                <DialogDescription className="text-fg-3 text-[13px]">
-                    Geser keempat titik ke sudut sampul buku. Gambar akan diluruskan dan dipotong otomatis.
-                </DialogDescription>
+                <DialogTitle className="text-fg-1 text-base">{text.title}</DialogTitle>
+                <DialogDescription className="text-fg-3 text-[13px]">{text.description}</DialogDescription>
 
                 <div className="grid min-h-[200px] place-items-center rounded-lg bg-slate-900 p-2">
                     {error ? (
@@ -146,7 +176,7 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
                     <button
                         type="button"
                         onClick={() => rotate(false)}
-                        disabled={!source || busy}
+                        disabled={!source || working}
                         aria-label="Putar ke kiri"
                         className="text-fg-1 grid size-10 cursor-pointer place-items-center rounded-[10px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-50 dark:bg-slate-800"
                     >
@@ -155,7 +185,7 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
                     <button
                         type="button"
                         onClick={() => rotate(true)}
-                        disabled={!source || busy}
+                        disabled={!source || working}
                         aria-label="Putar ke kanan"
                         className="text-fg-1 grid size-10 cursor-pointer place-items-center rounded-[10px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-50 dark:bg-slate-800"
                     >
@@ -164,7 +194,7 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
                     <button
                         type="button"
                         onClick={() => source && setQuad(fullQuad(source))}
-                        disabled={!source || busy}
+                        disabled={!source || working}
                         className="text-fg-1 h-10 cursor-pointer rounded-[10px] border border-slate-200 bg-white px-3 text-[13px] font-semibold hover:bg-slate-100 disabled:opacity-50 dark:bg-slate-800"
                     >
                         Seluruh foto
@@ -173,7 +203,7 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
                         <button
                             type="button"
                             onClick={onCancel}
-                            disabled={busy}
+                            disabled={working}
                             className="text-fg-2 h-10 cursor-pointer rounded-[10px] px-3 text-[13px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
                             Batal
@@ -181,11 +211,11 @@ export function CoverCropDialog({ file, onCancel, onDone }: { file: File | null;
                         <button
                             type="button"
                             onClick={save}
-                            disabled={!source || busy}
+                            disabled={!source || working}
                             className="flex h-10 cursor-pointer items-center gap-2 rounded-[10px] bg-teal-600 px-4 text-[13px] font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
                         >
-                            {busy && <LoaderCircle className="size-4 animate-spin" />}
-                            Pakai gambar
+                            {working && <LoaderCircle className="size-4 animate-spin" />}
+                            {busyLabel ?? text.confirm}
                         </button>
                     </div>
                 </div>
@@ -335,6 +365,18 @@ async function loadSource(file: File): Promise<HTMLCanvasElement> {
 }
 
 /** A book-shaped frame in the middle of the photo to start from. */
+function insetQuad(canvas: HTMLCanvasElement, inset: number): Quad {
+    const { width: w, height: h } = canvas;
+    const [x0, y0, x1, y1] = [w * inset, h * inset, w * (1 - inset), h * (1 - inset)];
+
+    return [
+        { x: x0, y: y0 },
+        { x: x1, y: y0 },
+        { x: x1, y: y1 },
+        { x: x0, y: y1 },
+    ];
+}
+
 function defaultQuad(canvas: HTMLCanvasElement): Quad {
     const { width: w, height: h } = canvas;
     let fw = w * 0.8;
@@ -403,11 +445,11 @@ function projection([p0, p1, p2, p3]: Quad) {
 }
 
 /** The quad straightened into a rectangle, sampled bilinearly. */
-function warp(source: HTMLCanvasElement, quad: Quad): HTMLCanvasElement {
+function warp(source: HTMLCanvasElement, quad: Quad, outputMax: number): HTMLCanvasElement {
     const [tl, tr, br, bl] = quad;
     const width = Math.max(dist(tl, tr), dist(bl, br));
     const height = Math.max(dist(tl, bl), dist(tr, br));
-    const ratio = Math.min(1, OUTPUT_MAX / Math.max(width, height));
+    const ratio = Math.min(1, outputMax / Math.max(width, height));
     const W = Math.max(1, Math.round(width * ratio));
     const H = Math.max(1, Math.round(height * ratio));
 

@@ -1,4 +1,5 @@
 import { BookCover } from '@/components/book-cover';
+import { AbstractScan } from '@/components/staf/abstract-scan';
 import { CoverPicker, removeCover } from '@/components/staf/cover-capture';
 import { DdcAssist } from '@/components/staf/ddc-assist';
 import { Badge, Cell, COLLECTION_TONES, StatusBadge } from '@/components/staf/master/cells';
@@ -342,7 +343,15 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                             suggestUrl: suggest('subjek'),
                             placeholder: 'Ketik subjek lalu Enter',
                         },
-                        { name: 'abstract', label: 'Abstrak', type: 'textarea', span: 2 },
+                        {
+                            name: 'abstract',
+                            label: 'Abstrak',
+                            type: 'textarea',
+                            span: 2,
+                            assist: ({ values, set }) => (
+                                <AbstractScan current={String(values.abstract ?? '')} onText={(text) => set('abstract', text)} />
+                            ),
+                        },
                         {
                             name: 'cover',
                             label: 'Gambar sampul',
