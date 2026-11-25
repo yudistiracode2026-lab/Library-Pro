@@ -3,7 +3,7 @@ import InputError from '@/components/input-error';
 import { PresenceQr, type PresenceQrData } from '@/components/pemustaka/presence-qr';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
-import { useState, type FormEventHandler } from 'react';
+import { useEffect, useState, type FormEventHandler } from 'react';
 
 type LoginForm = {
     email: string;
@@ -48,6 +48,40 @@ const COPY = {
 } as const;
 
 /** Split-screen login from Portal Pemustaka.dc.html, in a member and a staff version. */
+/** The staff login last remembered on this browser ("Ingat saya"). */
+const STAFF_LOGIN_KEY = 'pustagra.staf.login';
+
+type PasswordCredentialInit = { id: string; password: string; name?: string };
+type PasswordCredentialLike = Credential & { id: string; password?: string };
+type CredentialWindow = Window & { PasswordCredential?: new (init: PasswordCredentialInit) => Credential };
+
+function rememberedStaffLogin(): string {
+    try {
+        return localStorage.getItem(STAFF_LOGIN_KEY) ?? '';
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * With "Ingat saya", the NIP is kept on this browser and the password goes to
+ * the browser's own password manager (not to the page), so after signing out
+ * the form fills itself again. Without it, both are forgotten.
+ */
+function keepStaffLogin(remember: boolean, email: string, password: string) {
+    try {
+        if (remember) localStorage.setItem(STAFF_LOGIN_KEY, email);
+        else localStorage.removeItem(STAFF_LOGIN_KEY);
+    } catch {
+        // Private mode or blocked storage: nothing to remember.
+    }
+
+    const Credential = (window as CredentialWindow).PasswordCredential;
+    if (remember && Credential && navigator.credentials) {
+        navigator.credentials.store(new Credential({ id: email, password, name: email })).catch(() => {});
+    }
+}
+
 export default function Login({ portal, status, canResetPassword, attendance }: LoginProps) {
     const copy = COPY[portal];
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({ email: '', password: '', remember: false, device: false });
@@ -58,9 +92,33 @@ export default function Login({ portal, status, canResetPassword, attendance }: 
     const [unlocked, setUnlocked] = useState(false);
     const unlock = { readOnly: !unlocked, onPointerDown: () => setUnlocked(true), onFocus: () => setUnlocked(true) };
 
+    // Staff page only: refill the login remembered here, and only that one, so
+    // another account saved in the browser still does not appear by itself.
+    useEffect(() => {
+        if (portal !== 'staf') return;
+        const email = rememberedStaffLogin();
+        if (!email) return;
+        setData((d) => ({ ...d, email, remember: true }));
+        setUnlocked(true);
+
+        if (!(window as CredentialWindow).PasswordCredential || !navigator.credentials) return;
+        navigator.credentials
+            .get({ password: true, mediation: 'optional' } as CredentialRequestOptions)
+            .then((credential) => {
+                const saved = credential as PasswordCredentialLike | null;
+                if (saved?.id === email && saved.password) setData((d) => ({ ...d, password: saved.password! }));
+            })
+            .catch(() => {});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [portal]);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route(portal === 'staf' ? 'staf.login.store' : 'login'), { onFinish: () => reset('password') });
+        const { email, password, remember } = data;
+        post(route(portal === 'staf' ? 'staf.login.store' : 'login'), {
+            onSuccess: () => portal === 'staf' && keepStaffLogin(remember, email.trim(), password),
+            onFinish: () => reset('password'),
+        });
     };
 
     return (
