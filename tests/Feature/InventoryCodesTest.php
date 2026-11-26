@@ -89,6 +89,22 @@ class InventoryCodesTest extends TestCase
         $this->assertSame(['26SM22610', 'B0001-1', '26SM22611', '26SM22612'], $book->copies()->orderBy('id')->pluck('code')->all());
     }
 
+    public function test_the_series_skips_mistyped_numbers_and_reads_old_lowercase_codes()
+    {
+        $this->donated(['25sp21987', '25SD21989', '26SM22916', '26S1212851', '98p199986']);
+
+        $this->assertSame(22917, Book::nextInventoryNumber());
+    }
+
+    public function test_numbers_of_older_series_may_be_used_again()
+    {
+        $this->donated(['89P1278', '00PP1279']);
+
+        $this->post(route('staf.buku.store'), $this->payload(['inventory_start' => 1278]))->assertSessionHasNoErrors();
+
+        $this->assertSame(['26P1278', '26P1279'], $this->codes('Hukum Agraria Indonesia'));
+    }
+
     public function test_every_acquisition_has_a_code()
     {
         foreach (MasterOptions::ACQUISITIONS as $acquisition) {

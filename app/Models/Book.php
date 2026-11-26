@@ -209,8 +209,11 @@ class Book extends Model
         return $this->hasMany(BookCopy::class);
     }
 
-    /** A copy code: year of acquisition, acquisition code, inventory number ("26SM22610"). */
-    public const COPY_CODE = '/^(\d{2})([A-Z]{1,3})(\d+)$/';
+    /**
+     * A copy code: year of acquisition, acquisition code, inventory number
+     * ("26SM22610"). Codes from SLiMS may be lowercase or end in a letter.
+     */
+    public const COPY_CODE = '/^(\d{2})([a-z]{1,4})(\d+)[a-z]?$/i';
 
     /**
      * Grow or shrink the copy list to $target. New copies get consecutive
@@ -228,7 +231,14 @@ class Book extends Model
         if ($target > $current) {
             $count = $target - $current;
             $first = $firstInventory ?? self::nextInventoryNumber();
-            $taken = self::inventoryNumbersInUse()->intersect(range($first, $first + $count - 1));
+            $numbers = range($first, $first + $count - 1);
+            $prefix = sprintf('%02d', ($year ?? now()->year) % 100).$this->acquisitionCode();
+            $codes = array_map(fn (int $n) => $prefix.$n, $numbers);
+
+            // Taken: the same number in the running series, or the very same code.
+            $taken = self::inventoryNumbersInUse()->intersect($numbers)
+                ->merge(BookCopy::whereIn('code', $codes)->pluck('code')->map(fn ($c) => (int) preg_replace(self::COPY_CODE, '$3', $c)))
+                ->unique();
 
             if ($taken->isNotEmpty()) {
                 throw ValidationException::withMessages([
@@ -236,9 +246,8 @@ class Book extends Model
                 ]);
             }
 
-            $prefix = sprintf('%02d', ($year ?? now()->year) % 100).$this->acquisitionCode();
-            for ($i = 0; $i < $count; $i++) {
-                $this->copies()->create(['code' => $prefix.($first + $i)]);
+            foreach ($codes as $code) {
+                $this->copies()->create(['code' => $code]);
             }
 
             return;
@@ -267,21 +276,37 @@ class Book extends Model
         return MasterOptions::ACQUISITION_CODES[$this->acquisition] ?? 'P';
     }
 
-    /** The number after the highest inventory number in use. */
+    /**
+     * The number after the last one in the running series. Numbers typed with
+     * an extra digit in the old catalogue ("15S1212851") would jump the series,
+     * so anything above twice the median is left out.
+     */
     public static function nextInventoryNumber(): int
     {
-        return (self::inventoryNumbersInUse()->max() ?? 0) + 1;
+        $numbers = self::inventoryNumbersInUse()->sort()->values();
+
+        if ($numbers->isEmpty()) {
+            return 1;
+        }
+
+        $median = $numbers[intdiv($numbers->count(), 2)];
+
+        return $numbers->filter(fn (int $n) => $n <= 2 * $median)->max() + 1;
     }
 
     /**
-     * Inventory numbers of every copy coded with one ("26SM22610" -> 22610).
-     * Older generated codes (B0001-1) carry none.
+     * Inventory numbers of the running series: copies coded this year or last
+     * year ("26SM22610" -> 22610). Older series reused numbers, so they do not
+     * count; generated codes (B0001-1) carry none.
      *
      * @return Collection<int, int>
      */
-    public static function inventoryNumbersInUse()
+    public static function inventoryNumbersInUse(): Collection
     {
-        return BookCopy::query()->where('code', 'not like', 'B%')->pluck('code')
+        $years = [now()->format('y'), now()->subYear()->format('y')];
+
+        return BookCopy::query()->where(fn ($q) => $q->where('code', 'like', $years[0].'%')->orWhere('code', 'like', $years[1].'%'))
+            ->pluck('code')
             ->map(fn (string $code) => preg_match(self::COPY_CODE, $code, $m) ? (int) $m[3] : null)
             ->filter()
             ->values();
