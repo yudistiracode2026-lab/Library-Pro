@@ -145,7 +145,6 @@ class Book extends Model
         $this->subjects()->sync($ids->mapWithKeys(fn ($id, $i) => [$id => ['position' => $i]])->all());
     }
 
-    /** Cover image URL, versioned so a replaced image is not served from cache. */
     /** Stores a new cover image and removes the old one. */
     public function replaceCover(UploadedFile $file): void
     {
@@ -166,6 +165,7 @@ class Book extends Model
         }
     }
 
+    /** Cover image URL, versioned so a replaced image is not served from cache. */
     public function coverUrl(): ?string
     {
         return $this->cover_path ? route('cover', ['book' => $this->id, 'v' => substr(md5($this->cover_path), 0, 8)]) : null;
@@ -220,7 +220,11 @@ class Book extends Model
         $current = $this->copies()->count();
 
         if ($target > $current) {
-            $next = $this->copies()->get()->map(fn (BookCopy $c) => (int) str($c->code)->afterLast('-')->toString())->max() ?? 0;
+            // Only codes in this scheme count: donated copies keep their own
+            // inventory codes ("26SM22610") and do not move the numbering.
+            $next = $this->copies()->pluck('code')
+                ->map(fn (string $code) => preg_match('/^B\d+-(\d+)$/', $code, $m) ? (int) $m[1] : 0)
+                ->max() ?? 0;
 
             for ($i = 1; $i <= $target - $current; $i++) {
                 $this->copies()->create(['code' => $this->copyCode($next + $i)]);
