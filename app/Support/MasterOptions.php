@@ -63,7 +63,7 @@ class MasterOptions
     /** How a title came to the library, with the code written on its label ("SM", "P", ...). */
     public const ACQUISITION_CODES = [
         'Pembelian' => 'P',
-        'Penyerahan mahasiswa, tendik dan dosen' => null,
+        'Penyerahan mahasiswa, tendik dan dosen' => 'PN',
         'Sumbangan mahasiswa' => 'SM',
         'Sumbangan luar' => 'SL',
         'Sumbangan pusat' => 'SP',

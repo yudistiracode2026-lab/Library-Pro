@@ -54,6 +54,7 @@ class BookController extends Controller
                 'ebookStatuses' => MasterOptions::forSelect(MasterOptions::EBOOK_STATUSES),
                 'racks' => Rack::orderBy('code')->get()->map(fn (Rack $r) => ['value' => (string) $r->id, 'label' => "{$r->code} · {$r->name}"]),
                 'languages' => MasterOptions::forSelect(MasterOptions::LANGUAGES),
+                'nextInventory' => Book::nextInventoryNumber(),
             ],
         ]);
     }
@@ -67,7 +68,7 @@ class BookController extends Controller
             $this->saveRelations($request, $book, $data);
 
             if ($book->isPrinted()) {
-                $book->syncCopyCount((int) $data['copies']);
+                $book->syncCopyCount((int) $data['copies'], $data['inventory_start'] ?? null, $data['acquired_year'] ?? null);
             }
         });
 
@@ -83,7 +84,7 @@ class BookController extends Controller
             $this->saveRelations($request, $record, $data);
 
             if ($record->isPrinted()) {
-                $record->syncCopyCount((int) $data['copies']);
+                $record->syncCopyCount((int) $data['copies'], $data['inventory_start'] ?? null, $data['acquired_year'] ?? null);
             } else {
                 $record->syncCopyCount(0);
             }
@@ -350,6 +351,8 @@ class BookController extends Controller
             'call_number' => [$printed ? 'required' : 'nullable', 'string', 'max:40'],
             'rack_id' => ['nullable', 'exists:racks,id'],
             'copies' => [$printed ? 'required' : 'nullable', 'integer', 'min:0', 'max:500'],
+            'inventory_start' => ['nullable', 'integer', 'min:1', 'max:99999999'],
+            'acquired_year' => ['nullable', 'integer', 'min:2000', 'max:'.(now()->year + 1)],
             'format' => [$printed ? 'nullable' : 'required', Rule::in(MasterOptions::EBOOK_FORMATS)],
             'file_size_mb' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'license_count' => [$printed ? 'nullable' : 'required', 'integer', 'min:1', 'max:9999'],
@@ -361,7 +364,7 @@ class BookController extends Controller
             'publish_place' => 'tempat terbit', 'year' => 'tahun', 'edition' => 'edisi', 'collation' => 'kolasi', 'language' => 'bahasa',
             'classification' => 'klasifikasi', 'subjects' => 'subjek', 'abstract' => 'abstrak', 'cover' => 'gambar sampul',
             'ddc_class' => 'kelas DDC', 'collection_type' => 'sub-jenis koleksi', 'material_type' => 'jenis bahan', 'acquisition' => 'asal perolehan',
-            'call_number' => 'nomor panggil', 'rack_id' => 'rak', 'copies' => 'jumlah eksemplar',
+            'call_number' => 'nomor panggil', 'rack_id' => 'rak', 'copies' => 'jumlah eksemplar', 'inventory_start' => 'no. inventaris awal', 'acquired_year' => 'tahun pengadaan',
             'license_count' => 'jumlah lisensi', 'file_size_mb' => 'ukuran berkas',
         ]);
 

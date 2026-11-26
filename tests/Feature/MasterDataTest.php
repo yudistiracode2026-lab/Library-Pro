@@ -93,11 +93,11 @@ class MasterDataTest extends TestCase
         $labels = array_column(MasterOptions::acquisitionOptions(), 'label');
         $this->assertContains('Pembelian (P)', $labels);
         $this->assertContains('Sumbangan STPN (SS)', $labels);
-        $this->assertContains('Penyerahan mahasiswa, tendik dan dosen', $labels);
+        $this->assertContains('Penyerahan mahasiswa, tendik dan dosen (PN)', $labels);
 
         // The dashboard chart keeps every acquisition class apart, in the order of the list.
         $this->get('/staf')->assertInertia(fn (Assert $page) => $page
-            ->where('growth.sources', ['Pembelian (P)', 'Penyerahan mahasiswa, tendik dan dosen', 'Sumbangan mahasiswa (SM)', 'Sumbangan luar (SL)', 'Sumbangan pusat (SP)', 'Sumbangan dosen (SD)', 'Sumbangan individu (SI)', 'Sumbangan STPN (SS)'])
+            ->where('growth.sources', ['Pembelian (P)', 'Penyerahan mahasiswa, tendik dan dosen (PN)', 'Sumbangan mahasiswa (SM)', 'Sumbangan luar (SL)', 'Sumbangan pusat (SP)', 'Sumbangan dosen (SD)', 'Sumbangan individu (SI)', 'Sumbangan STPN (SS)'])
             ->where('growth.types.Semua jenis.6', [1, 0, 0, 1, 0, 0, 0, 0]));
     }
 
@@ -147,7 +147,8 @@ class MasterDataTest extends TestCase
         $book = Book::sole();
         $this->assertSame('Boedi Harsono', $book->author->name);
         $this->assertSame('Djambatan', $book->publisher->name);
-        $this->assertSame(["B{$this->pad($book->id)}-1", "B{$this->pad($book->id)}-2", "B{$this->pad($book->id)}-3"], $book->copies()->orderBy('id')->pluck('code')->all());
+        $year = now()->format('y');
+        $this->assertSame(["{$year}P1", "{$year}P2", "{$year}P3"], $book->copies()->orderBy('id')->pluck('code')->all());
     }
 
     public function test_a_title_keeps_its_authors_subjects_and_catalogue_fields()
@@ -392,10 +393,5 @@ class MasterDataTest extends TestCase
         $response->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $this->assertStringStartsWith("\xEF\xBB\xBFJenis;Judul;\"Judul seri\";Pengarang", $csv);
         $this->assertStringContainsString('"Buku fisik";"Hukum Agraria Indonesia";;"Boedi Harsono"', $csv);
-    }
-
-    private function pad(int $id): string
-    {
-        return str_pad((string) $id, 4, '0', STR_PAD_LEFT);
     }
 }

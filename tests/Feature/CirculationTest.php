@@ -45,7 +45,7 @@ class CirculationTest extends TestCase
 
     private function code(int $n): string
     {
-        return sprintf('B%04d-%d', $this->book->id, $n);
+        return $this->book->copies()->orderBy('id')->skip($n - 1)->value('code');
     }
 
     public function test_lending_marks_copies_loaned_with_the_configured_due_date()

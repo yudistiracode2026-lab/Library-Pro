@@ -61,6 +61,7 @@ interface BukuProps {
         ebookStatuses: SelectOption[];
         racks: SelectOption[];
         languages: SelectOption[];
+        nextInventory: number;
     };
 }
 
@@ -246,6 +247,8 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         call_number: '',
                         rack_id: '',
                         copies: '1',
+                        inventory_start: '',
+                        acquired_year: '',
                         format: 'PDF',
                         file_size_mb: '',
                         license_count: '1',
@@ -279,6 +282,8 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         call_number: b.call_number ?? '',
                         rack_id: b.rack_id,
                         copies: String(b.copies),
+                        inventory_start: '',
+                        acquired_year: '',
                         format: b.format ?? 'PDF',
                         file_size_mb: b.file_size_mb != null ? String(b.file_size_mb) : '',
                         license_count: String(b.license_count ?? 1),
@@ -378,6 +383,22 @@ export default function Buku({ records, filters, summary, options }: BukuProps) 
                         { name: 'call_number', label: 'No. panggil', required: true, hidden: isEbook, placeholder: 'mis. 346.04 Boe h' },
                         { name: 'rack_id', label: 'Rak', type: 'select', options: options.racks, hidden: isEbook },
                         { name: 'copies', label: 'Jumlah eksemplar', type: 'number', required: true, hidden: isEbook },
+                        {
+                            name: 'inventory_start',
+                            label: 'No. inventaris awal',
+                            type: 'number',
+                            hidden: isEbook,
+                            placeholder: String(options.nextInventory),
+                            hint: `Untuk eksemplar baru, berurutan. Kosongkan: lanjut dari nomor terakhir (${options.nextInventory})`,
+                        },
+                        {
+                            name: 'acquired_year',
+                            label: 'Tahun pengadaan',
+                            type: 'number',
+                            hidden: isEbook,
+                            placeholder: String(new Date().getFullYear()),
+                            hint: 'Kode eksemplar: 2 digit tahun + kode asal + no. inventaris, mis. 26SM22610',
+                        },
                         { name: 'format', label: 'Format', type: 'select', options: options.formats, required: true, hidden: isPrinted },
                         { name: 'license_count', label: 'Jumlah lisensi', type: 'number', required: true, hidden: isPrinted },
                         { name: 'file_size_mb', label: 'Ukuran berkas (MB)', type: 'number', step: '0.1', hidden: isPrinted },

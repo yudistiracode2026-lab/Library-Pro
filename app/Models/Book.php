@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -208,26 +209,36 @@ class Book extends Model
         return $this->hasMany(BookCopy::class);
     }
 
+    /** A copy code: year of acquisition, acquisition code, inventory number ("26SM22610"). */
+    public const COPY_CODE = '/^(\d{2})([A-Z]{1,3})(\d+)$/';
+
     /**
-     * Grow or shrink the copy list to $target. New copies get the next code
-     * (B0001-3, B0001-4, ...). Only copies on the shelf can be removed, so a
+     * Grow or shrink the copy list to $target. New copies get consecutive
+     * inventory numbers, from $firstInventory or after the highest number in
+     * use, coded with the year of acquisition and the acquisition code:
+     * "26SM22917", "26SM22918". Only copies on the shelf can be removed, so a
      * loaned copy is never deleted.
      *
-     * @throws ValidationException when too few copies are available to remove
+     * @throws ValidationException when the inventory numbers are taken, or too few copies are available to remove
      */
-    public function syncCopyCount(int $target): void
+    public function syncCopyCount(int $target, ?int $firstInventory = null, ?int $year = null): void
     {
         $current = $this->copies()->count();
 
         if ($target > $current) {
-            // Only codes in this scheme count: donated copies keep their own
-            // inventory codes ("26SM22610") and do not move the numbering.
-            $next = $this->copies()->pluck('code')
-                ->map(fn (string $code) => preg_match('/^B\d+-(\d+)$/', $code, $m) ? (int) $m[1] : 0)
-                ->max() ?? 0;
+            $count = $target - $current;
+            $first = $firstInventory ?? self::nextInventoryNumber();
+            $taken = self::inventoryNumbersInUse()->intersect(range($first, $first + $count - 1));
 
-            for ($i = 1; $i <= $target - $current; $i++) {
-                $this->copies()->create(['code' => $this->copyCode($next + $i)]);
+            if ($taken->isNotEmpty()) {
+                throw ValidationException::withMessages([
+                    'inventory_start' => 'No. inventaris '.$taken->sort()->implode(', ').' sudah dipakai eksemplar lain. Kosongkan untuk melanjutkan dari nomor '.self::nextInventoryNumber().'.',
+                ]);
+            }
+
+            $prefix = sprintf('%02d', ($year ?? now()->year) % 100).$this->acquisitionCode();
+            for ($i = 0; $i < $count; $i++) {
+                $this->copies()->create(['code' => $prefix.($first + $i)]);
             }
 
             return;
@@ -250,8 +261,29 @@ class Book extends Model
         $this->copies()->whereKey($removable->modelKeys())->delete();
     }
 
-    private function copyCode(int $number): string
+    /** The acquisition's label code ("SM", "P"). */
+    public function acquisitionCode(): string
     {
-        return sprintf('B%04d-%d', $this->id, $number);
+        return MasterOptions::ACQUISITION_CODES[$this->acquisition] ?? 'P';
+    }
+
+    /** The number after the highest inventory number in use. */
+    public static function nextInventoryNumber(): int
+    {
+        return (self::inventoryNumbersInUse()->max() ?? 0) + 1;
+    }
+
+    /**
+     * Inventory numbers of every copy coded with one ("26SM22610" -> 22610).
+     * Older generated codes (B0001-1) carry none.
+     *
+     * @return Collection<int, int>
+     */
+    public static function inventoryNumbersInUse()
+    {
+        return BookCopy::query()->where('code', 'not like', 'B%')->pluck('code')
+            ->map(fn (string $code) => preg_match(self::COPY_CODE, $code, $m) ? (int) $m[3] : null)
+            ->filter()
+            ->values();
     }
 }
